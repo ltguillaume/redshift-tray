@@ -1,4 +1,4 @@
-;Redshift Tray v1.0 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.0.1 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -11,10 +11,17 @@ IniRead, day, %ini%, Redshift, daytemp, 6500
 IniRead, night, %ini%, Redshift, nighttemp, 3500
 IniRead, pauseminutes, %ini%, Redshift, pauseminutes, 10
 IniRead, hotkeys, %ini%, Redshift, optionalhotkeys, 0
+IniRead, colorizecursor, %ini%, Redshift, colorizecursor, 0
 IniRead, runasadmin, %ini%, Redshift, runasadmin, 0
 
 If runasadmin And !A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%" /restart
+
+RegRead, mousetrails, HKCU\Control Panel\Mouse, MouseTrails
+If colorizecursor And mousetrails <> -1
+	RegWrite, REG_SZ, HKCU\Control Panel\Mouse, MouseTrails, -1
+Else If !colorizecursor And mousetrails = -1
+	RegDelete, HKCU\Control Panel\Mouse, MouseTrails
 
 Menu, Tray, NoStandard
 Menu, Tray, Add, &Enabled, Enable, Radio
@@ -153,6 +160,7 @@ Settings:
 	IniWrite, %day%, %ini%, Redshift, daytemp
 	IniWrite, %night%, %ini%, Redshift, nighttemp
 	IniWrite, %pauseminutes%, %ini%, Redshift, pauseminutes
+	IniWrite, %colorizecursor%, %ini%, Redshift, colorizecursor
 	IniWrite, %runasadmin%, %ini%, Redshift, runasadmin
 	FileGetTime, modtime, %ini%
 	RunWait, %ini%
