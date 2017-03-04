@@ -1,18 +1,19 @@
-;Redshift Tray v1.0.1 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.1 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
 SetWorkingDir %A_ScriptDir%
 
-Global lat, lon, day, night, pauseminutes, hotkeys, mode, timer, restorecaption, ini = "rstray.ini", brightness = 1
-IniRead, lat, %ini%, Redshift, latitude, 52.3702
-IniRead, lon, %ini%, Redshift, longitude, 4.8952
-IniRead, day, %ini%, Redshift, daytemp, 6500
-IniRead, night, %ini%, Redshift, nighttemp, 3500
-IniRead, pauseminutes, %ini%, Redshift, pauseminutes, 10
-IniRead, hotkeys, %ini%, Redshift, optionalhotkeys, 0
-IniRead, colorizecursor, %ini%, Redshift, colorizecursor, 0
-IniRead, runasadmin, %ini%, Redshift, runasadmin, 0
+Global lat, lon, day, night, pauseminutes, hotkeys, traveling, mode, timer, restorecaption, ini = "rstray.ini", s = "Redshift", brightness = 1
+IniRead, lat, %ini%, %s%, latitude
+IniRead, lon, %ini%, %s%, longitude
+IniRead, day, %ini%, %s%, daytemp, 6500
+IniRead, night, %ini%, %s%, nighttemp, 3500
+IniRead, pauseminutes, %ini%, %s%, pauseminutes, 10
+IniRead, hotkeys, %ini%, %s%, optionalhotkeys, 0
+IniRead, traveling, %ini%, %s%, traveling, 0
+IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
+IniRead, runasadmin, %ini%, %s%, runasadmin, 0
 
 If runasadmin And !A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%" /restart
@@ -51,7 +52,12 @@ Enable:
 	Menu, Tray, Check, &Enabled
 	Menu, Tray, Default, &Disabled
 	Menu, Tray, Icon, %A_ScriptFullPath%, 1, 1
-	Run()
+	If traveling Or (lat = "ERROR" Or lon = "ERROR")
+		GetLocation()
+	If (lat = "ERROR" Or lon = "ERROR")
+		Goto, Settings
+	Else
+		Run()
 	Return
 
 Force:
@@ -89,8 +95,7 @@ Pause:
 	Menu, Tray, Default, &Enabled
 	Menu, Tray, Icon, %A_ScriptFullPath%, 2, 1
 	Restore()
-	While timer > 0
-	{
+	While timer > 0 {
 		TrayTip()
 		Sleep, 10000
 		timer -= 10
@@ -106,6 +111,7 @@ Hotkeys:
 RControl PgUp	Increase brightness
 RControl PgDn	Decrease brightness
 RControl Home	Reset brightness
+RControl End	Pause Redshift for %pauseminutes% minutes
 
 ============	 Optional Hotkeys	===========
 RControl Up	MM: Volume up
@@ -120,8 +126,8 @@ AltGr =		Decrease window transparency
 AltGr Space	Send Ctrl-W
 RShift		Windows Run dialog
 
-Hotkeys will not work when the active program is running
-as admin, unless you set the "runasadmin" setting to 1.
+Hotkeys will not work when the active window is of a
+program run as admin, unless you set "runasadmin=1".
 
 Enable optional hotkeys?
 	)
@@ -137,7 +143,7 @@ Enable optional hotkeys?
 		Menu, Tray, Uncheck, &Hotkeys
 		hotkeys = 0
 	}
-	IniWrite, %hotkeys%, %ini%, Redshift, optionalhotkeys
+	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
 	Return
 
 Autorun:
@@ -155,13 +161,15 @@ Autorun:
 	Return
 
 Settings:
-	IniWrite, %lat%, %ini%, Redshift, latitude
-	IniWrite, %lon%, %ini%, Redshift, longitude
-	IniWrite, %day%, %ini%, Redshift, daytemp
-	IniWrite, %night%, %ini%, Redshift, nighttemp
-	IniWrite, %pauseminutes%, %ini%, Redshift, pauseminutes
-	IniWrite, %colorizecursor%, %ini%, Redshift, colorizecursor
-	IniWrite, %runasadmin%, %ini%, Redshift, runasadmin
+	IniWrite, %lat%, %ini%, %s%, latitude
+	IniWrite, %lon%, %ini%, %s%, longitude
+	IniWrite, %day%, %ini%, %s%, daytemp
+	IniWrite, %night%, %ini%, %s%, nighttemp
+	IniWrite, %pauseminutes%, %ini%, %s%, pauseminutes
+	IniWrite, %traveling%, %ini%, %s%, traveling
+	IniWrite, %colorizecursor%, %ini%, %s%, colorizecursor
+	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
+	IniWrite, %runasadmin%, %ini%, %s%, runasadmin
 	FileGetTime, modtime, %ini%
 	RunWait, %ini%
 	FileGetTime, newmodtime, %ini%
@@ -177,6 +185,7 @@ Exit:
 >^PgUp::Brightness(0.05)
 >^PgDn::Brightness(-0.05)
 >^Home::Brightness(1)
+>^End::Goto, Pause
 #If !WinActive("ahk_class TscShellContainerClass") And hotkeys
 >^Up::Send {Volume_Up}
 >^Down::Send {Volume_Down}
@@ -230,15 +239,37 @@ Exit:
 	WinSet, Transparent, %transparency%, A
 	Return
 <^>!Space::Send ^w
-RShift & Up::Return	; Make RShift a prefix by using it in front of "&" at least once.
+RShift & AppsKey::Return	; Make RShift a prefix by using it in front of "&" at least once.
 RShift::WinRunDialog()
+
+GetLocation() {
+	try {
+		whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+		whr.Open("GET", "https://ipapi.co/latlong", false)
+		whr.Send()
+		response := whr.ResponseText
+	}
+	If (InStr(response, "Undefined") Or response = "") {
+		If (lat = "ERROR" Or lon = "ERROR") {
+			MsgBox, 308, Location Error, An error occurred while determining your location!`nChoose Yes to retry, or No to manually specify latitude and longitude.
+			IfMsgBox Yes
+				GetLocation()
+		}
+		Return
+	}
+	StringSplit, latlon, response, `,
+	lat = %latlon1%
+	lon = %latlon2%
+	IniWrite, %lat%, %ini%, %s%, latitude
+	IniWrite, %lon%, %ini%, %s%, longitude
+}
 
 Restore() {
 	RunWait, redshift.exe -x,,Hide
 	Loop {
 		Process, Close, redshift.exe
 		Process, Exist, redshift.exe
-	}	Until !ErrorLevel
+	} Until !ErrorLevel
 }
 
 Run(adjbr = FALSE) {
@@ -297,7 +328,8 @@ Brightness(value) {
 BrightnessError(value) {
 	Sleep, 500
 	Process, Exist, redshift.exe
-	If !ErrorLevel {
+	If !ErrorLevel
+	{
 		brightness -= value
 		Run(TRUE)
 	}
