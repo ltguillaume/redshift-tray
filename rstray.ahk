@@ -1,4 +1,4 @@
-;Redshift Tray v1.1 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.1.1 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -114,6 +114,7 @@ RControl Home	Reset brightness
 RControl End	Pause Redshift for %pauseminutes% minutes
 
 ============	 Optional Hotkeys	===========
+RControl Menu	Windows Run dialog
 RControl Up	MM: Volume up
 RControl Down	MM: Volume down
 AltGr ,		MM: Previous
@@ -123,8 +124,8 @@ AltGr 9		Toggle window always on top
 AltGr 0		Toggle window on top clickthrough
 AltGr -		Increase window transparency
 AltGr =		Decrease window transparency
-AltGr Space	Send Ctrl-W
-RShift		Windows Run dialog
+AltGr Space	Send Ctrl W
+Menu + Arrow	Aero Snap
 
 Hotkeys will not work when the active window is of a
 program run as admin, unless you set "runasadmin=1".
@@ -187,6 +188,7 @@ Exit:
 >^Home::Brightness(1)
 >^End::Goto, Pause
 #If !WinActive("ahk_class TscShellContainerClass") And hotkeys
+>^AppsKey::WinRunDialog()
 >^Up::Send {Volume_Up}
 >^Down::Send {Volume_Down}
 <^>!,::Send {Media_Prev}
@@ -239,8 +241,11 @@ Exit:
 	WinSet, Transparent, %transparency%, A
 	Return
 <^>!Space::Send ^w
-RShift & AppsKey::Return	; Make RShift a prefix by using it in front of "&" at least once.
-RShift::WinRunDialog()
+AppsKey & Up::Send #{Up}
+AppsKey & Down::Send #{Down}
+AppsKey & Left::Send #{Left}
+AppsKey & Right::Send #{Right}
+AppsKey Up::Send {AppsKey}
 
 GetLocation() {
 	try {
@@ -278,7 +283,7 @@ Run(adjbr = FALSE) {
 	If mode = enable
 		cfg = -l %lat%:%lon% -t %day%:%night% %br%
 	Else If mode = force
-		cfg = -O %night% -r
+		cfg = -O %night% %br%
 	Else If mode = disable
 		cfg = -O 6500 %br%
 	Process, Exist, redshift.exe
@@ -328,7 +333,7 @@ Brightness(value) {
 BrightnessError(value) {
 	Sleep, 500
 	Process, Exist, redshift.exe
-	If !ErrorLevel
+	If !ErrorLevel And mode = enabled
 	{
 		brightness -= value
 		Run(TRUE)

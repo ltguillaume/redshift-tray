@@ -27,6 +27,7 @@ It also includes a set of optional hotkeys. Admittedly, these are entirely based
     - If you want to use the (default and/or optional) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set __runasadmin=1__ so that Redshift Tray will try to run as admin, too. If this scenario doesn't really occur on your system, leave the damn thing alone.
 3. Now save the settings file and close it. Redshift Tray will restart with the settings you've defined.
 4. If you'd like Redshift Tray to automatically run at startup, right-click the tray icon again and click __Autorun__, so that this option is checked. This setting just creates or removes a value in the registry key _HKCU\Software\Microsoft\Windows\CurrentVersion\Run_.
+5. If Redshift [fails to adjust the color temperature](http://jonls.dk/2010/09/windows-gamma-adjustments), or the brightness level gets stuck at a certain percentage, import __unlock-gammarange.reg__ into the registry and restart Windows.
 
 You. Are. Done!
 
