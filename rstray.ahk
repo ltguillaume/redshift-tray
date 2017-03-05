@@ -75,6 +75,7 @@ Force:
 Disable:
 	mode = disable
 	timer = 0
+	brightness = 1
 	Menu, Tray, Uncheck, &Enabled
 	Menu, Tray, UnCheck, &Forced
 	Menu, Tray, Uncheck, &Paused
@@ -88,6 +89,8 @@ Disable:
 Pause:
 	mode = pause
 	timer := pauseminutes * 60
+	restorebrightness = %brightness%
+	brightness = 1
 	Menu, Tray, Uncheck, &Enabled
 	Menu, Tray, Uncheck, &Disabled
 	Menu, Tray, UnCheck, &Forced
@@ -101,7 +104,10 @@ Pause:
 		timer -= 10
 	}
 	If mode = pause
+	{
+		brightness = %restorebrightness%
 		Goto, Enable
+	}
 	Return
 
 Hotkeys:
