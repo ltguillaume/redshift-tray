@@ -114,15 +114,15 @@ Hotkeys:
 	MsgBox, 4, Hotkeys List,
 	(
 ============	  Default Hotkeys	===========
-RControl PgUp	Increase brightness
-RControl PgDn	Decrease brightness
-RControl Home	Reset brightness
-RControl End	Pause Redshift for %pauseminutes% minutes
+RCtrl PgUp	Increase brightness
+RCtrl PgDn	Decrease brightness
+RCtrl Home	Reset brightness
+RCtrl End		Pause Redshift for %pauseminutes% minutes
 
 ============	 Optional Hotkeys	===========
-RControl Menu	Windows Run dialog
-RControl Up	MM: Volume up
-RControl Down	MM: Volume down
+RCtrl Menu	Windows Run dialog
+RCtrl Up		MM: Volume up
+RCtrl Down	MM: Volume down
 AltGr ,		MM: Previous
 AltGr .		MM: Next
 AltGr /		MM: Play/Pause
@@ -131,7 +131,7 @@ AltGr 0		Toggle window on top clickthrough
 AltGr -		Increase window transparency
 AltGr =		Decrease window transparency
 AltGr Space	Send Ctrl W
-Menu + Arrow	Aero Snap
+Menu + Arrows	Aero Snap
 
 Hotkeys will not work when the active window is of a
 program run as admin, unless you set "runasadmin=1".
@@ -251,7 +251,7 @@ AppsKey & Up::Send #{Up}
 AppsKey & Down::Send #{Down}
 AppsKey & Left::Send #{Left}
 AppsKey & Right::Send #{Right}
-AppsKey Up::Send {AppsKey}
+AppsKey::Send {AppsKey}
 
 GetLocation() {
 	try {
