@@ -1,10 +1,10 @@
-;Redshift Tray v1.1.1 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.2.0 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
 SetWorkingDir %A_ScriptDir%
 
-Global lat, lon, day, night, pauseminutes, hotkeys, traveling, mode, timer, restorecaption, ini = "rstray.ini", s = "Redshift", brightness = 1
+Global ini = "rstray.ini", s = "Redshift", lat, lon, day, night
 IniRead, lat, %ini%, %s%, latitude
 IniRead, lon, %ini%, %s%, longitude
 IniRead, day, %ini%, %s%, daytemp, 6500
@@ -14,6 +14,7 @@ IniRead, hotkeys, %ini%, %s%, optionalhotkeys, 0
 IniRead, traveling, %ini%, %s%, traveling, 0
 IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
+Global mode, timer, restorecaption, gamma, brightness = 1
 
 If runasadmin And !A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%" /restart
@@ -26,12 +27,12 @@ Else If !colorizecursor And mousetrails = -1
 
 Menu, Tray, NoStandard
 Menu, Tray, Add, &Enabled, Enable, Radio
-Menu, Tray, Add, &Disabled, Disable, Radio
 Menu, Tray, Add, &Forced, Force, Radio
 Menu, Tray, Add, &Paused, Pause, Radio
+Menu, Tray, Add, &Disabled, Disable, Radio
 Menu, Tray, Add
-Menu, Tray, Add, &Hotkeys, Hotkeys
 Menu, Tray, Add, &Autorun, Autorun
+Menu, Tray, Add, &Hotkeys, Hotkeys
 Menu, Tray, Add, &Settings, Settings
 Menu, Tray, Add
 Menu, Tray, Add, E&xit, Exit
@@ -63,11 +64,12 @@ Enable:
 Force:
 	mode = force
 	timer = 0
+	gamma = %night%
 	Menu, Tray, UnCheck, &Enabled
 	Menu, Tray, Uncheck, &Disabled
 	Menu, Tray, Uncheck, &Paused
 	Menu, Tray, Check, &Forced
-	Menu, Tray, Default, &Disabled
+	Menu, Tray, Default, &Enabled
 	Menu, Tray, Icon, %A_ScriptFullPath%, 1, 1
 	Run()
 	Return
@@ -98,11 +100,18 @@ Pause:
 	Menu, Tray, Default, &Enabled
 	Menu, Tray, Icon, %A_ScriptFullPath%, 2, 1
 	Restore()
+	SetTimer, Paused
+	Return
+
+Paused:
 	While timer > 0 {
+		If mode <> pause
+			SetTimer,, Delete
 		TrayTip()
 		Sleep, 10000
 		timer -= 10
 	}
+	SetTimer,, Delete
 	If mode = pause
 	{
 		brightness = %restorebrightness%
@@ -114,10 +123,15 @@ Hotkeys:
 	MsgBox, 4, Hotkeys List,
 	(
 ============	  Default Hotkeys	===========
+RCtrl Home	Reset brightness
 RCtrl PgUp	Increase brightness
 RCtrl PgDn	Decrease brightness
-RCtrl Home	Reset brightness
-RCtrl End		Pause Redshift for %pauseminutes% minutes
+RCtrl End		Toggle pause for %pauseminutes% minutes
+Forced temperature:
+AltGr Home	Force night temperature (reset)
+AltGr PgUp	Increase forced temperature
+AltGr PgDn	Decrease forced temperature
+AltGr End		End forced temperature
 
 ============	 Optional Hotkeys	===========
 RCtrl Menu	Windows Run dialog
@@ -192,7 +206,16 @@ Exit:
 >^PgUp::Brightness(0.05)
 >^PgDn::Brightness(-0.05)
 >^Home::Brightness(1)
->^End::Goto, Pause
+>^End::
+	If mode = pause
+		Goto, Enable
+	Else
+		Goto, Pause
+	Return
+<^>!Home::Goto, Force
+<^>!PgUp::Gamma(100)
+<^>!PgDn::Gamma(-100)
+<^>!End::Goto, Enable
 #If !WinActive("ahk_class TscShellContainerClass") And hotkeys
 >^AppsKey::WinRunDialog()
 >^Up::Send {Volume_Up}
@@ -275,25 +298,32 @@ GetLocation() {
 	IniWrite, %lon%, %ini%, %s%, longitude
 }
 
-Restore() {
-	RunWait, redshift.exe -x,,Hide
+Close() {
 	Loop {
 		Process, Close, redshift.exe
 		Process, Exist, redshift.exe
 	} Until !ErrorLevel
 }
 
-Run(adjbr = FALSE) {
+Restore() {
+	Close()
+	RunWait, redshift.exe -x,,Hide
+}
+
+Run(adjust = FALSE) {
 	br := brightness>1 ? "-g " . brightness : "-b " . brightness
-	br := adjbr ? br . " -r" : br
 	If mode = enable
 		cfg = -l %lat%:%lon% -t %day%:%night% %br%
 	Else If mode = force
-		cfg = -O %night% %br%
+		cfg = -O %gamma% %br%
+	Else If mode = pause
+		cfg = -O 6500 %br%
 	Else If mode = disable
 		cfg = -O 6500 %br%
-	Process, Exist, redshift.exe
-	If ErrorLevel
+	Close()
+	If adjust
+		cfg = %cfg% -r
+	Else
 		Restore()
 	Run, redshift.exe %cfg%,,Hide
 	TrayTip()
@@ -303,9 +333,10 @@ TrayTip() {
 	If mode = enable
 		status = Enabled: %night%K/%day%K`nLatitude: %lat%`nLongitude: %lon%
 	Else If mode = force
-		status = Forced: %night%K
+		status = Forced: %gamma%K
 	Else If mode = pause
 	{
+		endtime =
 		endtime += timer, seconds
 		FormatTime, endtime, %endtime%, HH:mm
 		status = Disabled until %endtime%
@@ -333,15 +364,34 @@ Brightness(value) {
 	Else
 		brightness += value
 	Run(TRUE)
-	BrightnessError(value)
+	If mode = enabled
+	{
+		Sleep, 500
+		Process, Exist, redshift.exe
+		If !ErrorLevel
+		{
+			brightness -= value
+			Run(TRUE)
+		}
+	}
 }
 
-BrightnessError(value) {
-	Sleep, 500
-	Process, Exist, redshift.exe
-	If !ErrorLevel And mode = enabled
+Gamma(value) {
+	If mode <> force
+		Return
+	If value = 1
+		gamma = night
+	Else
+		gamma += value
+	Run(TRUE)
+	If mode = enabled
 	{
-		brightness -= value
-		Run(TRUE)
+		Sleep, 500
+		Process, Exist, redshift.exe
+		If !ErrorLevel
+		{
+			gamma -= value
+			Run(TRUE)
+		}
 	}
 }
