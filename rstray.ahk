@@ -364,12 +364,13 @@ Brightness(value) {
 	Else
 		brightness += value
 	Run(TRUE)
-	If mode = enabled
+	If mode = enable
 	{
-		Sleep, 500
+		Sleep, 200
 		Process, Exist, redshift.exe
 		If !ErrorLevel
 		{
+			MsgBox, Uh oooh
 			brightness -= value
 			Run(TRUE)
 		}
@@ -384,9 +385,9 @@ Gamma(value) {
 	Else
 		gamma += value
 	Run(TRUE)
-	If mode = enabled
+	If mode = enable
 	{
-		Sleep, 500
+		Sleep, 200
 		Process, Exist, redshift.exe
 		If !ErrorLevel
 		{
