@@ -1,10 +1,10 @@
-;Redshift Tray v1.2.0 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.2.1 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
-SetWorkingDir %A_ScriptDir%
+SetWorkingDir, %A_ScriptDir%
 
-Global ini = "rstray.ini", s = "Redshift", lat, lon, day, night
+Global exe = "redshift.exe", ini = "rstray.ini", s = "Redshift", lat, lon, day, night
 IniRead, lat, %ini%, %s%, latitude
 IniRead, lon, %ini%, %s%, longitude
 IniRead, day, %ini%, %s%, daytemp, 6500
@@ -26,6 +26,7 @@ Else If !colorizecursor And mousetrails = -1
 	RegDelete, HKCU\Control Panel\Mouse, MouseTrails
 
 Menu, Tray, NoStandard
+Menu, Tray, Tip, Redshift
 Menu, Tray, Add, &Enabled, Enable, Radio
 Menu, Tray, Add, &Forced, Force, Radio
 Menu, Tray, Add, &Paused, Pause, Radio
@@ -45,7 +46,7 @@ If !ErrorLevel
 	Menu, Tray, Check, &Autorun
 
 Enable:
-	mode = enable
+	mode = enabled
 	timer = 0
 	Menu, Tray, Uncheck, &Disabled
 	Menu, Tray, UnCheck, &Forced
@@ -62,7 +63,7 @@ Enable:
 	Return
 
 Force:
-	mode = force
+	mode = forced
 	timer = 0
 	gamma = %night%
 	Menu, Tray, UnCheck, &Enabled
@@ -75,7 +76,7 @@ Force:
 	Return
 
 Disable:
-	mode = disable
+	mode = disabled
 	timer = 0
 	brightness = 1
 	Menu, Tray, Uncheck, &Enabled
@@ -89,7 +90,7 @@ Disable:
 	Return
 
 Pause:
-	mode = pause
+	mode = paused
 	timer := pauseminutes * 60
 	restorebrightness = %brightness%
 	brightness = 1
@@ -105,14 +106,14 @@ Pause:
 
 Paused:
 	While timer > 0 {
-		If mode <> pause
+		If mode <> paused
 			SetTimer,, Delete
 		TrayTip()
 		Sleep, 10000
 		timer -= 10
 	}
 	SetTimer,, Delete
-	If mode = pause
+	If mode = paused
 	{
 		brightness = %restorebrightness%
 		Goto, Enable
@@ -207,7 +208,7 @@ Exit:
 >^PgDn::Brightness(-0.05)
 >^Home::Brightness(1)
 >^End::
-	If mode = pause
+	If mode = paused
 		Goto, Enable
 	Else
 		Goto, Pause
@@ -285,7 +286,8 @@ GetLocation() {
 	}
 	If (InStr(response, "Undefined") Or response = "") {
 		If (lat = "ERROR" Or lon = "ERROR") {
-			MsgBox, 308, Location Error, An error occurred while determining your location!`nChoose Yes to retry, or No to manually specify latitude and longitude.
+			MsgBox, 308, Location Error
+				, An error occurred while determining your location!`nChoose Yes to retry, or No to manually specify latitude and longitude.
 			IfMsgBox Yes
 				GetLocation()
 		}
@@ -300,41 +302,41 @@ GetLocation() {
 
 Close() {
 	Loop {
-		Process, Close, redshift.exe
-		Process, Exist, redshift.exe
+		Process, Close, %exe%
+		Process, Exist, %exe%
 	} Until !ErrorLevel
 }
 
 Restore() {
 	Close()
-	RunWait, redshift.exe -x,,Hide
+	RunWait, %exe% -x,,Hide
 }
 
 Run(adjust = FALSE) {
 	br := brightness>1 ? "-g " . brightness : "-b " . brightness
-	If mode = enable
+	If mode = enabled
 		cfg = -l %lat%:%lon% -t %day%:%night% %br%
-	Else If mode = force
+	Else If mode = forced
 		cfg = -O %gamma% %br%
-	Else If mode = pause
+	Else If mode = paused
 		cfg = -O 6500 %br%
-	Else If mode = disable
+	Else If mode = disabled
 		cfg = -O 6500 %br%
 	Close()
 	If adjust
 		cfg = %cfg% -r
 	Else
 		Restore()
-	Run, redshift.exe %cfg%,,Hide
+	Run, %exe% %cfg%,,Hide
 	TrayTip()
 }
 
 TrayTip() {
-	If mode = enable
+	If mode = enabled
 		status = Enabled: %night%K/%day%K`nLatitude: %lat%`nLongitude: %lon%
-	Else If mode = force
+	Else If mode = forced
 		status = Forced: %gamma%K
-	Else If mode = pause
+	Else If mode = paused
 	{
 		endtime =
 		endtime += timer, seconds
@@ -362,15 +364,20 @@ Brightness(value) {
 	If value = 1
 		brightness = 1
 	Else
-		brightness += value
+	{
+		newbrightness := brightness + value
+		If (newbrightness > 0.09 And newbrightness < 10.01)
+			brightness = %newbrightness%
+		Else
+			Return
+	}
 	Run(TRUE)
-	If mode = enable
+	If mode = enabled
 	{
 		Sleep, 200
-		Process, Exist, redshift.exe
+		Process, Exist, %exe%
 		If !ErrorLevel
 		{
-			MsgBox, Uh oooh
 			brightness -= value
 			Run(TRUE)
 		}
@@ -378,17 +385,23 @@ Brightness(value) {
 }
 
 Gamma(value) {
-	If mode <> force
+	If mode <> forced
 		Return
 	If value = 1
 		gamma = night
 	Else
-		gamma += value
+	{
+		newgamma := gamma + value
+		If (newgamma > 999  And newgamma < 25001)
+			gamma = %newgamma%
+		Else
+			Return
+	}
 	Run(TRUE)
-	If mode = enable
+	If mode = enabled
 	{
 		Sleep, 200
-		Process, Exist, redshift.exe
+		Process, Exist, %exe%
 		If !ErrorLevel
 		{
 			gamma -= value
