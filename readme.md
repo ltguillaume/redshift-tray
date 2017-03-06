@@ -8,8 +8,8 @@ Redshift Tray is a no-frills GUI for the excellent screen temperature adjustment
 
 - Quickly enable/disable Redshift: double-click the tray icon
 - Force a full nighttime temperature adjustment, no matter what the actual time is
-- Pause the temperature adjustment for x minutes via Right Control + End
-- Adjust the screen brightness via Right Control + PgUp|Home|PgDn
+- Pause the temperature adjustment for x minutes
+- Adjust the screen brightness and forced temperature via hotkeys
 - Optionally update your current coordinates every time you enable Redshift (e.g. when traveling)
 
 It also includes a set of optional hotkeys. Admittedly, these are entirely based on my personal preferences, but since this program is put together in [AutoHotkey](http://www.autohotkey.com), it's easy to add your own hotkeys and remove the ones you think are rubbish.
