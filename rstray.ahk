@@ -1,4 +1,4 @@
-;Redshift Tray v1.2.1 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.2.2 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -39,8 +39,6 @@ Menu, Tray, Add
 Menu, Tray, Add, E&xit, Exit
 If hotkeys
 	Menu, Tray, Check, &Hotkeys
-Else
-	Suspend, On
 RegRead, autorun, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
 If !ErrorLevel
 	Menu, Tray, Check, &Autorun
@@ -142,11 +140,12 @@ AltGr ,		MM: Previous
 AltGr .		MM: Next
 AltGr /		MM: Play/Pause
 AltGr 9		Toggle window always on top
-AltGr 0		Toggle window on top clickthrough
+AltGr 0		Toggle window on top click-through
 AltGr -		Increase window transparency
 AltGr =		Decrease window transparency
 AltGr Space	Send Ctrl W
 Menu + Arrows	Aero Snap
+MidClick on taskbar	Open Task Manager
 
 Hotkeys will not work when the active window is of a
 program run as admin, unless you set "runasadmin=1".
@@ -155,13 +154,11 @@ Enable optional hotkeys?
 	)
 	IfMsgBox Yes
 	{
-		Suspend, Off
 		Menu, Tray, Check, &Hotkeys
 		hotkeys = 1
 	}
 	IfMsgBox No
 	{
-		Suspend, On
 		Menu, Tray, Uncheck, &Hotkeys
 		hotkeys = 0
 	}
@@ -203,7 +200,7 @@ Exit:
 	Restore()
 	ExitApp
 
-#IfWinNotActive ahk_class TscShellContainerClass
+#IfWinNotActive, ahk_class TscShellContainerClass
 >^PgUp::Brightness(0.05)
 >^PgDn::Brightness(-0.05)
 >^Home::Brightness(1)
@@ -217,65 +214,6 @@ Exit:
 <^>!PgUp::Gamma(100)
 <^>!PgDn::Gamma(-100)
 <^>!End::Goto, Enable
-#If !WinActive("ahk_class TscShellContainerClass") And hotkeys
->^AppsKey::WinRunDialog()
->^Up::Send {Volume_Up}
->^Down::Send {Volume_Down}
-<^>!,::Send {Media_Prev}
-<^>!.::Send {Media_Next}
-<^>!/::Send {Media_Play_Pause}
-<^>!9::WinSet, AlwaysOnTop, Toggle, A
-<^>!0::
-	WinGet, ExStyle, ExStyle, A
-	If (ExStyle & 0x20) {
-		If restorecaption
-		{
-			WinSet, Style, +0xC00000, A
-			WinSet, Style, -0x1000000, A
-			restorecaption = FALSE
-		}
-		WinSet, AlwaysOnTop, Off, A
-		WinSet, ExStyle, -0x20, A
-	} Else {
-		WinGet, transparency, Transparent, A
-		WinSet, AlwaysOnTop, On, A
-		WinGet, Style, Style, A
-		If (transparency = "") Or transparency = 255
-			WinSet, Transparent, 254, A
-		If (Style & 0xC00000) {
-			restorecaption = TRUE
-			WinSet, Style, -0xC00000, A
-			WinSet, Style, +0x1000000, A
-		}
-		If transparency = 254
-			WinSet, Transparent, 255, A
-		WinSet, ExStyle, +0x20, A
-	}
-	Return
-<^>!-::
-	WinGet, transparency, Transparent, A
-	If (transparency = "")
-		transparency = 255
-	Else If transparency > 20
-		transparency -= 5
-	WinSet, Transparent, %transparency%, A
-	Return
-<^>!=::
-	WinGet, transparency, Transparent, A
-	If (transparency = "")
-		transparency = 255
-	Else If transparency = 255
-		transparency = OFF
-	Else
-		transparency += 5
-	WinSet, Transparent, %transparency%, A
-	Return
-<^>!Space::Send ^w
-AppsKey & Up::Send #{Up}
-AppsKey & Down::Send #{Down}
-AppsKey & Left::Send #{Left}
-AppsKey & Right::Send #{Right}
-AppsKey::Send {AppsKey}
 
 GetLocation() {
 	try {
@@ -349,17 +287,6 @@ TrayTip() {
 	Menu, Tray, Tip, Redshift`n%status%`nBrightness = %br%`%
 }
 
-WinRunDialog() {
-	IfWinExist, ahk_class #32770
-	{
-		IfWinActive, ahk_class #32770
-			Send !{Esc}
-		WinClose, ahk_class #32770
-	}
-	Else
-		Send #r
-}
-
 Brightness(value) {
 	If value = 1
 		brightness = 1
@@ -408,4 +335,91 @@ Gamma(value) {
 			Run(TRUE)
 		}
 	}
+}
+
+#If !WinActive("ahk_class TscShellContainerClass") And hotkeys
+>^AppsKey::WinRunDialog()
+>^Up::Send {Volume_Up}
+>^Down::Send {Volume_Down}
+<^>!,::Send {Media_Prev}
+<^>!.::Send {Media_Next}
+<^>!/::Send {Media_Play_Pause}
+<^>!9::WinSet, AlwaysOnTop, Toggle, A
+<^>!0::ClickThroughWindow()
+<^>!-::Opacity(-5)
+<^>!=::Opacity(5)
+<^>!Space::Send ^w
+AppsKey & Up::Send #{Up}
+AppsKey & Down::Send #{Down}
+AppsKey & Left::Send #{Left}
+AppsKey & Right::Send #{Right}
+AppsKey::Send {AppsKey}
+MButton::TaskMgr()
+
+WinRunDialog() {
+	SetTitleMatchMode, 3
+	WinGet, id, ID, Run ahk_class #32770 ahk_exe explorer.exe
+	If id <>
+	{
+		IfWinActive, ahk_id %id%
+			Send !{Esc}
+		WinClose, ahk_id %id%
+	}
+	Else
+		Send #r
+}
+
+ClickThroughWindow() {
+	WinGet, ExStyle, ExStyle, A
+	If (ExStyle & 0x20) {
+		If restorecaption
+		{
+			WinSet, Style, +0xC00000, A
+			WinSet, Style, -0x1000000, A
+			restorecaption = FALSE
+		}
+		WinSet, AlwaysOnTop, Off, A
+		WinSet, ExStyle, -0x20, A
+	} Else {
+		WinGet, transparency, Transparent, A
+		WinSet, AlwaysOnTop, On, A
+		WinGet, Style, Style, A
+		If (transparency = "") Or transparency = 255
+			WinSet, Transparent, 254, A
+		If (Style & 0xC00000) {
+			restorecaption = TRUE
+			WinSet, Style, -0xC00000, A
+			WinSet, Style, +0x1000000, A
+		}
+		If transparency = 254
+			WinSet, Transparent, 255, A
+		WinSet, ExStyle, +0x20, A
+	}
+}
+
+Opacity(value) {
+	WinGet, transparency, Transparent, A
+	If (transparency = "")
+		transparency = 255
+	transparency += value
+	If transparency > 254
+		transparency = OFF
+	Else If transparency < 15
+		transparency = 15
+	WinSet, Transparent, %transparency%, A
+	Return
+}
+
+TaskMgr() {
+	WinGetClass, before, A
+	If before = Shell_TrayWnd
+		Send !{Esc}
+	WinGetClass, before, A
+	Click, Middle
+	WinGetClass, after, A
+	If (after = "Shell_TrayWnd" And before <> after)
+		If A_Is64bitOS
+			Run, %A_WinDir%\SysNative\taskmgr.exe
+		Else
+			Run, taskmgr.exe
 }
