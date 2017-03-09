@@ -1,4 +1,4 @@
-;Redshift Tray v1.2.2 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.2.3 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -122,10 +122,10 @@ Hotkeys:
 	MsgBox, 4, Hotkeys List,
 	(
 ============	  Default Hotkeys	===========
-RCtrl Home	Reset brightness
-RCtrl PgUp	Increase brightness
-RCtrl PgDn	Decrease brightness
-RCtrl End		Toggle pause for %pauseminutes% minutes
+Alt Home		Reset brightness
+Alt PgUp		Increase brightness
+Alt PgDn		Decrease brightness
+Alt End		Toggle pause for %pauseminutes% minutes
 Forced temperature:
 AltGr Home	Force night temperature (reset)
 AltGr PgUp	Increase forced temperature
@@ -201,10 +201,10 @@ Exit:
 	ExitApp
 
 #IfWinNotActive, ahk_class TscShellContainerClass
->^PgUp::Brightness(0.05)
->^PgDn::Brightness(-0.05)
->^Home::Brightness(1)
->^End::
+!PgUp::Brightness(0.05)
+!PgDn::Brightness(-0.05)
+!Home::Brightness(1)
+!End::
 	If mode = paused
 		Goto, Enable
 	Else
@@ -413,8 +413,10 @@ Opacity(value) {
 TaskMgr() {
 	WinGetClass, before, A
 	If before = Shell_TrayWnd
+	{
 		Send !{Esc}
-	WinGetClass, before, A
+		WinGetClass, before, A
+	}
 	Click, Middle
 	WinGetClass, after, A
 	If (after = "Shell_TrayWnd" And before <> after)
