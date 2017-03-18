@@ -1,4 +1,4 @@
-;Redshift Tray v1.2.3 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.2.5 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -14,7 +14,7 @@ IniRead, hotkeys, %ini%, %s%, optionalhotkeys, 0
 IniRead, traveling, %ini%, %s%, traveling, 0
 IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
-Global mode, timer, restorecaption, gamma, brightness = 1
+Global mode, timer, temperature, brightness = 1, withcaption := Object()
 
 If runasadmin And !A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%" /restart
@@ -63,7 +63,7 @@ Enable:
 Force:
 	mode = forced
 	timer = 0
-	gamma = %night%
+	temperature = %night%
 	Menu, Tray, UnCheck, &Enabled
 	Menu, Tray, Uncheck, &Disabled
 	Menu, Tray, Uncheck, &Paused
@@ -145,6 +145,7 @@ AltGr -		Increase window transparency
 AltGr =		Decrease window transparency
 AltGr Space	Send Ctrl W
 Menu + Arrows	Aero Snap
+DblClick on taskbar	Show desktop
 MidClick on taskbar	Open Task Manager
 
 Hotkeys will not work when the active window is of a
@@ -211,8 +212,8 @@ Exit:
 		Goto, Pause
 	Return
 <^>!Home::Goto, Force
-<^>!PgUp::Gamma(100)
-<^>!PgDn::Gamma(-100)
+<^>!PgUp::Temperature(100)
+<^>!PgDn::Temperature(-100)
 <^>!End::Goto, Enable
 
 GetLocation() {
@@ -255,7 +256,7 @@ Run(adjust = FALSE) {
 	If mode = enabled
 		cfg = -l %lat%:%lon% -t %day%:%night% %br%
 	Else If mode = forced
-		cfg = -O %gamma% %br%
+		cfg = -O %temperature% %br%
 	Else If mode = paused
 		cfg = -O 6500 %br%
 	Else If mode = disabled
@@ -273,7 +274,7 @@ TrayTip() {
 	If mode = enabled
 		status = Enabled: %night%K/%day%K`nLatitude: %lat%`nLongitude: %lon%
 	Else If mode = forced
-		status = Forced: %gamma%K
+		status = Forced: %temperature%K
 	Else If mode = paused
 	{
 		endtime =
@@ -311,16 +312,16 @@ Brightness(value) {
 	}
 }
 
-Gamma(value) {
+Temperature(value) {
 	If mode <> forced
-		Return
+		Gosub, Force
 	If value = 1
-		gamma = night
+		temperature = night
 	Else
 	{
-		newgamma := gamma + value
-		If (newgamma > 999  And newgamma < 25001)
-			gamma = %newgamma%
+		temp := temperature + value
+		If (temp > 999 And temp < 25001)
+			temperature = %temp%
 		Else
 			Return
 	}
@@ -331,7 +332,7 @@ Gamma(value) {
 		Process, Exist, %exe%
 		If !ErrorLevel
 		{
-			gamma -= value
+			temperature -= value
 			Run(TRUE)
 		}
 	}
@@ -354,6 +355,7 @@ AppsKey & Down::Send #{Down}
 AppsKey & Left::Send #{Left}
 AppsKey & Right::Send #{Right}
 AppsKey::Send {AppsKey}
+~LButton::ShowDesktop()
 MButton::TaskMgr()
 
 WinRunDialog() {
@@ -370,44 +372,61 @@ WinRunDialog() {
 }
 
 ClickThroughWindow() {
-	WinGet, ExStyle, ExStyle, A
-	If (ExStyle & 0x20) {
-		If restorecaption
+	WinGetClass, class, A
+	If class = WorkerW
+		Return
+	WinGet, id, ID, A
+	_id = ahk_id %id%
+	WinGet, exstyle, ExStyle, %_id%
+	If (exstyle & 0x20) {	; Clickthrough
+		If withcaption.HasKey(id)
 		{
-			WinSet, Style, +0xC00000, A
-			WinSet, Style, -0x1000000, A
-			restorecaption = FALSE
+			max := withcaption.Delete(id)
+			if max = 1
+				WinSet, Style, -0x1000000, %_id%	; -Maximize
+			WinSet, Style, +0xC00000, %_id%	; +Caption
 		}
-		WinSet, AlwaysOnTop, Off, A
-		WinSet, ExStyle, -0x20, A
+		WinSet, AlwaysOnTop, Off, %_id%
+		WinSet, ExStyle, -0x20, %_id%	; -Clickthrough
 	} Else {
-		WinGet, transparency, Transparent, A
-		WinSet, AlwaysOnTop, On, A
-		WinGet, Style, Style, A
-		If (transparency = "") Or transparency = 255
-			WinSet, Transparent, 254, A
-		If (Style & 0xC00000) {
-			restorecaption = TRUE
-			WinSet, Style, -0xC00000, A
-			WinSet, Style, +0x1000000, A
+		WinGet, tr, Transparent, %_id%
+		If (tr = "")
+			WinSet, Transparent, 255, %_id%
+		WinGet, style, Style, %_id%
+		If (style & 0xC00000) {	; Has caption
+			WinGet, maximized, MinMax, %_id%
+			If maximized = 1
+				max = 0
+			Else
+			{
+				max = 1
+				WinSet, Style, +0x1000000, %_id%	; +Maximize (lose shadow)
+			}
+			withcaption[id] := max
+			WinSet, Style, -0xC00000, %_id%	; -Caption
 		}
-		If transparency = 254
-			WinSet, Transparent, 255, A
-		WinSet, ExStyle, +0x20, A
+		WinSet, AlwaysOnTop, On, %_id%
+		WinSet, ExStyle, +0x20, %_id%	; +Clickthrough
 	}
 }
 
 Opacity(value) {
-	WinGet, transparency, Transparent, A
-	If (transparency = "")
-		transparency = 255
-	transparency += value
-	If transparency > 254
-		transparency = OFF
-	Else If transparency < 15
-		transparency = 15
-	WinSet, Transparent, %transparency%, A
+	WinGet, tr, Transparent, A
+	If (tr = "")
+		tr = 255
+	tr += value
+	WinGet, exstyle, ExStyle, A
+	If (tr > 254 And Not exstyle & 0x20)
+		tr = Off
+	Else If tr < 15
+		tr = 15
+	WinSet, Transparent, %tr%, A
 	Return
+}
+
+ShowDesktop() {
+	If (A_TimeSincePriorHotkey < 400 And A_PriorHotkey="~LButton" And WinActive("ahk_class Shell_TrayWnd"))
+		Send #d
 }
 
 TaskMgr() {

@@ -1,4 +1,5 @@
 <img src="https://github.com/ltGuillaume/Redshift-Tray/blob/master/Icons/redshift.ico" align="right"/>
+
 # Redshift Tray
 [Redshift Tray](https://github.com/ltGuillaume/Redshift-Tray) by ltGuillaume  
 [Redshift](http://jonls.dk/redshift) by [Jon Lund Steffensen](https://github.com/jonls) 
