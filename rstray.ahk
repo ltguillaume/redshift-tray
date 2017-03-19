@@ -14,7 +14,7 @@ IniRead, hotkeys, %ini%, %s%, optionalhotkeys, 0
 IniRead, traveling, %ini%, %s%, traveling, 0
 IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
-Global mode, timer, temperature, brightness = 1, withcaption := Object()
+Global mode, timer, temperature, rundialog, brightness = 1, withcaption := Object()
 
 If runasadmin And !A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%" /restart
@@ -359,16 +359,19 @@ AppsKey::Send {AppsKey}
 MButton::TaskMgr()
 
 WinRunDialog() {
-	SetTitleMatchMode, 3
-	WinGet, id, ID, Run ahk_class #32770 ahk_exe explorer.exe
-	If id <>
+	If rundialog <>
 	{
-		IfWinActive, ahk_id %id%
+		IfWinActive, ahk_id %rundialog%
 			Send !{Esc}
-		WinClose, ahk_id %id%
+		WinClose, ahk_id %rundialog%
+		rundialog =
 	}
 	Else
+	{
 		Send #r
+		WinWaitActive, ahk_class #32770 ahk_exe explorer.exe
+		WinGet, rundialog, ID, A
+	}
 }
 
 ClickThroughWindow() {
@@ -425,8 +428,11 @@ Opacity(value) {
 }
 
 ShowDesktop() {
-	If (A_TimeSincePriorHotkey < 400 And A_PriorHotkey="~LButton" And WinActive("ahk_class Shell_TrayWnd"))
-		Send #d
+	If (A_TimeSincePriorHotkey < 400 And A_PriorHotkey="~LButton" And WinActive("ahk_class Shell_TrayWnd")) {
+		MouseGetPos,,,, control 
+		If control = MSTaskListWClass1
+			Send #d
+	}
 }
 
 TaskMgr() {
