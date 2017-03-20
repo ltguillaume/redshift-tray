@@ -1,4 +1,4 @@
-;Redshift Tray v1.2.5 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.2.6 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -126,7 +126,6 @@ Alt Home		Reset brightness
 Alt PgUp		Increase brightness
 Alt PgDn		Decrease brightness
 Alt End		Toggle pause for %pauseminutes% minutes
-Forced temperature:
 AltGr Home	Force night temperature (reset)
 AltGr PgUp	Increase forced temperature
 AltGr PgDn	Decrease forced temperature
@@ -147,6 +146,7 @@ AltGr Space	Send Ctrl W
 Menu + Arrows	Aero Snap
 DblClick on taskbar	Show desktop
 MidClick on taskbar	Open Task Manager
+Wheel on taskbar	MM: Volume up/down
 
 Hotkeys will not work when the active window is of a
 program run as admin, unless you set "runasadmin=1".
@@ -357,6 +357,8 @@ AppsKey & Right::Send #{Right}
 AppsKey::Send {AppsKey}
 ~LButton::ShowDesktop()
 MButton::TaskMgr()
+~WheelUp::Volume(1)
+~WheelDown::Volume(-1)
 
 WinRunDialog() {
 	If rundialog <>
@@ -449,4 +451,13 @@ TaskMgr() {
 			Run, %A_WinDir%\SysNative\taskmgr.exe
 		Else
 			Run, taskmgr.exe
+}
+
+Volume(direction) {
+	MouseGetPos,,,, control
+	If control = MSTaskListWClass1
+		If direction > 0
+			Send {Volume_Up}
+		Else
+			Send {Volume_Down}
 }
