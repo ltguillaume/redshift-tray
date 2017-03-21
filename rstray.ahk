@@ -1,4 +1,4 @@
-;Redshift Tray v1.2.6 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.2.7 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -361,15 +361,12 @@ MButton::TaskMgr()
 ~WheelDown::Volume(-1)
 
 WinRunDialog() {
-	If rundialog <>
-	{
+	If (rundialog <> "" And WinExist("ahk_id" . rundialog)) {
 		IfWinActive, ahk_id %rundialog%
 			Send !{Esc}
 		WinClose, ahk_id %rundialog%
 		rundialog =
-	}
-	Else
-	{
+	} Else {
 		Send #r
 		WinWaitActive, ahk_class #32770 ahk_exe explorer.exe
 		WinGet, rundialog, ID, A
