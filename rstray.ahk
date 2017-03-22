@@ -1,7 +1,8 @@
-;Redshift Tray v1.2.7 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.2.8 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
+#MaxHotkeysPerInterval, 200
 SetWorkingDir, %A_ScriptDir%
 
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Redshift", lat, lon, day, night
@@ -119,7 +120,7 @@ Paused:
 	Return
 
 Hotkeys:
-	MsgBox, 4, Hotkeys List,
+	MsgBox, 4, Hotkeys,
 	(
 ============	  Default Hotkeys	===========
 Alt Home		Reset brightness
@@ -338,7 +339,7 @@ Temperature(value) {
 	}
 }
 
-#If !WinActive("ahk_class TscShellContainerClass") And hotkeys
+#If, !WinActive("ahk_class TscShellContainerClass") And hotkeys
 >^AppsKey::WinRunDialog()
 >^Up::Send {Volume_Up}
 >^Down::Send {Volume_Down}
@@ -355,10 +356,16 @@ AppsKey & Down::Send #{Down}
 AppsKey & Left::Send #{Left}
 AppsKey & Right::Send #{Right}
 AppsKey::Send {AppsKey}
+#If, MouseOnTaskbar() And !WinActive("ahk_class TscShellContainerClass") And hotkeys
 ~LButton::ShowDesktop()
 MButton::TaskMgr()
-~WheelUp::Volume(1)
-~WheelDown::Volume(-1)
+WheelUp::Send {Volume_Up}
+WheelDown::Send {Volume_Down}
+
+MouseOnTaskbar() {
+	MouseGetPos,,, id
+	Return WinExist("ahk_id" . id . " ahk_class Shell_TrayWnd")
+}
 
 WinRunDialog() {
 	If (rundialog <> "" And WinExist("ahk_id" . rundialog)) {
@@ -428,7 +435,7 @@ Opacity(value) {
 
 ShowDesktop() {
 	If (A_TimeSincePriorHotkey < 400 And A_PriorHotkey="~LButton" And WinActive("ahk_class Shell_TrayWnd")) {
-		MouseGetPos,,,, control 
+		MouseGetPos,,,, control
 		If control = MSTaskListWClass1
 			Send #d
 	}
@@ -448,13 +455,4 @@ TaskMgr() {
 			Run, %A_WinDir%\SysNative\taskmgr.exe
 		Else
 			Run, taskmgr.exe
-}
-
-Volume(direction) {
-	MouseGetPos,,,, control
-	If control = MSTaskListWClass1
-		If direction > 0
-			Send {Volume_Up}
-		Else
-			Send {Volume_Down}
 }
