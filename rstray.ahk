@@ -1,4 +1,4 @@
-;Redshift Tray v1.2.8 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.3.0 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -123,28 +123,31 @@ Hotkeys:
 	MsgBox, 4, Hotkeys,
 	(
 ============	  Default Hotkeys	===========
-Alt Home		Reset brightness
+Alt Home		Reset Redshift
+Alt End		Disable Redshift
 Alt PgUp		Increase brightness
 Alt PgDn		Decrease brightness
-Alt End		Toggle pause for %pauseminutes% minutes
+Alt Pause		Toggle pause for %pauseminutes% minutes
 AltGr Home	Force night temperature (reset)
+AltGr End		End forced temperature
 AltGr PgUp	Increase forced temperature
 AltGr PgDn	Decrease forced temperature
-AltGr End		End forced temperature
 
 ============	 Optional Hotkeys	===========
-RCtrl Menu	Windows Run dialog
-RCtrl Up		MM: Volume up
-RCtrl Down	MM: Volume down
-AltGr ,		MM: Previous
-AltGr .		MM: Next
-AltGr /		MM: Play/Pause
 AltGr 9		Toggle window always on top
 AltGr 0		Toggle window on top click-through
 AltGr -		Increase window transparency
 AltGr =		Decrease window transparency
 AltGr Space	Send Ctrl W
+AltGr ,		MM: Previous
+AltGr .		MM: Next
+AltGr /		MM: Play/Pause
+RCtrl Up		MM: Volume up
+RCtrl Down	MM: Volume down
+RCtrl Menu	Windows Run dialog
 Menu + Arrows	Aero Snap
+Menu Home	Restart computer
+Menu End		Hibernate computer
 DblClick on taskbar	Show desktop
 MidClick on taskbar	Open Task Manager
 Wheel on taskbar	MM: Volume up/down
@@ -205,13 +208,17 @@ Exit:
 #IfWinNotActive, ahk_class TscShellContainerClass
 !PgUp::Brightness(0.05)
 !PgDn::Brightness(-0.05)
-!Home::Brightness(1)
-!End::
+!Home::
+	Brightness(1)
+	Goto, Enable
+	Return
+!Pause::
 	If mode = paused
 		Goto, Enable
 	Else
 		Goto, Pause
 	Return
+!End::Goto, Disable
 <^>!Home::Goto, Force
 <^>!PgUp::Temperature(100)
 <^>!PgDn::Temperature(-100)
@@ -355,6 +362,8 @@ AppsKey & Up::Send #{Up}
 AppsKey & Down::Send #{Down}
 AppsKey & Left::Send #{Left}
 AppsKey & Right::Send #{Right}
+AppsKey & Home::Shutdown, 2
+AppsKey & End::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
 AppsKey::Send {AppsKey}
 #If, MouseOnTaskbar() And !WinActive("ahk_class TscShellContainerClass") And hotkeys
 ~LButton::ShowDesktop()
@@ -404,10 +413,9 @@ ClickThroughWindow() {
 		WinGet, style, Style, %_id%
 		If (style & 0xC00000) {	; Has caption
 			WinGet, maximized, MinMax, %_id%
-			If maximized = 1
+			If (maximized = 1 Or WinExist(_id . " ahk_class ApplicationFrameWindow")) {
 				max = 0
-			Else
-			{
+			} Else {
 				max = 1
 				WinSet, Style, +0x1000000, %_id%	; +Maximize (lose shadow)
 			}

@@ -15,6 +15,38 @@ Redshift Tray is a no-frills GUI for the excellent screen temperature adjustment
 
 It also includes a set of optional hotkeys. Admittedly, these are entirely based on my personal preferences, but since this program is put together in [AutoHotkey](http://www.autohotkey.com), it's easy to add your own hotkeys and remove the ones you think are rubbish.
 
+## Hotkeys
+
+__Default Hotkeys__ | &nbsp;
+:---: |---
+Alt Home | Reset Redshift
+Alt End | Disable Redshift
+Alt PgUp | Increase brightness
+Alt PgDn | Decrease brightness
+Alt Pause | Toggle pause for %pauseminutes% minutes
+AltGr Home | Force night temperature (reset)
+AltGr End | End forced temperature
+AltGr PgUp | Increase forced temperature
+AltGr PgDn | Decrease forced temperature
+__Optional Hotkeys__ | &nbsp;
+AltGr 9 | Toggle window always on top
+AltGr 0 | Toggle window on top click-through
+AltGr - | Increase window transparency
+AltGr = | Decrease window transparency
+AltGr Space | Send Ctrl W
+AltGr , | MM: Previous
+AltGr . | MM: Next
+AltGr / | MM: Play/Pause
+RCtrl Up | MM: Volume up
+RCtrl Down | MM: Volume down
+RCtrl Menu | Windows Run dialog
+Menu + Arrows | Aero Snap
+Menu Home | Restart computer
+Menu End | Hibernate computer
+DblClick on taskbar | Show desktop
+MidClick on taskbar | Open Task Manager
+Wheel on taskbar | MM: Volume up/down
+
 ## Getting started
 1. Download Redshift Tray from the [releases page](https://github.com/ltGuillaume/Redshift-Tray/releases) and extract it to a folder you really like.
 2. Run __rstray.exe__ and you'll see a handsome icon pop up in the notification area next to your clock. Now right-click it and choose __Settings__. The text file __rstray.ini__ that shows up in your editor contains all the settings for Redshift Tray.
