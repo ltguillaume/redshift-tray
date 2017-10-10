@@ -1,4 +1,4 @@
-;Redshift Tray v1.3.0 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.3.1 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -15,6 +15,7 @@ IniRead, hotkeys, %ini%, %s%, optionalhotkeys, 0
 IniRead, traveling, %ini%, %s%, traveling, 0
 IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
+IniRead, startdisabled, %ini%, %s%, startdisabled, 0
 Global mode, timer, temperature, rundialog, brightness = 1, withcaption := Object()
 
 If runasadmin And !A_IsAdmin
@@ -37,12 +38,18 @@ Menu, Tray, Add, &Autorun, Autorun
 Menu, Tray, Add, &Hotkeys, Hotkeys
 Menu, Tray, Add, &Settings, Settings
 Menu, Tray, Add
+Menu, Tray, Add, &Restart, Restart
 Menu, Tray, Add, E&xit, Exit
 If hotkeys
 	Menu, Tray, Check, &Hotkeys
 RegRead, autorun, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
 If !ErrorLevel
 	Menu, Tray, Check, &Autorun
+
+If startdisabled
+	Goto, Disable
+Else
+	Goto, Enable
 
 Enable:
 	mode = enabled
@@ -194,11 +201,16 @@ Settings:
 	IniWrite, %colorizecursor%, %ini%, %s%, colorizecursor
 	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
 	IniWrite, %runasadmin%, %ini%, %s%, runasadmin
+	IniWrite, %startdisabled%, %ini%, %s%, startdisabled
 	FileGetTime, modtime, %ini%
 	RunWait, %ini%
 	FileGetTime, newmodtime, %ini%
 	If newmodtime <> %modtime%
 		Reload
+	Return
+
+Restart:
+	Run "%A_ScriptFullPath%" /restart
 	Return
 
 Exit:
