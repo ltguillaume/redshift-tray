@@ -1,4 +1,4 @@
-;Redshift Tray v1.3.1 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.4.0 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -16,7 +16,8 @@ IniRead, traveling, %ini%, %s%, traveling, 0
 IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
 IniRead, startdisabled, %ini%, %s%, startdisabled, 0
-Global mode, timer, temperature, rundialog, brightness = 1, withcaption := Object()
+IniRead, disableonfullscreen, %ini%, %s%, disableonfullscreen, 0
+Global mode, fullscreen, timer, temperature, rundialog, brightness = 1, withcaption := Object()
 
 If runasadmin And !A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%" /restart
@@ -42,14 +43,15 @@ Menu, Tray, Add, &Restart, Restart
 Menu, Tray, Add, E&xit, Exit
 If hotkeys
 	Menu, Tray, Check, &Hotkeys
+
 RegRead, autorun, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
 If !ErrorLevel
 	Menu, Tray, Check, &Autorun
 
 If startdisabled
 	Goto, Disable
-Else
-	Goto, Enable
+Else If disableonfullscreen
+	SetTimer, FullScreen, 1000
 
 Enable:
 	mode = enabled
@@ -82,7 +84,8 @@ Force:
 	Return
 
 Disable:
-	mode = disabled
+	If !fullscreen
+		mode = disabled
 	timer = 0
 	brightness = 1
 	Menu, Tray, Uncheck, &Enabled
@@ -202,11 +205,36 @@ Settings:
 	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
 	IniWrite, %runasadmin%, %ini%, %s%, runasadmin
 	IniWrite, %startdisabled%, %ini%, %s%, startdisabled
+	IniWrite, %disableonfullscreen%, %ini%, %s%, disableonfullscreen
 	FileGetTime, modtime, %ini%
 	RunWait, %ini%
 	FileGetTime, newmodtime, %ini%
 	If newmodtime <> %modtime%
 		Reload
+	Return
+
+FullScreen:
+	WinGet, id, ID, A
+	WinGetClass, cls, ahk_id %id%
+	WinGet style, Style, ahk_id %id%
+	WinGetPos ,,, winW, winH, ahk_id %id%
+	; 0x800000 is WS_BORDER.
+	; 0x20000000 is WS_MINIMIZE.
+	; no border and not minimized
+	If ((style & 0x20800000) Or winH < A_ScreenHeight or winW < A_ScreenWidth) {	; Not full-screen
+		If fullscreen {	; Was full-screen
+			fullscreen := false
+			If mode = enabled
+				Goto, Enable
+			If mode = paused
+				Goto, Pause
+			If mode = forced
+				Goto, Force
+		}
+	} Else If (cls <> "TscShellContainerClass") {	; Full-screen and not remote desktop
+		fullscreen := true
+		Goto, Disable
+	}
 	Return
 
 Restart:
@@ -402,8 +430,8 @@ WinRunDialog() {
 }
 
 ClickThroughWindow() {
-	WinGetClass, class, A
-	If class = WorkerW
+	WinGetClass, cls, A
+	If cls = WorkerW
 		Return
 	WinGet, id, ID, A
 	_id = ahk_id %id%

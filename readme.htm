@@ -23,7 +23,7 @@ td:first-child {text-align:center}</style>
 <li>Optionally update your current coordinates every time you enable Redshift (e.g. when traveling)</li>
 </ul>
 <p>It also includes a set of optional hotkeys. Admittedly, these are entirely based on my personal preferences, but since this program is put together in <a href="http://www.autohotkey.com">AutoHotkey</a>, it’s easy to add your own hotkeys and remove the ones you think are rubbish.</p>
-<h2><a id="Hotkeys_17"></a>Hotkeys</h2>
+<h2>List of hotkeys</h2>
 <table>
 <tr><td colspan="2"><strong>Default Hotkeys</strong></td></tr>
 <tr><td>Alt Home</td>
@@ -93,6 +93,8 @@ td:first-child {text-align:center}</style>
 <li>If you get annoyed by the fact that your mouse cursor does not assume the same color temperature, set <strong>colorizecursor=1</strong> and Redshift Tray will write <em>MouseTrails=-1</em> to <em>HKCU\Control Panel\Mouse</em> in your registry to fix this. You'll need to save and exit the config file, then <strong>restart Windows or log off</strong> to get this working.</li>
 <li>The setting <strong>optionalhotkeys=1</strong> will enable the extra set of hotkeys (right-click the tray icon and choose <strong>Hotkeys</strong> to see a list), while (big surprise) <strong>optionalhotkeys=0</strong> disables them. The <em>Hotkeys List</em> dialog’s yes/no buttons control this setting.</li>
 <li>If you want to use the (default and/or optional) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set <strong>runasadmin=1</strong> so that Redshift Tray will try to run as admin, too. If this scenario doesn’t really occur on your system, leave the damn thing alone.</li>
+<li>If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set <strong>startdisabled=1</strong>.</li>
+<li>Redshift Tray can check if the active window/program is in full-screen mode and automatically pause. This can come in handy for image viewers or video players. To do this, set <strong>disableonfullscreen=1</strong>.</li>
 </ul>
 </li>
 <li>Now save the settings file and close it. Redshift Tray will restart with the settings you’ve defined.</li>
