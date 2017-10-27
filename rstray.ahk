@@ -17,7 +17,8 @@ IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
 IniRead, startdisabled, %ini%, %s%, startdisabled, 0
 IniRead, disableonfullscreen, %ini%, %s%, disableonfullscreen, 0
-Global mode, fullscreen, timer, temperature, rundialog, brightness = 1, withcaption := Object()
+Global mode, fullscreen, timer, temperature, rundialog, brightness = 1, notransitions, withcaption := Object()
+IniRead, notransitions, %ini%, %s%, notransitions, 0
 
 If runasadmin And !A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%" /restart
@@ -206,6 +207,7 @@ Settings:
 	IniWrite, %runasadmin%, %ini%, %s%, runasadmin
 	IniWrite, %startdisabled%, %ini%, %s%, startdisabled
 	IniWrite, %disableonfullscreen%, %ini%, %s%, disableonfullscreen
+	IniWrite, %notransitions%, %ini%, %s%, notransitions
 	FileGetTime, modtime, %ini%
 	RunWait, %ini%
 	FileGetTime, newmodtime, %ini%
@@ -301,8 +303,9 @@ Restore() {
 
 Run(adjust = FALSE) {
 	br := brightness>1 ? "-g " . brightness : "-b " . brightness
+	notr := notransitions ? "-r" : ""
 	If mode = enabled
-		cfg = -l %lat%:%lon% -t %day%:%night% %br%
+		cfg = -l %lat%:%lon% -t %day%:%night% %br% %notr%
 	Else If mode = forced
 		cfg = -O %temperature% %br%
 	Else If mode = paused
