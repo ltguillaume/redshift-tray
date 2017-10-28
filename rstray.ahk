@@ -1,11 +1,13 @@
-;Redshift Tray v1.4.0 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.4.1 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
 #MaxHotkeysPerInterval, 200
+SetBatchLines, -1
 SetWorkingDir, %A_ScriptDir%
 
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Redshift", lat, lon, day, night
+Global mode, timer, temperature, rundialog, brightness = 1, notransitions, fullscreen, withcaption := Object()
 IniRead, lat, %ini%, %s%, latitude
 IniRead, lon, %ini%, %s%, longitude
 IniRead, day, %ini%, %s%, daytemp, 6500
@@ -17,7 +19,6 @@ IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
 IniRead, startdisabled, %ini%, %s%, startdisabled, 0
 IniRead, disableonfullscreen, %ini%, %s%, disableonfullscreen, 0
-Global mode, fullscreen, timer, temperature, rundialog, brightness = 1, notransitions, withcaption := Object()
 IniRead, notransitions, %ini%, %s%, notransitions, 0
 
 If runasadmin And !A_IsAdmin
@@ -39,7 +40,7 @@ Menu, Tray, Add
 Menu, Tray, Add, &Help, Help
 Menu, Settings, Add, &Autorun, Autorun
 Menu, Settings, Add, &Hotkeys, Hotkeys
-Menu, Settings, Add, &More Settings..., Settings
+Menu, Settings, Add, &More settings..., Settings
 Menu, Tray, Add, &Settings, :Settings
 Menu, Tray, Add
 Menu, Tray, Add, &Restart, Restart
@@ -87,7 +88,7 @@ Force:
 	Return
 
 Disable:
-	If !fullscreen
+	If fullscreen <> 1
 		mode = disabled
 	timer = 0
 	brightness = 1
@@ -231,23 +232,24 @@ FullScreen:
 	WinGet, id, ID, A
 	WinGetClass, cls, ahk_id %id%
 	WinGet style, Style, ahk_id %id%
-	WinGetPos ,,, winW, winH, ahk_id %id%
+	WinGetPos ,,, width, height, ahk_id %id%
 	; 0x800000 is WS_BORDER.
 	; 0x20000000 is WS_MINIMIZE.
 	; no border and not minimized
-	If ((style & 0x20800000) Or winH < A_ScreenHeight or winW < A_ScreenWidth) {	; Not full-screen
-		If fullscreen {	; Was full-screen
-			fullscreen := false
-			notransitions := true
+	If ((style & 0x20800000) Or height < A_ScreenHeight Or width < A_ScreenWidth) {	; Not full-screen
+		If fullscreen = 1	; Was full-screen
+		{
+			fullscreen = 2	; Full-screen is done
 			If mode = enabled
-				Goto, Enable
+				Gosub, Enable
 			If mode = paused
-				Goto, Pause
+				Gosub, Pause
 			If mode = forced
-				Goto, Force
+				Gosub, Force
+			fullscreen = 0	; Full-screen is off
 		}
-	} Else If (cls <> "WorkerW" And cls <> "TscShellContainerClass") {	; Full-screen and not (remote) desktop
-		fullscreen := true
+	} Else If (cls <> "Progman" And cls <> "WorkerW" And cls <> "TscShellContainerClass") {	; Full-screen and not (remote) desktop
+		fullscreen = 1	; Full-screen is on
 		Goto, Disable
 	}
 	Return
@@ -316,7 +318,7 @@ Restore() {
 
 Run(adjust = FALSE) {
 	br := brightness>1 ? "-g " . brightness : "-b " . brightness
-	notr := notransitions ? "-r" : ""
+	notr := notransitions Or fullscreen ? "-r" : ""
 	If mode = enabled
 		cfg = -l %lat%:%lon% -t %day%:%night% %br% %notr%
 	Else If mode = forced
