@@ -226,6 +226,7 @@ FullScreen:
 	If ((style & 0x20800000) Or winH < A_ScreenHeight or winW < A_ScreenWidth) {	; Not full-screen
 		If fullscreen {	; Was full-screen
 			fullscreen := false
+			notransitions := true
 			If mode = enabled
 				Goto, Enable
 			If mode = paused
@@ -233,7 +234,7 @@ FullScreen:
 			If mode = forced
 				Goto, Force
 		}
-	} Else If (cls <> "TscShellContainerClass") {	; Full-screen and not remote desktop
+	} Else If (cls <> "WorkerW" And cls <> "TscShellContainerClass") {	; Full-screen and not (remote) desktop
 		fullscreen := true
 		Goto, Disable
 	}
