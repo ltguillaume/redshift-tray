@@ -36,18 +36,20 @@ Menu, Tray, Add, &Forced, Force, Radio
 Menu, Tray, Add, &Paused, Pause, Radio
 Menu, Tray, Add, &Disabled, Disable, Radio
 Menu, Tray, Add
-Menu, Tray, Add, &Autorun, Autorun
-Menu, Tray, Add, &Hotkeys, Hotkeys
-Menu, Tray, Add, &Settings, Settings
+Menu, Tray, Add, &Help, Help
+Menu, Settings, Add, &Autorun, Autorun
+Menu, Settings, Add, &Hotkeys, Hotkeys
+Menu, Settings, Add, &More Settings..., Settings
+Menu, Tray, Add, &Settings, :Settings
 Menu, Tray, Add
 Menu, Tray, Add, &Restart, Restart
 Menu, Tray, Add, E&xit, Exit
 If hotkeys
-	Menu, Tray, Check, &Hotkeys
+	Menu, Settings, Check, &Hotkeys
 
 RegRead, autorun, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
 If !ErrorLevel
-	Menu, Tray, Check, &Autorun
+	Menu, Settings, Check, &Autorun
 
 If startdisabled
 	Goto, Disable
@@ -130,6 +132,16 @@ Paused:
 	}
 	Return
 
+Help:
+	Gui, Add, ActiveX, w800 h600 vbrowser, Shell.Explorer
+	browser.Navigate("file://" . A_ScriptDir . "/readme.htm")
+	Gui, Show,, Help
+	Return
+
+GuiClose:
+	Gui, Destroy
+	Return
+
 Hotkeys:
 	MsgBox, 4, Hotkeys,
 	(
@@ -170,12 +182,12 @@ Enable optional hotkeys?
 	)
 	IfMsgBox Yes
 	{
-		Menu, Tray, Check, &Hotkeys
+		Menu, Settings, Check, &Hotkeys
 		hotkeys = 1
 	}
 	IfMsgBox No
 	{
-		Menu, Tray, Uncheck, &Hotkeys
+		Menu, Settings, Uncheck, &Hotkeys
 		hotkeys = 0
 	}
 	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
@@ -186,12 +198,12 @@ Autorun:
 	If ErrorLevel
 	{
 		RegWrite, REG_SZ, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift, "%A_ScriptFullPath%"
-		Menu, Tray, Check, &Autorun
+		Menu, Settings, Check, &Autorun
 	}
 	Else
 	{
 		RegDelete, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
-		Menu, Tray, Uncheck, &Autorun
+		Menu, Settings, Uncheck, &Autorun
 	}
 	Return
 
