@@ -1,4 +1,4 @@
-;Redshift Tray v1.4.1 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.4.2 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -6,20 +6,21 @@
 SetBatchLines, -1
 SetWorkingDir, %A_ScriptDir%
 
-Global exe = "redshift.exe", ini = "rstray.ini", s = "Redshift", lat, lon, day, night
-Global mode, timer, temperature, rundialog, brightness = 1, notransitions, fullscreen, withcaption := Object()
+Global exe = "redshift.exe", ini = "rstray.ini", s = "Redshift", lat, lon, day, night, fullscreen, notransitions
+Global mode, timer, temperature, rundialog, brightness = 1, isfullscreen, withcaption := Object()
 IniRead, lat, %ini%, %s%, latitude
 IniRead, lon, %ini%, %s%, longitude
 IniRead, day, %ini%, %s%, daytemp, 6500
 IniRead, night, %ini%, %s%, nighttemp, 3500
+IniRead, fullscreen, %ini%, %s%, fullscreentemp, 6500
+IniRead, fullscreenmode, %ini%, %s%, fullscreenmode, 0
 IniRead, pauseminutes, %ini%, %s%, pauseminutes, 10
-IniRead, hotkeys, %ini%, %s%, optionalhotkeys, 0
-IniRead, traveling, %ini%, %s%, traveling, 0
-IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
-IniRead, runasadmin, %ini%, %s%, runasadmin, 0
-IniRead, startdisabled, %ini%, %s%, startdisabled, 0
-IniRead, disableonfullscreen, %ini%, %s%, disableonfullscreen, 0
 IniRead, notransitions, %ini%, %s%, notransitions, 0
+IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
+IniRead, traveling, %ini%, %s%, traveling, 0
+IniRead, startdisabled, %ini%, %s%, startdisabled, 0
+IniRead, hotkeys, %ini%, %s%, optionalhotkeys, 0
+IniRead, runasadmin, %ini%, %s%, runasadmin, 0
 
 If runasadmin And !A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%" /restart
@@ -54,7 +55,7 @@ If !ErrorLevel
 
 If startdisabled
 	Goto, Disable
-Else If disableonfullscreen
+Else If fullscreenmode
 	SetTimer, FullScreen, 1000
 
 Enable:
@@ -88,7 +89,7 @@ Force:
 	Return
 
 Disable:
-	If fullscreen <> 1
+	If isfullscreen <> 1
 		mode = disabled
 	timer = 0
 	brightness = 1
@@ -213,14 +214,15 @@ Settings:
 	IniWrite, %lon%, %ini%, %s%, longitude
 	IniWrite, %day%, %ini%, %s%, daytemp
 	IniWrite, %night%, %ini%, %s%, nighttemp
+	IniWrite, %fullscreen%, %ini%, %s%, fullscreentemp
+	IniWrite, %fullscreenmode%, %ini%, %s%, fullscreenmode
 	IniWrite, %pauseminutes%, %ini%, %s%, pauseminutes
-	IniWrite, %traveling%, %ini%, %s%, traveling
+	IniWrite, %notransitions%, %ini%, %s%, notransitions
 	IniWrite, %colorizecursor%, %ini%, %s%, colorizecursor
+	IniWrite, %traveling%, %ini%, %s%, traveling
+	IniWrite, %startdisabled%, %ini%, %s%, startdisabled
 	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
 	IniWrite, %runasadmin%, %ini%, %s%, runasadmin
-	IniWrite, %startdisabled%, %ini%, %s%, startdisabled
-	IniWrite, %disableonfullscreen%, %ini%, %s%, disableonfullscreen
-	IniWrite, %notransitions%, %ini%, %s%, notransitions
 	FileGetTime, modtime, %ini%
 	RunWait, %ini%
 	FileGetTime, newmodtime, %ini%
@@ -229,6 +231,8 @@ Settings:
 	Return
 
 FullScreen:
+	If mode <> enabled
+		Return
 	WinGet, id, ID, A
 	WinGetClass, cls, ahk_id %id%
 	WinGet style, Style, ahk_id %id%
@@ -237,20 +241,18 @@ FullScreen:
 	; 0x20000000 is WS_MINIMIZE.
 	; no border and not minimized
 	If ((style & 0x20800000) Or height < A_ScreenHeight Or width < A_ScreenWidth) {	; Not full-screen
-		If fullscreen = 1	; Was full-screen
+		If isfullscreen = 1	; Was full-screen
 		{
-			fullscreen = 2	; Full-screen is done
-			If mode = enabled
-				Gosub, Enable
-			If mode = paused
-				Gosub, Pause
-			If mode = forced
-				Gosub, Force
-			fullscreen = 0	; Full-screen is off
+			isfullscreen = 2	; Full-screen is done
+			Gosub, Enable
+			isfullscreen = 0	; Full-screen is off
 		}
-	} Else If (cls <> "Progman" And cls <> "WorkerW" And cls <> "TscShellContainerClass") {	; Full-screen and not (remote) desktop
-		fullscreen = 1	; Full-screen is on
-		Goto, Disable
+	} Else If (isfullscreen <> 1 And cls <> "Progman" And cls <> "WorkerW" And cls <> "TscShellContainerClass") {	; Full-screen and not (remote) desktop
+		isfullscreen = 1	; Full-screen is on
+		If fullscreen = 6500
+			Goto, Disable
+		Else
+			Goto, Enable
 	}
 	Return
 
@@ -318,9 +320,10 @@ Restore() {
 
 Run(adjust = FALSE) {
 	br := brightness>1 ? "-g " . brightness : "-b " . brightness
-	notr := notransitions Or fullscreen ? "-r" : ""
+	ntmp := isfullscreen = 1 ? fullscreen : night
+	notr := isfullscreen Or notransitions ? "-r" : ""
 	If mode = enabled
-		cfg = -l %lat%:%lon% -t %day%:%night% %br% %notr%
+		cfg = -l %lat%:%lon% -t %day%:%ntmp% %br% %notr%
 	Else If mode = forced
 		cfg = -O %temperature% %br%
 	Else If mode = paused
