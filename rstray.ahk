@@ -1,4 +1,4 @@
-;Redshift Tray v1.4.2 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.4.3 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -40,14 +40,16 @@ Menu, Tray, Add, &Disabled, Disable, Radio
 Menu, Tray, Add
 Menu, Tray, Add, &Help, Help
 Menu, Settings, Add, &Autorun, Autorun
-Menu, Settings, Add, &Hotkeys, Hotkeys
+Menu, Settings, Add, &Optional hotkeys, Hotkeys
+Menu, Settings, Add
 Menu, Settings, Add, &More settings..., Settings
 Menu, Tray, Add, &Settings, :Settings
 Menu, Tray, Add
 Menu, Tray, Add, &Restart, Restart
 Menu, Tray, Add, E&xit, Exit
+
 If hotkeys
-	Menu, Settings, Check, &Hotkeys
+	Menu, Settings, Check, &Optional hotkeys
 
 RegRead, autorun, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
 If !ErrorLevel
@@ -145,52 +147,15 @@ GuiClose:
 	Return
 
 Hotkeys:
-	MsgBox, 4, Hotkeys,
-	(
-============	  Default Hotkeys	===========
-Alt Home		Reset Redshift
-Alt End		Disable Redshift
-Alt PgUp		Increase brightness
-Alt PgDn		Decrease brightness
-Alt Pause		Toggle pause for %pauseminutes% minutes
-AltGr Home	Force night temperature (reset)
-AltGr End		End forced temperature
-AltGr PgUp	Increase forced temperature
-AltGr PgDn	Decrease forced temperature
-
-============	 Optional Hotkeys	===========
-AltGr 9		Toggle window always on top
-AltGr 0		Toggle window on top click-through
-AltGr -		Increase window transparency
-AltGr =		Decrease window transparency
-AltGr Space	Send Ctrl W
-AltGr ,		MM: Previous
-AltGr .		MM: Next
-AltGr /		MM: Play/Pause
-RCtrl Up		MM: Volume up
-RCtrl Down	MM: Volume down
-RCtrl Menu	Windows Run dialog
-Menu + Arrows	Aero Snap
-Menu Home	Restart computer
-Menu End		Hibernate computer
-DblClick on taskbar	Show desktop
-MidClick on taskbar	Open Task Manager
-Wheel on taskbar	MM: Volume up/down
-
-Hotkeys will not work when the active window is of a
-program run as admin, unless you set "runasadmin=1".
-
-Enable optional hotkeys?
-	)
-	IfMsgBox Yes
+	If hotkeys
 	{
-		Menu, Settings, Check, &Hotkeys
-		hotkeys = 1
-	}
-	IfMsgBox No
-	{
-		Menu, Settings, Uncheck, &Hotkeys
+		Menu, Settings, Uncheck, &Optional hotkeys
 		hotkeys = 0
+	}
+	Else
+	{
+		Menu, Settings, Check, &Optional hotkeys
+		hotkeys = 1
 	}
 	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
 	Return
@@ -264,7 +229,6 @@ Exit:
 	Restore()
 	ExitApp
 
-#IfWinNotActive, ahk_class TscShellContainerClass
 !PgUp::Brightness(0.05)
 !PgDn::Brightness(-0.05)
 !Home::
@@ -407,26 +371,48 @@ Temperature(value) {
 	}
 }
 
-#If, !WinActive("ahk_class TscShellContainerClass") And hotkeys
->^AppsKey::WinRunDialog()
->^Up::Send {Volume_Up}
->^Down::Send {Volume_Down}
-<^>!,::Send {Media_Prev}
-<^>!.::Send {Media_Next}
-<^>!/::Send {Media_Play_Pause}
+#If, hotkeys
 <^>!9::WinSet, AlwaysOnTop, Toggle, A
 <^>!0::ClickThroughWindow()
 <^>!-::Opacity(-5)
 <^>!=::Opacity(5)
-<^>!Space::Send ^w
+RAlt::
+	If (A_PriorHotkey = A_ThisHotkey && A_TimeSincePriorHotkey < 400)
+<^>!Space::
+		IfWinActive, ahk_class MozillaWindowClass
+			Send ^{F4}
+		Else
+			Send ^w
+	Return
+<^>!,::Send {Media_Prev}
+<^>!.::Send {Media_Next}
+<^>!/::Send {Media_Play_Pause}
+>^Up::Send {Volume_Up}
+>^Down::Send {Volume_Down}
+>^AppsKey::WinRunDialog()
+AppsKey::
+	If (A_PriorHotkey = A_ThisHotkey && A_TimeSincePriorHotkey < 400) {
+		Send {Alt}
+		WinRunDialog()
+	} Else {
+		Send {AppsKey}
+	}
+	Return
+~RControl Up::
+	If (A_PriorHotkey = A_ThisHotkey && A_TimeSincePriorHotkey < 400)
+		IfWinActive, ahk_class TscShellContainerClass
+			WinMinimize, ahk_class TscShellContainerClass
+		Else IfWinExist, ahk_class TscShellContainerClass
+			WinActivate, ahk_class TscShellContainerClass
+	Return
 AppsKey & Up::Send #{Up}
 AppsKey & Down::Send #{Down}
 AppsKey & Left::Send #{Left}
 AppsKey & Right::Send #{Right}
 AppsKey & Home::Shutdown, 2
 AppsKey & End::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
-AppsKey::Send {AppsKey}
-#If, MouseOnTaskbar() And !WinActive("ahk_class TscShellContainerClass") And hotkeys
+
+#If, hotkeys And MouseOnTaskbar()
 ~LButton::ShowDesktop()
 MButton::TaskMgr()
 WheelUp::Send {Volume_Up}
@@ -440,9 +426,13 @@ MouseOnTaskbar() {
 WinRunDialog() {
 	If (rundialog <> "" And WinExist("ahk_id" . rundialog)) {
 		IfWinActive, ahk_id %rundialog%
+		{
 			Send !{Esc}
-		WinClose, ahk_id %rundialog%
-		rundialog =
+			WinClose, ahk_id %rundialog%
+			rundialog =
+		}
+		Else
+			WinActivate, ahk_id %rundialog%
 	} Else {
 		Send #r
 		WinWaitActive, ahk_class #32770 ahk_exe explorer.exe
