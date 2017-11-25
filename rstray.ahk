@@ -3,11 +3,10 @@
 #SingleInstance, force
 #Persistent
 #MaxHotkeysPerInterval, 200
-SetBatchLines, -1
 SetWorkingDir, %A_ScriptDir%
 
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Redshift", lat, lon, day, night, fullscreen, notransitions
-Global mode, timer, temperature, rundialog, brightness = 1, isfullscreen, withcaption := Object()
+Global mode, timer, temperature, rundialog, brightness = 1, rdp = 0, isfullscreen, withcaption := Object()
 IniRead, lat, %ini%, %s%, latitude
 IniRead, lon, %ini%, %s%, longitude
 IniRead, day, %ini%, %s%, daytemp, 6500
@@ -20,6 +19,7 @@ IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, traveling, %ini%, %s%, traveling, 0
 IniRead, startdisabled, %ini%, %s%, startdisabled, 0
 IniRead, hotkeys, %ini%, %s%, optionalhotkeys, 0
+IniRead, remotedesktop, %ini%, %s%, remotedesktop, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
 
 If runasadmin And !A_IsAdmin
@@ -59,6 +59,9 @@ If startdisabled
 	Goto, Disable
 Else If fullscreenmode
 	SetTimer, FullScreen, 1000
+
+If remotedesktop
+	SetTimer, RemoteDesktop, 2500
 
 Enable:
 	mode = enabled
@@ -187,6 +190,7 @@ Settings:
 	IniWrite, %traveling%, %ini%, %s%, traveling
 	IniWrite, %startdisabled%, %ini%, %s%, startdisabled
 	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
+	IniWrite, %remotedesktop%, %ini%, %s%, remotedesktop
 	IniWrite, %runasadmin%, %ini%, %s%, runasadmin
 	FileGetTime, modtime, %ini%
 	RunWait, %ini%
@@ -219,6 +223,18 @@ FullScreen:
 		Else
 			Goto, Enable
 	}
+	Return
+
+RemoteDesktop:
+	IfWinActive, ahk_class TscShellContainerClass
+		If !rdp
+		{
+			Suspend, On
+			Suspend, Off
+			rdp = 1
+		}
+	Else 
+		rdp = 0
 	Return
 
 Restart:
@@ -371,56 +387,80 @@ Temperature(value) {
 	}
 }
 
-#If, hotkeys
+#If, hotkeys And !WinActive("ahk_class TscShellContainerClass")
 <^>!9::WinSet, AlwaysOnTop, Toggle, A
 <^>!0::ClickThroughWindow()
 <^>!-::Opacity(-5)
 <^>!=::Opacity(5)
-RAlt::
-	If (A_PriorHotkey = A_ThisHotkey && A_TimeSincePriorHotkey < 400)
-<^>!Space::
-		IfWinActive, ahk_class MozillaWindowClass
-			Send ^{F4}
-		Else
-			Send ^w
-	Return
 <^>!,::Send {Media_Prev}
 <^>!.::Send {Media_Next}
 <^>!/::Send {Media_Play_Pause}
->^Up::Send {Volume_Up}
->^Down::Send {Volume_Down}
+<^LWin::WinRunDialog()
 >^AppsKey::WinRunDialog()
-AppsKey::
-	If (A_PriorHotkey = A_ThisHotkey && A_TimeSincePriorHotkey < 400) {
-		Send {Alt}
-		WinRunDialog()
-	} Else {
-		Send {AppsKey}
-	}
-	Return
-~RControl Up::
-	If (A_PriorHotkey = A_ThisHotkey && A_TimeSincePriorHotkey < 400)
-		IfWinActive, ahk_class TscShellContainerClass
-			WinMinimize, ahk_class TscShellContainerClass
-		Else IfWinExist, ahk_class TscShellContainerClass
-			WinActivate, ahk_class TscShellContainerClass
-	Return
 AppsKey & Up::Send #{Up}
 AppsKey & Down::Send #{Down}
 AppsKey & Left::Send #{Left}
 AppsKey & Right::Send #{Right}
 AppsKey & Home::Shutdown, 2
 AppsKey & End::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
+AppsKey::Send {AppsKey}
+RAlt::
+	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
+<^>!Space::
+		IfWinActive, ahk_class MozillaWindowClass
+			Send ^{F4}
+		Else
+			Send ^w
+	Return
+
+#If, hotkeys And WinActive("ahk_class ConsoleWindowClass")
+~Esc::
+	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
+		Send !{F4}
+	Return
 
 #If, hotkeys And MouseOnTaskbar()
 ~LButton::ShowDesktop()
 MButton::TaskMgr()
-WheelUp::Send {Volume_Up}
-WheelDown::Send {Volume_Down}
+WheelUp::SendInput {Volume_Up}
+WheelDown::SendInput {Volume_Down}
+
+#If, hotkeys And WinActive("ahk_class TscShellContainerClass")
+>^Up::SetVolume("+2")
+>^Down::SetVolume("-2")
+
+#If, hotkeys And !RemoteSession()
+>^Up::SendInput {Volume_Up}
+>^Down::SendInput {Volume_Down}
+RControl Up::
+	Sleep, 50
+	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
+		IfWinActive, ahk_class TscShellContainerClass
+			WinMinimize
+		Else IfWinExist, ahk_class TscShellContainerClass
+			WinActivate
+	Return
 
 MouseOnTaskbar() {
 	MouseGetPos,,, id
 	Return WinExist("ahk_id" . id . " ahk_class Shell_TrayWnd")
+}
+
+SetVolume(value) {
+	SoundSet, %value%
+	SoundGet, volume
+	Tooltip, % Round(volume)`%
+	SetTimer, RemoveToolTip, 1000
+}
+
+RemoveToolTip:
+	SetTimer, RemoveToolTip, Off
+	ToolTip
+	Return
+
+RemoteSession() {
+	SysGet, remote, 4096
+	Return remote > 0
 }
 
 WinRunDialog() {
@@ -435,7 +475,9 @@ WinRunDialog() {
 			WinActivate, ahk_id %rundialog%
 	} Else {
 		Send #r
-		WinWaitActive, ahk_class #32770 ahk_exe explorer.exe
+		WinWait, ahk_class #32770 ahk_exe explorer.exe
+		If Not ErrorLevel
+			WinActivate
 		WinGet, rundialog, ID, A
 	}
 }
@@ -493,7 +535,7 @@ Opacity(value) {
 }
 
 ShowDesktop() {
-	If (A_TimeSincePriorHotkey < 400 And A_PriorHotkey="~LButton" And WinActive("ahk_class Shell_TrayWnd")) {
+	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 And WinActive("ahk_class Shell_TrayWnd")) {
 		MouseGetPos,,,, control
 		If control = MSTaskListWClass1
 			Send #d
