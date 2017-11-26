@@ -344,7 +344,11 @@ Run(adjust = FALSE) {
 
 TrayTip() {
 	If mode = enabled
-		status = Enabled: %night%K/%day%K`nLatitude: %lat%`nLongitude: %lon%
+	{
+		latitude := Round(Abs(lat), 2) . "°" . (lat > 0 ? "N" : "S")
+		longitude := Round(Abs(lon), 2) . "°" . (lon > 0 ? "E" : "W")
+		status = % "Enabled: " . night . "K/" . day . "K`nLocation: " . latitude . " " . longitude
+	}
 	Else If mode = forced
 		status = Forced: %temperature%K
 	Else If mode = paused
@@ -357,7 +361,7 @@ TrayTip() {
 	Else
 		status = Disabled
 	br := Round(brightness * 100, 0)
-	Menu, Tray, Tip, Redshift`n%status%`nBrightness = %br%`%
+	Menu, Tray, Tip, Redshift`n%status%`nBrightness: %br%`%
 }
 
 Brightness(value) {
@@ -409,6 +413,13 @@ Temperature(value) {
 		}
 	}
 }
+
+#If, hotkeys
+~Up::
+~Down::
+  If GetKeyState("RCtrl", "P")
+		Return
+	Return
 
 #If, hotkeys And !WinActive("ahk_class TscShellContainerClass")
 <^>!9::WinSet, AlwaysOnTop, Toggle, A
