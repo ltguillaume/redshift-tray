@@ -1,4 +1,4 @@
-;Redshift Tray v1.4.3 - https://github.com/ltGuillaume/Redshift-Tray
+;Redshift Tray v1.5.0 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -65,6 +65,7 @@ If remotedesktop
 
 Enable:
 	mode = enabled
+	rdp = 0
 	timer = 0
 	Menu, Tray, Uncheck, &Disabled
 	Menu, Tray, UnCheck, &Forced
@@ -82,6 +83,7 @@ Enable:
 
 Force:
 	mode = forced
+	rdp = 0
 	timer = 0
 	temperature = %night%
 	Menu, Tray, UnCheck, &Enabled
@@ -96,6 +98,7 @@ Force:
 Disable:
 	If isfullscreen <> 1
 		mode = disabled
+	rdp = 0
 	timer = 0
 	brightness = 1
 	Menu, Tray, Uncheck, &Enabled
@@ -110,6 +113,7 @@ Disable:
 
 Pause:
 	mode = paused
+	rdp = 0
 	timer := pauseminutes * 60
 	restorebrightness = %brightness%
 	brightness = 1
@@ -227,13 +231,32 @@ FullScreen:
 
 RemoteDesktop:
 	IfWinActive, ahk_class TscShellContainerClass
-		If !rdp
+	{
+		If rdp < 1
 		{
 			Suspend, On
 			Suspend, Off
 			rdp = 1
 		}
-	Else 
+	}
+	Else If RemoteSession()
+	{
+		If rdp <> -1
+		{
+			rdp = -1
+			Menu, Tray, Tip, Redshift`nDisabled`n(Remote Desktop)
+			Restore()
+		}
+	}
+	Else If rdp = -1
+	{
+		rdp = 0
+		If mode = enabled
+			Goto, Enable
+		If mode = forced
+			Goto, Force
+	}
+	Else
 		rdp = 0
 	Return
 
@@ -407,10 +430,13 @@ AppsKey::Send {AppsKey}
 RAlt::
 	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
 <^>!Space::
-		IfWinActive, ahk_class MozillaWindowClass
+		If WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
+			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass")
 			Send ^{F4}
-		Else
+		Else If WinActive("ahk_class TTOTAL_CMD")
 			Send ^w
+		Else
+			WinClose, A
 	Return
 
 #If, hotkeys And WinActive("ahk_class ConsoleWindowClass")
