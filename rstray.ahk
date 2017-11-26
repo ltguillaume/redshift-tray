@@ -6,7 +6,7 @@
 SetWorkingDir, %A_ScriptDir%
 
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Redshift", lat, lon, day, night, fullscreen, notransitions
-Global mode, timer, temperature, rundialog, brightness = 1, rdp = 0, isfullscreen, withcaption := Object()
+Global mode, timer, temperature, rundialog, brightness = 1, rdpclient, remote, isfullscreen, withcaption := Object()
 IniRead, lat, %ini%, %s%, latitude
 IniRead, lon, %ini%, %s%, longitude
 IniRead, day, %ini%, %s%, daytemp, 6500
@@ -65,7 +65,6 @@ If remotedesktop
 
 Enable:
 	mode = enabled
-	rdp = 0
 	timer = 0
 	Menu, Tray, Uncheck, &Disabled
 	Menu, Tray, UnCheck, &Forced
@@ -83,7 +82,6 @@ Enable:
 
 Force:
 	mode = forced
-	rdp = 0
 	timer = 0
 	temperature = %night%
 	Menu, Tray, UnCheck, &Enabled
@@ -98,7 +96,6 @@ Force:
 Disable:
 	If isfullscreen <> 1
 		mode = disabled
-	rdp = 0
 	timer = 0
 	brightness = 1
 	Menu, Tray, Uncheck, &Enabled
@@ -113,7 +110,6 @@ Disable:
 
 Pause:
 	mode = paused
-	rdp = 0
 	timer := pauseminutes * 60
 	restorebrightness = %brightness%
 	brightness = 1
@@ -230,34 +226,41 @@ FullScreen:
 	Return
 
 RemoteDesktop:
-	IfWinActive, ahk_class TscShellContainerClass
+	If RemoteSession() And !%remote%
 	{
-		If rdp < 1
-		{
-			Suspend, On
-			Suspend, Off
-			rdp = 1
-		}
+		remote = 1
+		Menu, Tray, Disable, &Enabled
+		Menu, Tray, Disable, &Forced
+		Menu, Tray, Disable, &Paused
+		Menu, Tray, Disable, &Disabled
+		Menu, Tray, Tip, Redshift`nDisabled`n(Remote Desktop)
+		Restore()
 	}
-	Else If RemoteSession()
+	Else If !RemoteSession() And %remote%
 	{
-		If rdp <> -1
-		{
-			rdp = -1
-			Menu, Tray, Tip, Redshift`nDisabled`n(Remote Desktop)
-			Restore()
-		}
-	}
-	Else If rdp = -1
-	{
-		rdp = 0
+		remote = 0
+		Menu, Tray, Enable, &Enabled
+		Menu, Tray, Enable, &Forced
+		Menu, Tray, Enable, &Paused
+		Menu, Tray, Enable, &Disabled
 		If mode = enabled
 			Goto, Enable
 		If mode = forced
 			Goto, Force
 	}
-	Else
-		rdp = 0
+	
+
+	IfWinActive, ahk_class TscShellContainerClass
+	{
+		If !%rdpclient%
+		{
+			Suspend, On
+			Suspend, Off
+			rdpclient = 1
+		}
+	}
+	Else If %rdpclient%
+		rdpclient = 0	
 	Return
 
 Restart:
@@ -414,13 +417,6 @@ Temperature(value) {
 	}
 }
 
-#If, hotkeys
-~Up::
-~Down::
-  If GetKeyState("RCtrl", "P")
-		Return
-	Return
-
 #If, hotkeys And !WinActive("ahk_class TscShellContainerClass")
 <^>!9::WinSet, AlwaysOnTop, Toggle, A
 <^>!0::ClickThroughWindow()
@@ -459,16 +455,16 @@ RAlt::
 #If, hotkeys And MouseOnTaskbar()
 ~LButton::ShowDesktop()
 MButton::TaskMgr()
-WheelUp::SendInput {Volume_Up}
-WheelDown::SendInput {Volume_Down}
+WheelUp::Send {Volume_Up}
+WheelDown::Send {Volume_Down}
 
 #If, hotkeys And WinActive("ahk_class TscShellContainerClass")
 >^Up::SetVolume("+2")
 >^Down::SetVolume("-2")
 
 #If, hotkeys And !RemoteSession()
->^Up::SendInput {Volume_Up}
->^Down::SendInput {Volume_Down}
+>^Up::Send {Volume_Up}
+>^Down::Send {Volume_Down}
 RControl Up::
 	Sleep, 50
 	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
