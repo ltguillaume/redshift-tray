@@ -26,9 +26,9 @@ If runasadmin And !A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%" /restart
 
 RegRead, mousetrails, HKCU\Control Panel\Mouse, MouseTrails
-If colorizecursor And mousetrails <> -1
+If (colorizecursor And mousetrails <> -1)
 	RegWrite, REG_SZ, HKCU\Control Panel\Mouse, MouseTrails, -1
-Else If !colorizecursor And mousetrails = -1
+Else If (!colorizecursor And mousetrails = -1)
 	RegDelete, HKCU\Control Panel\Mouse, MouseTrails
 
 Menu, Tray, NoStandard
@@ -72,13 +72,13 @@ Enable:
 	Menu, Tray, Check, &Enabled
 	Menu, Tray, Default, &Disabled
 	Menu, Tray, Icon, %A_ScriptFullPath%, 1, 1
-	If traveling Or (lat = "ERROR" Or lon = "ERROR")
+	If (traveling Or (lat = "ERROR" Or lon = "ERROR"))
 		GetLocation()
 	If (lat = "ERROR" Or lon = "ERROR")
 		Goto, Settings
 	Else
 		Run()
-	Return
+Return
 
 Force:
 	mode = forced
@@ -91,7 +91,7 @@ Force:
 	Menu, Tray, Default, &Enabled
 	Menu, Tray, Icon, %A_ScriptFullPath%, 1, 1
 	Run()
-	Return
+Return
 
 Disable:
 	If isfullscreen <> 1
@@ -106,7 +106,7 @@ Disable:
 	Menu, Tray, Icon, %A_ScriptFullPath%, 2, 1
 	Restore()
 	TrayTip()
-	Return
+Return
 
 Pause:
 	mode = paused
@@ -121,7 +121,7 @@ Pause:
 	Menu, Tray, Icon, %A_ScriptFullPath%, 2, 1
 	Restore()
 	SetTimer, Paused
-	Return
+Return
 
 Paused:
 	While timer > 0 {
@@ -137,17 +137,17 @@ Paused:
 		brightness = %restorebrightness%
 		Goto, Enable
 	}
-	Return
+Return
 
 Help:
 	Gui, Add, ActiveX, w800 h600 vbrowser, Shell.Explorer
 	browser.Navigate("file://" . A_ScriptDir . "/readme.htm")
 	Gui, Show,, Help
-	Return
+Return
 
 GuiClose:
 	Gui, Destroy
-	Return
+Return
 
 Hotkeys:
 	If hotkeys
@@ -161,7 +161,7 @@ Hotkeys:
 		hotkeys = 1
 	}
 	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
-	Return
+Return
 
 Autorun:
 	RegRead, autorun, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
@@ -175,7 +175,7 @@ Autorun:
 		RegDelete, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
 		Menu, Settings, Uncheck, &Autorun
 	}
-	Return
+Return
 
 Settings:
 	IniWrite, %lat%, %ini%, %s%, latitude
@@ -197,7 +197,7 @@ Settings:
 	FileGetTime, newmodtime, %ini%
 	If newmodtime <> %modtime%
 		Reload
-	Return
+Return
 
 FullScreen:
 	If mode <> enabled
@@ -223,49 +223,45 @@ FullScreen:
 		Else
 			Goto, Enable
 	}
-	Return
+Return
 
 RemoteDesktop:
-	If RemoteSession() And !%remote%
-	{
-		remote = 1
+	If (RemoteSession() And !remote) {
 		Menu, Tray, Disable, &Enabled
 		Menu, Tray, Disable, &Forced
 		Menu, Tray, Disable, &Paused
 		Menu, Tray, Disable, &Disabled
 		Menu, Tray, Tip, Redshift`nDisabled`n(Remote Desktop)
 		Restore()
-	}
-	Else If !RemoteSession() And %remote%
-	{
-		remote = 0
+		remote = 1
+	} Else If (!RemoteSession() And remote) {
 		Menu, Tray, Enable, &Enabled
 		Menu, Tray, Enable, &Forced
 		Menu, Tray, Enable, &Paused
 		Menu, Tray, Enable, &Disabled
 		If mode = enabled
-			Goto, Enable
+			Gosub, Enable
 		If mode = forced
-			Goto, Force
+			Gosub, Force
+		remote = 0
 	}
 	
-
 	IfWinActive, ahk_class TscShellContainerClass
 	{
-		If !%rdpclient%
+		If !rdpclient
 		{
 			Suspend, On
 			Suspend, Off
 			rdpclient = 1
 		}
 	}
-	Else If %rdpclient%
-		rdpclient = 0	
-	Return
+	Else
+		rdpclient = 0
+Return
 
 Restart:
 	Run "%A_ScriptFullPath%" /restart
-	Return
+Return
 
 Exit:
 	Restore()
@@ -437,20 +433,20 @@ AppsKey::Send {AppsKey}
 RAlt::
 	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
 <^>!Space::
-		If WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
-			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass")
+		If (WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
+			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass"))
 			Send ^{F4}
 		Else If WinActive("ahk_class TTOTAL_CMD")
 			Send ^w
 		Else
 			WinClose, A
-	Return
+Return
 
 #If, hotkeys And WinActive("ahk_class ConsoleWindowClass")
 ~Esc::
 	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
 		Send !{F4}
-	Return
+Return
 
 #If, hotkeys And MouseOnTaskbar()
 ~LButton::ShowDesktop()
@@ -472,7 +468,7 @@ RControl Up::
 			WinMinimize
 		Else IfWinExist, ahk_class TscShellContainerClass
 			WinActivate
-	Return
+Return
 
 MouseOnTaskbar() {
 	MouseGetPos,,, id
@@ -489,11 +485,11 @@ SetVolume(value) {
 RemoveToolTip:
 	SetTimer, RemoveToolTip, Off
 	ToolTip
-	Return
+Return
 
 RemoteSession() {
-	SysGet, remote, 4096
-	Return remote > 0
+	SysGet, isremote, 4096
+	Return isremote > 0
 }
 
 WinRunDialog() {
