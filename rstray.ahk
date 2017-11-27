@@ -3,6 +3,7 @@
 #SingleInstance, force
 #Persistent
 #MaxHotkeysPerInterval, 200
+SetKeyDelay, -1
 SetWorkingDir, %A_ScriptDir%
 
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Redshift", lat, lon, day, night, fullscreen, notransitions
@@ -288,7 +289,7 @@ Exit:
 GetLocation() {
 	try {
 		whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		whr.Open("GET", "https://ipapi.co/latlong", false)
+		whr.Open("GET", "https://ipapi.co/latlong", FALSE)
 		whr.Send()
 		response := whr.ResponseText
 	}
@@ -440,12 +441,6 @@ RAlt::
 			Send ^w
 		Else
 			WinClose, A
-Return
-
-#If, hotkeys And WinActive("ahk_class ConsoleWindowClass")
-~Esc::
-	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
-		Send !{F4}
 Return
 
 #If, hotkeys And MouseOnTaskbar()
