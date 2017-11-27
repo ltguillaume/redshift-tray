@@ -12,6 +12,7 @@ Redshift Tray is a no-frills GUI for the excellent screen temperature adjustment
 - Pause the temperature adjustment for x minutes
 - Adjust the screen brightness and forced temperature via hotkeys
 - Optionally update your current coordinates every time you enable Redshift (e.g. when traveling)
+- Optimized for Remote Desktop: change Redshift locally while in an RDP session, while Redshift Tray can also run on the remote system for its hotkeys.
 
 It also includes a set of optional hotkeys. Admittedly, these are entirely based on my personal preferences, but since this program is put together in [AutoHotkey](http://www.autohotkey.com), it's easy to add your own hotkeys and remove the ones you think are rubbish.
 
@@ -20,10 +21,10 @@ It also includes a set of optional hotkeys. Admittedly, these are entirely based
 __Default Hotkeys__ | &nbsp;
 :---: |---
 Alt Home | Reset Redshift
+Alt Pause | Toggle pause for %pauseminutes% minutes
 Alt End | Disable Redshift
 Alt PgUp | Increase brightness
 Alt PgDn | Decrease brightness
-Alt Pause | Toggle pause for %pauseminutes% minutes
 AltGr Home | Force night temperature (reset)
 AltGr End | End forced temperature
 AltGr PgUp | Increase forced temperature
@@ -33,16 +34,19 @@ AltGr 9 | Toggle window always on top
 AltGr 0 | Toggle window on top click-through
 AltGr - | Increase window transparency
 AltGr = | Decrease window transparency
-AltGr Space | Send Ctrl W
 AltGr , | MM: Previous
 AltGr . | MM: Next
 AltGr / | MM: Play/Pause
 RCtrl Up | MM: Volume up
 RCtrl Down | MM: Volume down
-RCtrl Menu | Windows Run dialog
+LCtrl Win | Windows Run dialog
+RCtrl Menu | 
 Menu + Arrows | Aero Snap
 Menu Home | Restart computer
 Menu End | Hibernate computer
+AltGr x2 | Close current tab/window
+AltGr Space | 
+RCtrl x2 | Switch RDP Host/Client
 DblClick on taskbar | Show desktop
 MidClick on taskbar | Open Task Manager
 Wheel on taskbar | MM: Volume up/down
@@ -60,6 +64,7 @@ Wheel on taskbar | MM: Volume up/down
     - Traveling with your laptop? You can set __traveling=1__ after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though.
     - If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set __startdisabled=1__.
     - The setting __optionalhotkeys=1__ will enable the extra set of hotkeys (right-click the tray icon and choose __Hotkeys__ to see a list), while (big surprise) __optionalhotkeys=0__ disables them. The _Hotkeys List_ dialog's yes/no buttons control this setting.
+		- If you're a Remote Desktop addict like me, be sure to set __remotedesktop=1__. This way, you can run this gem in both environments, switch between local and remote sessions by double-tapping RCtrl, and change the local Redshift settings while in a remote screen.
     - If you want to use the (default and/or optional) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set __runasadmin=1__ so that Redshift Tray will try to run as admin, too. If this scenario doesn't really occur on your system, leave the damn thing alone.
 3. Now save the settings file and close it. Redshift Tray will restart with the settings you've defined.
 4. If you'd like Redshift Tray to automatically run at startup, right-click the tray icon again and click __Autorun__, so that this option is checked. This setting just creates or removes a value in the registry key _HKCU\Software\Microsoft\Windows\CurrentVersion\Run_.

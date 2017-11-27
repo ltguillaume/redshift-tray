@@ -260,6 +260,11 @@ RemoteDesktop:
 		rdpclient = 0
 Return
 
+RemoveToolTip:
+	SetTimer, RemoveToolTip, Off
+	ToolTip
+Return
+
 Restart:
 	Run "%A_ScriptFullPath%" /restart
 Return
@@ -268,8 +273,6 @@ Exit:
 	Restore()
 	ExitApp
 
-!PgUp::Brightness(0.05)
-!PgDn::Brightness(-0.05)
 !Home::
 	Brightness(1)
 	Goto, Enable
@@ -281,10 +284,12 @@ Exit:
 		Goto, Pause
 	Return
 !End::Goto, Disable
+!PgUp::Brightness(0.05)
+!PgDn::Brightness(-0.05)
 <^>!Home::Goto, Force
+<^>!End::Goto, Enable
 <^>!PgUp::Temperature(100)
 <^>!PgDn::Temperature(-100)
-<^>!End::Goto, Enable
 
 GetLocation() {
 	try {
@@ -345,8 +350,8 @@ Run(adjust = FALSE) {
 TrayTip() {
 	If mode = enabled
 	{
-		latitude := Round(Abs(lat), 2) . "Â°" . (lat > 0 ? "N" : "S")
-		longitude := Round(Abs(lon), 2) . "Â°" . (lon > 0 ? "E" : "W")
+		latitude := Round(Abs(lat), 2) . "°" . (lat > 0 ? "N" : "S")
+		longitude := Round(Abs(lon), 2) . "°" . (lon > 0 ? "E" : "W")
 		status = % "Enabled: " . night . "K/" . day . "K`nLocation: " . latitude . " " . longitude
 	}
 	Else If mode = forced
@@ -362,6 +367,10 @@ TrayTip() {
 		status = Disabled
 	br := Round(brightness * 100, 0)
 	Menu, Tray, Tip, Redshift`n%status%`nBrightness: %br%`%
+	If (A_ThisHotkey <> "" And A_ThisHotkey <> "~LButton") {
+		Tooltip, Redshift`n%status%`nBrightness: %br%`%
+		SetTimer, RemoveToolTip, 1000
+	}
 }
 
 Brightness(value) {
@@ -456,7 +465,7 @@ WheelDown::Send {Volume_Down}
 #If, hotkeys And !RemoteSession()
 >^Up::Send {Volume_Up}
 >^Down::Send {Volume_Down}
-RControl Up::
+RCtrl Up::
 	Sleep, 50
 	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
 		IfWinActive, ahk_class TscShellContainerClass
@@ -476,11 +485,6 @@ SetVolume(value) {
 	Tooltip, % Round(volume)`%
 	SetTimer, RemoveToolTip, 1000
 }
-
-RemoveToolTip:
-	SetTimer, RemoveToolTip, Off
-	ToolTip
-Return
 
 RemoteSession() {
 	SysGet, isremote, 4096
