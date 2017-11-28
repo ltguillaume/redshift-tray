@@ -440,9 +440,10 @@ AppsKey & Right::Send #{Right}
 AppsKey & Home::Shutdown, 2
 AppsKey & End::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
 AppsKey::Send {AppsKey}
-RAlt::
+RAlt Up::
 	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
 <^>!Space::
+	{
 		If (WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
 			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass"))
 			Send ^{F4}
@@ -450,6 +451,8 @@ RAlt::
 			Send ^w
 		Else
 			WinClose, A
+		Sleep, 250
+	}
 Return
 
 #If, hotkeys And MouseOnTaskbar()
@@ -467,11 +470,13 @@ WheelDown::Send {Volume_Down}
 >^Down::Send {Volume_Down}
 RCtrl Up::
 	Sleep, 50
-	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
+	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
 		IfWinActive, ahk_class TscShellContainerClass
 			WinMinimize
 		Else IfWinExist, ahk_class TscShellContainerClass
 			WinActivate
+		Sleep, 250
+	}
 Return
 
 MouseOnTaskbar() {
@@ -567,6 +572,7 @@ ShowDesktop() {
 		MouseGetPos,,,, control
 		If control = MSTaskListWClass1
 			Send #d
+		Sleep, 250
 	}
 }
 
