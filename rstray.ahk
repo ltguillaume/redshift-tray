@@ -276,13 +276,13 @@ Exit:
 !Home::
 	Brightness(1)
 	Goto, Enable
-	Return
+Return
 !Pause::
 	If mode = paused
 		Goto, Enable
 	Else
 		Goto, Pause
-	Return
+Return
 !End::Goto, Disable
 !PgUp::Brightness(0.05)
 !PgDn::Brightness(-0.05)
@@ -350,8 +350,8 @@ Run(adjust = FALSE) {
 TrayTip() {
 	If mode = enabled
 	{
-		latitude := Round(Abs(lat), 2) . "°" . (lat > 0 ? "N" : "S")
-		longitude := Round(Abs(lon), 2) . "°" . (lon > 0 ? "E" : "W")
+		latitude := Round(Abs(lat), 2) . "Â°" . (lat > 0 ? "N" : "S")
+		longitude := Round(Abs(lon), 2) . "Â°" . (lon > 0 ? "E" : "W")
 		status = % "Enabled: " . night . "K/" . day . "K`nLocation: " . latitude . " " . longitude
 	}
 	Else If mode = forced
@@ -367,7 +367,7 @@ TrayTip() {
 		status = Disabled
 	br := Round(brightness * 100, 0)
 	Menu, Tray, Tip, Redshift`n%status%`nBrightness: %br%`%
-	If (A_ThisHotkey <> "" And A_ThisHotkey <> "~LButton") {
+	If (A_ThisHotkey <> A_PriorHotkey Or (InStr(A_ThisHotkey, "Pg") And A_TimeSinceThisHotkey < 2500)) {
 		Tooltip, Redshift`n%status%`nBrightness: %br%`%
 		SetTimer, RemoveToolTip, 1000
 	}
