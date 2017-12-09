@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <title>Redshift Tray</title>
 <style>
-body{background:#f0f0f0;font:15px segoe ui,helvetica,sans-serif;padding:25px;line-height:1.5}
+body{background:#f0f0f0;font:14px segoe ui,helvetica,sans-serif;padding:25px;line-height:1.5}
 h1,h2{font-weight:600;padding-bottom:8px;border-bottom:1px solid #d0d0d0}
 img{float:right;margin:-10px;padding-left:20px;background:#f0f0f0}
 .start li{padding:2px}
@@ -25,12 +25,14 @@ tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
 <h2>Overview</h2>
 <p>Redshift Tray is a no-frills GUI for the excellent screen temperature adjustment tool <a href="http://jonls.dk/redshift">Redshift</a> by Jon Lund Steffensen. Redshift Tray allows you to:</p>
 <ul>
+<li>Control Redshift based on location or custom night/day times</li>
 <li>Quickly enable/disable Redshift: double-click the tray icon</li>
 <li>Force a full nighttime temperature adjustment, no matter what the actual time is</li>
 <li>Pause the temperature adjustment for x minutes</li>
 <li>Adjust the screen brightness and forced temperature via hotkeys</li>
 <li>Optionally update your current coordinates every time you enable Redshift (e.g. when traveling)</li>
-<li>Optimized for Remote Desktop: change Redshift locally while in a remote desktop session, while Redshift Tray can also run on the remote system for its hotkeys.</li>
+<li>Use a fantastic set of optional hotkeys</li>
+<li>Make use of Remote Desktop: Redshift hotkeys will stay active locally, while Redshift Tray can also run on the remote system for its optional hotkeys</li>
 </ul>
 <p>It also includes a set of optional hotkeys. Admittedly, these are entirely based on my personal preferences, but since this program is put together in <a href="http://www.autohotkey.com">AutoHotkey</a>, it’s easy to add your own hotkeys and remove the ones you think are rubbish.</p>
 <h2>List of hotkeys</h2>
@@ -59,7 +61,7 @@ tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
 <tr><td>Menu + Arrows</td><td>Aero Snap</td></tr>
 <tr><td>Menu Home</td><td>Restart computer</td></tr>
 <tr><td>Menu End</td><td>Hibernate computer</td></tr>
-<tr><td>AltGr x2<br>AltGr Space</td><td>Close current tab/window</td></tr>
+<tr><td>AltGr x2<br>AltGr Menu</td><td>Close current tab/window</td></tr>
 <tr><td>RCtrl x2</td><td>Switch RDP Host/Client</td></tr>
 <tr><td>DblClick on taskbar</td><td>Show desktop</td></tr>
 <tr><td>MidClick on taskbar</td><td>Open Task Manager</td></tr>
@@ -67,25 +69,26 @@ tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
 </table>
 <h2>Getting started</h2>
 <ol class="start">
-<li>Download Redshift Tray from the <a href="https://github.com/ltGuillaume/Redshift-Tray/releases">releases page</a> (<strong>redshift-tray.zip</strong>) and extract it to a folder you really like.</li>
-<li>Run <strong>rstray.exe</strong> and you’ll see a handsome icon pop up in the notification area next to your clock. Now right-click it and choose <strong>Settings</strong>. The text file <strong>rstray.ini</strong> that shows up in your editor contains all the settings for Redshift Tray.
+<li>Download Redshift Tray from the <a href="https://github.com/ltGuillaume/Redshift-Tray/releases">releases page</a> and extract it to a folder you really like.</li>
+<li>Run <strong>rstray.exe</strong> and you’ll see a handsome icon pop up in the notification area next to your clock. Now right-click it and choose <strong>Settings</strong>. You can quickly switch some features on/off, or choose <strong>More Settings</strong>. The text file <strong>rstray.ini</strong> that shows up in your editor contains all the settings for Redshift Tray.
 <ul>
 <li>For accurate coordinates, you can set them yourself, otherwise it uses your IP and the <a href="https://ipapi.co">ipapi</a> service (<strong>one time only</strong>). Use a <a href="https://encrypted.google.com/search?q=Amsterdam+coordinates">search engine</a>, Maps, Wikipedia, or whatever and jot down your coordinates behind <strong>latitude</strong> and <strong>longitude</strong>.</li>
 <li>During the day, the color temperature should match the light from outside, typically around 5500K-6500K. The light has a higher temperature on an overcast day. Redshift assumes that your screen will produce light at a color of 6500K when no color correction is applied by the program. Thus, 6500K is the neutral temperature. The <strong>daytemp</strong> setting helps you set this value (e.g. <strong>daytemp=6500</strong>).</li>
 <li>At night, the color temperature should be set to match the lamps in your room. This is typically a low temperature at around 3000K-4000K. The <strong>nighttemp</strong> setting helps you out here (e.g. <strong>nighttemp=3500</strong>).</li>
 <li>Redshift Tray can check if the active window is in full-screen mode and automatically switch to a different color temperature (useful for image viewers and video players). Set the <strong>fullscreentemp</strong> to your preferred value and enable this feature with <strong>fullscreenmode=1</strong></li>
 <li>You can temporarily disable Redshift’s color adjustment for a few (or a whole lotta) minutes. Set the amount of those hella blue minutes with the <strong>pauseminutes</strong> setting.</li>
-<li>If you loathe the fading transition upon start-up, just set <strong>notransitions=1</strong>.</li>
+<li>If you want total control over the times at which Redshift will be enabled and disabled, just set <strong>nighttime=1800</strong> and <strong>daytime=0600</strong>, where the values depict 24h military time. Then, set <strong>customtimes=1</strong>.</li>
 <li>If you get annoyed by the fact that your mouse cursor does not assume the same color temperature, set <strong>colorizecursor=1</strong> and Redshift Tray will write <em>MouseTrails=-1</em> to <em>HKCU\Control Panel\Mouse</em> in your registry to fix this. You'll need to save and exit the config file, then <strong>restart Windows or log off</strong> to get this working.</li>
-<li>Traveling with your laptop? You can set <strong>traveling=1</strong> after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though.</li>
-<li>If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set <strong>startdisabled=1</strong>.</li>
+<li>If you loathe the fading transition upon start-up, just set <strong>notransitions=1</strong>.</li>
 <li>The setting <strong>optionalhotkeys=1</strong> will enable the extra set of hotkeys (right-click the tray icon and choose <strong>Hotkeys</strong> to see a list), while (big surprise) <strong>optionalhotkeys=0</strong> disables them. The <em>Hotkeys List</em> dialog’s yes/no buttons control this setting.</li>
 <li>If you're a Remote Desktop addict like me, be sure to set <strong>remotedesktop=1</strong>. This way, you can run this gem in both environments, switch between local and remote sessions by double-tapping RCtrl, and change the local Redshift settings while in a remote screen.</li>
+<li>If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set <strong>startdisabled=1</strong>.</li>
 <li>If you want to use the (default and/or optional) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set <strong>runasadmin=1</strong> so that Redshift Tray will try to run as admin, too. If this scenario doesn’t really occur on your system, leave the damn thing alone.</li>
+<li>Traveling with your laptop? You can set <strong>traveling=1</strong> after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though. Since the location is based on your IP, don't use this when a VPN is active.</li>
 </ul>
 </li>
 <li>Now save the settings file and close it. Redshift Tray will restart with the settings you’ve defined.</li>
-<li>If you’d like Redshift Tray to automatically run at startup, right-click the tray icon again and click <strong>Autorun</strong>, so that this option is checked. This setting just creates or removes a value in the registry key <em>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</em>.</li>
+<li>If you’d like Redshift Tray to automatically run at startup, right-click the tray icon again and click <strong>Autorun</strong> under <strong>Settings</strong>, so that this option is checked. This setting just creates or removes a value in the registry key <em>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</em>.</li>
 <li>If Redshift <a href="http://jonls.dk/2010/09/windows-gamma-adjustments">fails to adjust the color temperature</a>, or the brightness level gets stuck at a certain percentage, import <strong>unlock-gammarange.reg</strong> into the registry and restart Windows.</li>
 </ol>
 <p>You. Are. Done!</p>

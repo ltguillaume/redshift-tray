@@ -1,37 +1,41 @@
-;Redshift Tray v1.5.0 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.6.0 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
 #MaxHotkeysPerInterval, 200
 SetKeyDelay, -1
 SetWorkingDir, %A_ScriptDir%
+OnExit, OnExit
 
-Global exe = "redshift.exe", ini = "rstray.ini", s = "Redshift", lat, lon, day, night, fullscreen, notransitions
-Global mode, timer, temperature, rundialog, brightness = 1, rdpclient, remote, isfullscreen, withcaption := Object()
-IniRead, lat, %ini%, %s%, latitude
-IniRead, lon, %ini%, %s%, longitude
-IniRead, day, %ini%, %s%, daytemp, 6500
-IniRead, night, %ini%, %s%, nighttemp, 3500
-IniRead, fullscreen, %ini%, %s%, fullscreentemp, 6500
-IniRead, fullscreenmode, %ini%, %s%, fullscreenmode, 0
-IniRead, pauseminutes, %ini%, %s%, pauseminutes, 10
-IniRead, notransitions, %ini%, %s%, notransitions, 0
+; Global variables (when also used in functions)
+Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
+Global customtimes, notransitions, colorizecursor, traveling, startdisabled, hotkeys, remotedesktop, runasadmin	; Switches
+Global lat, lon, day, night, fullscreen, pauseminutes, fullscreenmode, daytime, nighttime	; Values
+Global mode, temperature, brightness = 1, timer, endtime, customnight, isfullscreen, rdpclient, remote, rundialog, withcaption := Object()	; Internal
+; Settings from .ini
+IniRead, lat, %ini%, %v%, latitude
+IniRead, lon, %ini%, %v%, longitude
+IniRead, day, %ini%, %v%, daytemp, 6500
+IniRead, night, %ini%, %v%, nighttemp, 3500
+IniRead, fullscreen, %ini%, %v%, fullscreentemp, 6500
+IniRead, pauseminutes, %ini%, %v%, pauseminutes, 10
+IniRead, daytime, %ini%, %v%, daytime, HHmm
+IniRead, nighttime, %ini%, %v%, nighttime, HHmm
 IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
-IniRead, traveling, %ini%, %s%, traveling, 0
-IniRead, startdisabled, %ini%, %s%, startdisabled, 0
+IniRead, customtimes, %ini%, %s%, customtimes, 0
+IniRead, fullscreenmode, %ini%, %s%, fullscreenmode, 0
+IniRead, notransitions, %ini%, %s%, notransitions, 0
 IniRead, hotkeys, %ini%, %s%, optionalhotkeys, 0
 IniRead, remotedesktop, %ini%, %s%, remotedesktop, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
+IniRead, startdisabled, %ini%, %s%, startdisabled, 0
+IniRead, traveling, %ini%, %s%, traveling, 0
 
-If runasadmin And !A_IsAdmin
+; Initialize
+If (runasadmin And !A_IsAdmin)
 	Run *RunAs "%A_ScriptFullPath%" /restart
 
-RegRead, mousetrails, HKCU\Control Panel\Mouse, MouseTrails
-If (colorizecursor And mousetrails <> -1)
-	RegWrite, REG_SZ, HKCU\Control Panel\Mouse, MouseTrails, -1
-Else If (!colorizecursor And mousetrails = -1)
-	RegDelete, HKCU\Control Panel\Mouse, MouseTrails
-
+; Set up tray menu
 Menu, Tray, NoStandard
 Menu, Tray, Tip, Redshift
 Menu, Tray, Add, &Enabled, Enable, Radio
@@ -41,7 +45,15 @@ Menu, Tray, Add, &Disabled, Disable, Radio
 Menu, Tray, Add
 Menu, Tray, Add, &Help, Help
 Menu, Settings, Add, &Autorun, Autorun
+Menu, Settings, Add, &Colorize cursor, ColorizeCursor
+Menu, Settings, Add, &Custom times, CustomTimes
+Menu, Settings, Add, &Full-screen mode, FullScreen
+Menu, Settings, Add, &No transitions, NoTransitions
 Menu, Settings, Add, &Optional hotkeys, Hotkeys
+Menu, Settings, Add, &Remote Desktop support, RemoteDesktop
+Menu, Settings, Add, &Run as Administrator, RunAsAdmin
+Menu, Settings, Add, &Start disabled, StartDisabled
+Menu, Settings, Add, &Traveling, Traveling
 Menu, Settings, Add
 Menu, Settings, Add, &More settings..., Settings
 Menu, Tray, Add, &Settings, :Settings
@@ -49,21 +61,44 @@ Menu, Tray, Add
 Menu, Tray, Add, &Restart, Restart
 Menu, Tray, Add, E&xit, Exit
 
-If hotkeys
-	Menu, Settings, Check, &Optional hotkeys
-
 RegRead, autorun, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
 If !ErrorLevel
 	Menu, Settings, Check, &Autorun
+ColorizeCursor()
+If customtimes
+	Menu, Settings, Check, &Custom times
+if fullscreenmode
+	Menu, Settings, Check, &Full-screen mode
+If notransitions
+	Menu, Settings, Check, &No transitions
+If hotkeys
+	Menu, Settings, Check, &Optional hotkeys
+If remotedesktop
+	Menu, Settings, Check, &Remote Desktop support
+If runasadmin
+	Menu, Settings, Check, &Run as Administrator
+If startdisabled
+	Menu, Settings, Check, &Start disabled
+If traveling
+	Menu, Settings, Check, &Traveling
 
+; Set mode
+If remotedesktop
+	SetTimer, RemoteDesktopMode, 2500
+If customtimes
+{
+	If (daytime = "HHmm" Or nighttime = "HHmm") {
+		MsgBox, 64, Custom Times, Please fill in nighttime and daytime (use military times),`nthen save and close the settings file.
+		Goto, Settings
+	}
+	SetTimer, CustomTimesMode, 60000
+	If !startdisabled
+		Goto, CustomTimesMode
+}
 If startdisabled
 	Goto, Disable
-Else If fullscreenmode
-	SetTimer, FullScreen, 1000
 
-If remotedesktop
-	SetTimer, RemoteDesktop, 2500
-
+; Or else, Enable:
 Enable:
 	mode = enabled
 	timer = 0
@@ -77,8 +112,9 @@ Enable:
 		GetLocation()
 	If (lat = "ERROR" Or lon = "ERROR")
 		Goto, Settings
-	Else
-		Run()
+	Run()
+	If fullscreenmode
+		SetTimer, FullScreenMode, 1000
 Return
 
 Force:
@@ -112,6 +148,9 @@ Return
 Pause:
 	mode = paused
 	timer := pauseminutes * 60
+	endtime =
+	endtime += timer, seconds
+	FormatTime, endtime, %endtime%, HH:mm:ss
 	restorebrightness = %brightness%
 	brightness = 1
 	Menu, Tray, Uncheck, &Enabled
@@ -121,22 +160,21 @@ Pause:
 	Menu, Tray, Default, &Enabled
 	Menu, Tray, Icon, %A_ScriptFullPath%, 2, 1
 	Restore()
-	SetTimer, Paused
+	TrayTip()
+	timer -= 10
+	SetTimer, Paused, 10000
 Return
 
 Paused:
-	While timer > 0 {
-		If mode <> paused
-			SetTimer,, Delete
-		TrayTip()
-		Sleep, 10000
+	If (timer > 0 And mode = "paused") {
 		timer -= 10
-	}
-	SetTimer,, Delete
-	If mode = paused
-	{
-		brightness = %restorebrightness%
-		Goto, Enable
+	} Else {
+		SetTimer,, Delete
+		If mode = paused
+		{
+			brightness = %restorebrightness%
+			Goto, Enable
+		}
 	}
 Return
 
@@ -148,20 +186,6 @@ Return
 
 GuiClose:
 	Gui, Destroy
-Return
-
-Hotkeys:
-	If hotkeys
-	{
-		Menu, Settings, Uncheck, &Optional hotkeys
-		hotkeys = 0
-	}
-	Else
-	{
-		Menu, Settings, Check, &Optional hotkeys
-		hotkeys = 1
-	}
-	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
 Return
 
 Autorun:
@@ -178,29 +202,115 @@ Autorun:
 	}
 Return
 
+ColorizeCursor:
+	colorizecursor := !colorizecursor
+	ColorizeCursor()
+Return
+
+CustomTimes:
+	customtimes := !customtimes
+	Goto, Restart
+Return
+
+FullScreen:
+	fullscreenmode := !fullscreenmode
+	If fullscreenmode
+	{
+		SetTimer, FullScreenMode, 1000
+		Menu, Settings, Check, &Full-screen mode
+	}
+	Else
+	{
+		SetTimer, FullScreenMode, Delete
+		Menu, Settings, Uncheck, &Full-screen mode
+	}
+Return
+
+NoTransitions:
+	If notransitions
+	{
+		notransitions = 0
+		Menu, Settings, Uncheck, &No transitions
+	}
+	Else
+	{
+		notransitions = 1
+		Menu, Settings, Check, &No transitions
+	}
+Return
+
+Hotkeys:
+	If hotkeys
+	{
+		hotkeys = 0
+		Menu, Settings, Uncheck, &Optional hotkeys
+	}
+	Else
+	{
+		hotkeys = 1
+		Menu, Settings, Check, &Optional hotkeys
+	}
+Return
+
+RemoteDesktop:
+	remotedesktop := !remotedesktop
+	If remotedesktop
+	{
+		SetTimer, RemoteDesktopMode, 2500
+		Menu, Settings, Check, &Remote Desktop support
+	}
+	Else
+	{
+		SetTimer, RemoteDesktopMode, Delete
+		Menu, Settings, Uncheck, &Remote Desktop support
+	}
+Return
+
+RunAsAdmin:
+	runasadmin := !runasadmin
+	Goto, Restart
+Return
+
+StartDisabled:
+	startdisabled := !startdisabled
+	If startdisabled
+		Menu, Settings, Check, &Start disabled
+	Else
+		Menu, Settings, Uncheck, &Start disabled
+Return
+
+Traveling:
+	traveling := !traveling
+	Goto, Restart
+Return
+
 Settings:
-	IniWrite, %lat%, %ini%, %s%, latitude
-	IniWrite, %lon%, %ini%, %s%, longitude
-	IniWrite, %day%, %ini%, %s%, daytemp
-	IniWrite, %night%, %ini%, %s%, nighttemp
-	IniWrite, %fullscreen%, %ini%, %s%, fullscreentemp
-	IniWrite, %fullscreenmode%, %ini%, %s%, fullscreenmode
-	IniWrite, %pauseminutes%, %ini%, %s%, pauseminutes
-	IniWrite, %notransitions%, %ini%, %s%, notransitions
-	IniWrite, %colorizecursor%, %ini%, %s%, colorizecursor
-	IniWrite, %traveling%, %ini%, %s%, traveling
-	IniWrite, %startdisabled%, %ini%, %s%, startdisabled
-	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
-	IniWrite, %remotedesktop%, %ini%, %s%, remotedesktop
-	IniWrite, %runasadmin%, %ini%, %s%, runasadmin
+	OnExit
+	WriteSettings()
 	FileGetTime, modtime, %ini%
 	RunWait, %ini%
 	FileGetTime, newmodtime, %ini%
 	If newmodtime <> %modtime%
-		Reload
+		Goto, Restart
+	OnExit, OnExit
 Return
 
-FullScreen:
+CustomTimesMode:
+	FormatTime, time,, HHmm
+	If (daytime <= time And time < nighttime) {
+		If (customnight Or mode = "") {
+			customnight = 0
+			If (mode = "" Or mode = "enabled")
+				Goto, Disable
+		}
+	} Else If (!customnight) {
+		customnight = 1
+		If (mode = "" Or mode = "disabled")
+			Goto, Enable
+	}
+Return
+
+FullScreenMode:
 	If mode <> enabled
 		Return
 	WinGet, id, ID, A
@@ -226,7 +336,7 @@ FullScreen:
 	}
 Return
 
-RemoteDesktop:
+RemoteDesktopMode:
 	If (RemoteSession() And !remote) {
 		Menu, Tray, Disable, &Enabled
 		Menu, Tray, Disable, &Forced
@@ -246,7 +356,6 @@ RemoteDesktop:
 			Gosub, Force
 		remote = 0
 	}
-	
 	IfWinActive, ahk_class TscShellContainerClass
 	{
 		If !rdpclient
@@ -269,8 +378,13 @@ Restart:
 	Run "%A_ScriptFullPath%" /restart
 Return
 
-Exit:
+OnExit:
+	WriteSettings()
 	Restore()
+	ExitApp
+Return
+
+Exit:
 	ExitApp
 
 !Home::
@@ -304,14 +418,50 @@ GetLocation() {
 				, An error occurred while determining your location!`nChoose Yes to retry, or No to manually specify latitude and longitude.
 			IfMsgBox Yes
 				GetLocation()
+			IfMsgBox No
+				Gosub, Settings
 		}
 		Return
 	}
 	StringSplit, latlon, response, `,
 	lat = %latlon1%
 	lon = %latlon2%
-	IniWrite, %lat%, %ini%, %s%, latitude
-	IniWrite, %lon%, %ini%, %s%, longitude
+}
+
+WriteSettings() {
+	IniWrite, %lat%, %ini%, %v%, latitude
+	IniWrite, %lon%, %ini%, %v%, longitude
+	IniWrite, %day%, %ini%, %v%, daytemp
+	IniWrite, %night%, %ini%, %v%, nighttemp
+	IniWrite, %fullscreen%, %ini%, %v%, fullscreentemp
+	IniWrite, %pauseminutes%, %ini%, %v%, pauseminutes
+	IniWrite, %daytime%, %ini%, %v%, daytime
+	IniWrite, %nighttime%, %ini%, %v%, nighttime
+	IniWrite, %colorizecursor%, %ini%, %s%, colorizecursor
+	IniWrite, %customtimes%, %ini%, %s%, customtimes
+	IniWrite, %fullscreenmode%, %ini%, %s%, fullscreenmode
+	IniWrite, %notransitions%, %ini%, %s%, notransitions
+	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
+	IniWrite, %remotedesktop%, %ini%, %s%, remotedesktop
+	IniWrite, %runasadmin%, %ini%, %s%, runasadmin
+	IniWrite, %startdisabled%, %ini%, %s%, startdisabled
+	IniWrite, %traveling%, %ini%, %s%, traveling
+}
+
+ColorizeCursor() {
+	RegRead, mousetrails, HKCU\Control Panel\Mouse, MouseTrails
+	If colorizecursor
+	{
+		If mousetrails <> -1
+			RegWrite, REG_SZ, HKCU\Control Panel\Mouse, MouseTrails, -1
+		Menu, Settings, Check, &Colorize cursor
+	}
+	Else
+	{
+		If mousetrails = -1
+			RegDelete, HKCU\Control Panel\Mouse, MouseTrails
+		Menu, Settings, Uncheck, &Colorize cursor
+	}
 }
 
 Close() {
@@ -331,7 +481,12 @@ Run(adjust = FALSE) {
 	ntmp := isfullscreen = 1 ? fullscreen : night
 	notr := isfullscreen Or notransitions ? "-r" : ""
 	If mode = enabled
-		cfg = -l %lat%:%lon% -t %day%:%ntmp% %br% %notr%
+	{
+		If customtimes
+			cfg = -O %ntmp% %br%
+		Else
+			cfg = -l %lat%:%lon% -t %day%:%ntmp% %br% %notr%
+	}
 	Else If mode = forced
 		cfg = -O %temperature% %br%
 	Else If mode = paused
@@ -350,25 +505,29 @@ Run(adjust = FALSE) {
 TrayTip() {
 	If mode = enabled
 	{
-		latitude := Round(Abs(lat), 2) . "Â°" . (lat > 0 ? "N" : "S")
-		longitude := Round(Abs(lon), 2) . "Â°" . (lon > 0 ? "E" : "W")
-		status = % "Enabled: " . night . "K/" . day . "K`nLocation: " . latitude . " " . longitude
+		If customtimes
+			status := "Enabled until " . SubStr(daytime, 1, 2) . ":" . SubStr(daytime, 3) . " (" . night . "K)"
+		Else
+		{
+			latitude := Round(Abs(lat), 2) . "°" . (lat > 0 ? "N" : "S")
+			longitude := Round(Abs(lon), 2) . "°" . (lon > 0 ? "E" : "W")
+			status = Enabled: %night%K/%day%K`nLocation: %latitude% %longitude%
+		}
 	}
 	Else If mode = forced
 		status = Forced: %temperature%K
 	Else If mode = paused
-	{
-		endtime =
-		endtime += timer, seconds
-		FormatTime, endtime, %endtime%, HH:mm
-		status = Disabled until %endtime%
-	}
+		status = Paused until %endtime%
 	Else
+	{
 		status = Disabled
+		if customtimes
+			status .= " until " . SubStr(nighttime, 1, 2) . ":" . SubStr(nighttime, 3)
+	}
 	br := Round(brightness * 100, 0)
 	Menu, Tray, Tip, Redshift`n%status%`nBrightness: %br%`%
-	If (A_ThisHotkey <> A_PriorHotkey Or (InStr(A_ThisHotkey, "Pg") And A_TimeSinceThisHotkey < 2500)) {
-		Tooltip, Redshift`n%status%`nBrightness: %br%`%
+	If (isfullscreen = 0 And (A_ThisHotkey <> A_PriorHotkey Or (InStr(A_ThisHotkey, "Pg") And A_TimeSinceThisHotkey < 2500))) {
+		Tooltip, %status%`nBrightness: %br%`%
 		SetTimer, RemoveToolTip, 1000
 	}
 }
@@ -431,8 +590,10 @@ Temperature(value) {
 <^>!,::Send {Media_Prev}
 <^>!.::Send {Media_Next}
 <^>!/::Send {Media_Play_Pause}
-<^LWin::WinRunDialog()
+>^Up::Send {Volume_Up}
+>^Down::Send {Volume_Down}
 >^AppsKey::WinRunDialog()
+<^LWin::WinRunDialog()
 AppsKey & Up::Send #{Up}
 AppsKey & Down::Send #{Down}
 AppsKey & Left::Send #{Left}
@@ -440,9 +601,9 @@ AppsKey & Right::Send #{Right}
 AppsKey & Home::Shutdown, 2
 AppsKey & End::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
 AppsKey::Send {AppsKey}
-RAlt Up::
+RAlt::
 	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
-<^>!Space::
+<^>!AppsKey::
 	{
 		If (WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
 			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass"))
@@ -461,13 +622,11 @@ MButton::TaskMgr()
 WheelUp::Send {Volume_Up}
 WheelDown::Send {Volume_Down}
 
-#If, hotkeys And WinActive("ahk_class TscShellContainerClass")
+#If, hotkeys And remotedesktop And WinActive("ahk_class TscShellContainerClass")
 >^Up::SetVolume("+2")
 >^Down::SetVolume("-2")
 
 #If, hotkeys And !RemoteSession()
->^Up::Send {Volume_Up}
->^Down::Send {Volume_Down}
 RCtrl Up::
 	Sleep, 50
 	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
@@ -509,7 +668,7 @@ WinRunDialog() {
 	} Else {
 		Send #r
 		WinWait, ahk_class #32770 ahk_exe explorer.exe
-		If Not ErrorLevel
+		If !ErrorLevel
 			WinActivate
 		WinGet, rundialog, ID, A
 	}
