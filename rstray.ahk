@@ -1,4 +1,4 @@
-; Redshift Tray v1.6.0 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.6.1 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -11,7 +11,7 @@ OnExit, OnExit
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
 Global customtimes, notransitions, colorizecursor, traveling, startdisabled, hotkeys, remotedesktop, runasadmin	; Switches
 Global lat, lon, day, night, fullscreen, pauseminutes, fullscreenmode, daytime, nighttime	; Values
-Global mode, temperature, brightness = 1, timer, endtime, customnight, isfullscreen, rdpclient, remote, rundialog, withcaption := Object()	; Internal
+Global mode, temperature, brightness = 1, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, withcaption := Object()	; Internal
 ; Settings from .ini
 IniRead, lat, %ini%, %v%, latitude
 IniRead, lon, %ini%, %v%, longitude
@@ -342,7 +342,7 @@ RemoteDesktopMode:
 		Menu, Tray, Disable, &Forced
 		Menu, Tray, Disable, &Paused
 		Menu, Tray, Disable, &Disabled
-		Menu, Tray, Tip, Redshift`nDisabled`n(Remote Desktop)
+		Menu, Tray, Tip, Redshift`nDisabled (Remote Desktop)
 		Restore()
 		remote = 1
 	} Else If (!RemoteSession() And remote) {
@@ -602,18 +602,28 @@ AppsKey & Home::Shutdown, 2
 AppsKey & End::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
 AppsKey::Send {AppsKey}
 RAlt::
-	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400)
-<^>!AppsKey::
-	{
-		If (WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
-			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass"))
-			Send ^{F4}
-		Else If WinActive("ahk_class TTOTAL_CMD")
-			Send ^w
-		Else
-			WinClose, A
-		Sleep, 250
+	If (!ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
+		ralt = 1
+		SetTimer, RAltReset, 400
+		Goto, CloseWin
+	} Else {
+		ralt = 0
 	}
+Return
+<^>!AppsKey::
+CloseWin:
+	If (WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
+		Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass"))
+		Send ^{F4}
+	Else If WinActive("ahk_class TTOTAL_CMD")
+		Send ^w
+	Else
+		WinClose, A
+Return
+
+RAltReset:
+	ralt = 0
+	SetTimer,, Delete
 Return
 
 #If, hotkeys And MouseOnTaskbar()
@@ -623,19 +633,27 @@ WheelUp::Send {Volume_Up}
 WheelDown::Send {Volume_Down}
 
 #If, hotkeys And remotedesktop And WinActive("ahk_class TscShellContainerClass")
->^Up::SetVolume("+2")
->^Down::SetVolume("-2")
+>^Up::SetVolume("+1")
+>^Down::SetVolume("-1")
 
 #If, hotkeys And !RemoteSession()
-RCtrl Up::
-	Sleep, 50
-	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
+RCtrl::
+	If (!rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
+		rctrl = 1
+		SetTimer, RCtrlReset, 400
+		Sleep, 50
 		IfWinActive, ahk_class TscShellContainerClass
 			WinMinimize
 		Else IfWinExist, ahk_class TscShellContainerClass
 			WinActivate
-		Sleep, 250
+	} Else {
+		rctrl = 0
 	}
+Return
+
+RCtrlReset:
+	rctrl = 0
+	SetTimer,, Delete
 Return
 
 MouseOnTaskbar() {
