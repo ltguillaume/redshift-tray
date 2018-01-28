@@ -1,9 +1,10 @@
-; Redshift Tray v1.6.1 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.6.2 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
 #MaxHotkeysPerInterval, 200
 SetKeyDelay, -1
+SetTitleMatchMode, 2
 SetWorkingDir, %A_ScriptDir%
 OnExit, OnExit
 
@@ -84,7 +85,7 @@ If traveling
 
 ; Set mode
 If remotedesktop
-	SetTimer, RemoteDesktopMode, 2500
+	SetTimer, RemoteDesktopMode, 1000
 If customtimes
 {
 	If (daytime = "HHmm" Or nighttime = "HHmm") {
@@ -317,9 +318,8 @@ FullScreenMode:
 	WinGetClass, cls, ahk_id %id%
 	WinGet style, Style, ahk_id %id%
 	WinGetPos ,,, width, height, ahk_id %id%
-	; 0x800000 is WS_BORDER.
-	; 0x20000000 is WS_MINIMIZE.
-	; no border and not minimized
+	; 0x800000 is WS_BORDER
+	; 0x20000000 is WS_MINIMIZE
 	If ((style & 0x20800000) Or height < A_ScreenHeight Or width < A_ScreenWidth) {	; Not full-screen
 		If isfullscreen = 1	; Was full-screen
 		{
@@ -337,6 +337,24 @@ FullScreenMode:
 Return
 
 RemoteDesktopMode:
+	IfWinActive, ahk_class TscShellContainerClass
+	{
+		If !rdpclient
+		{
+			Suspend, On
+			Hotkey, RAlt & `,, Off
+			Hotkey, RAlt & ., Off
+			Send, {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
+			Suspend, Off
+			rdpclient = 1
+		}
+	}
+	Else
+	{
+		Hotkey, RAlt & `,, On
+		Hotkey, RAlt & ., On
+		rdpclient = 0
+	}
 	If (RemoteSession() And !remote) {
 		Menu, Tray, Disable, &Enabled
 		Menu, Tray, Disable, &Forced
@@ -356,17 +374,6 @@ RemoteDesktopMode:
 			Gosub, Force
 		remote = 0
 	}
-	IfWinActive, ahk_class TscShellContainerClass
-	{
-		If !rdpclient
-		{
-			Suspend, On
-			Suspend, Off
-			rdpclient = 1
-		}
-	}
-	Else
-		rdpclient = 0
 Return
 
 RemoveToolTip:
@@ -526,7 +533,7 @@ TrayTip() {
 	}
 	br := Round(brightness * 100, 0)
 	Menu, Tray, Tip, Redshift`n%status%`nBrightness: %br%`%
-	If (isfullscreen = 0 And (A_ThisHotkey <> A_PriorHotkey Or (InStr(A_ThisHotkey, "Pg") And A_TimeSinceThisHotkey < 2500))) {
+	If (!isfullscreen And (A_ThisHotkey <> A_PriorHotkey Or (InStr(A_ThisHotkey, "Pg") And A_TimeSinceThisHotkey < 2500))) {
 		Tooltip, %status%`nBrightness: %br%`%
 		SetTimer, RemoveToolTip, 1000
 	}
@@ -583,48 +590,42 @@ Temperature(value) {
 }
 
 #If, hotkeys And !WinActive("ahk_class TscShellContainerClass")
+<^LWin::WinRunDialog()
 <^>!9::WinSet, AlwaysOnTop, Toggle, A
 <^>!0::ClickThroughWindow()
 <^>!-::Opacity(-5)
 <^>!=::Opacity(5)
-<^>!,::Send {Media_Prev}
-<^>!.::Send {Media_Next}
-<^>!/::Send {Media_Play_Pause}
->^Up::Send {Volume_Up}
->^Down::Send {Volume_Down}
->^AppsKey::WinRunDialog()
-<^LWin::WinRunDialog()
+RAlt & ,::ShiftAltTab
+RAlt & .::AltTab
+RAlt::
+	If (!ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
+		ralt = 1
+		SetTimer, RAltReset, 400
+		If (WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
+			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass"))
+			Send ^{F4}
+		Else If WinActive("ahk_class TTOTAL_CMD")
+			Send ^w
+		Else
+			WinClose, A
+	} Else {
+		ralt = 0
+	}
+Return
 AppsKey & Up::Send #{Up}
 AppsKey & Down::Send #{Down}
 AppsKey & Left::Send #{Left}
 AppsKey & Right::Send #{Right}
 AppsKey & Home::Shutdown, 2
 AppsKey & End::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
+AppsKey & ,::Send {Media_Prev}
+AppsKey & .::Send {Media_Next}
+AppsKey & /::Send {Media_Play_Pause}
+AppsKey & p::Send #p
 AppsKey::Send {AppsKey}
-RAlt::
-	If (!ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
-		ralt = 1
-		SetTimer, RAltReset, 400
-		Goto, CloseWin
-	} Else {
-		ralt = 0
-	}
-Return
-<^>!AppsKey::
-CloseWin:
-	If (WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
-		Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass"))
-		Send ^{F4}
-	Else If WinActive("ahk_class TTOTAL_CMD")
-		Send ^w
-	Else
-		WinClose, A
-Return
-
-RAltReset:
-	ralt = 0
-	SetTimer,, Delete
-Return
+>^Up::Send {Volume_Up}
+>^Down::Send {Volume_Down}
+>^AppsKey::WinRunDialog()
 
 #If, hotkeys And MouseOnTaskbar()
 ~LButton::ShowDesktop()
@@ -649,6 +650,11 @@ RCtrl::
 	} Else {
 		rctrl = 0
 	}
+Return
+
+RAltReset:
+	ralt = 0
+	SetTimer,, Delete
 Return
 
 RCtrlReset:

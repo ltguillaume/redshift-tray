@@ -32,23 +32,25 @@ AltGr End | End forced temperature
 AltGr PgUp | Increase forced temperature
 AltGr PgDn | Decrease forced temperature
 __Optional Hotkeys__ | &nbsp;
+LCtrl Win | Windows Run dialog
+RCtrl Menu | 
 AltGr 9 | Toggle window always on top
 AltGr 0 | Toggle window on top click-through
 AltGr - | Increase window transparency
 AltGr = | Decrease window transparency
-AltGr , | MM: Previous
-AltGr . | MM: Next
-AltGr / | MM: Play/Pause
-RCtrl Up | MM: Volume up
-RCtrl Down | MM: Volume down
-LCtrl Win | Windows Run dialog
-RCtrl Menu | 
+AltGr . | Switch between open items (Alt Tab)
+AltGr , | Switch between open items (Shift Alt Tab)
+AltGr x2 | Close current tab/window
 Menu + Arrows | Aero Snap
 Menu Home | Restart computer
 Menu End | Hibernate computer
-AltGr x2 | Close current tab/window
-AltGr Menu | 
-RCtrl x2 | Switch RDP Host/Client
+Menu P | Presentation display mode
+Menu , | MM: Previous
+Menu . | MM: Next
+Menu / | MM: Play/Pause
+RCtrl Up | MM: Volume up
+RCtrl Down | MM: Volume down
+RCtrl x2 | Switch between RDP host/client
 DblClick on taskbar | Show desktop
 MidClick on taskbar | Open Task Manager
 Wheel on taskbar | MM: Volume up/down
