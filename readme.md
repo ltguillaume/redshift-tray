@@ -48,6 +48,7 @@ Menu P | Presentation display mode
 Menu , | MM: Previous
 Menu . | MM: Next
 Menu / | MM: Play/Pause
+Menu M | MM: Mute
 RCtrl Up | MM: Volume up
 RCtrl Down | MM: Volume down
 RCtrl x2 | Switch between RDP host/client

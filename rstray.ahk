@@ -1,4 +1,4 @@
-; Redshift Tray v1.6.2 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.6.3 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -85,7 +85,7 @@ If traveling
 
 ; Set mode
 If remotedesktop
-	SetTimer, RemoteDesktopMode, 1000
+	SetTimer, RemoteDesktopMode, 1500
 If customtimes
 {
 	If (daytime = "HHmm" Or nighttime = "HHmm") {
@@ -341,10 +341,10 @@ RemoteDesktopMode:
 	{
 		If !rdpclient
 		{
-			Suspend, On
 			Hotkey, RAlt & `,, Off
 			Hotkey, RAlt & ., Off
 			Send, {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
+			Suspend, On
 			Suspend, Off
 			rdpclient = 1
 		}
@@ -604,10 +604,10 @@ RAlt::
 		If (WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
 			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass"))
 			Send ^{F4}
-		Else If WinActive("ahk_class TTOTAL_CMD")
+		Else IfWinActive, ahk_class TTOTAL_CMD
 			Send ^w
 		Else
-			WinClose, A
+			Send !{F4}
 	} Else {
 		ralt = 0
 	}
@@ -621,6 +621,7 @@ AppsKey & End::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
 AppsKey & ,::Send {Media_Prev}
 AppsKey & .::Send {Media_Next}
 AppsKey & /::Send {Media_Play_Pause}
+AppsKey & m::Send {Volume_Mute}
 AppsKey & p::Send #p
 AppsKey::Send {AppsKey}
 >^Up::Send {Volume_Up}
@@ -672,6 +673,9 @@ SetVolume(value) {
 	SoundGet, volume
 	Tooltip, % Round(volume)`%
 	SetTimer, RemoveToolTip, 1000
+	SoundGet, mute,, mute
+	If mute = On
+		SoundSet, 0,, mute
 }
 
 RemoteSession() {
