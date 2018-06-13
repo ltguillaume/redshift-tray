@@ -13,14 +13,14 @@ Redshift Tray is a no-frills GUI for the excellent screen temperature adjustment
 - Pause the temperature adjustment for x minutes
 - Adjust the screen brightness and forced temperature via hotkeys
 - Optionally update your current coordinates every time you enable Redshift (e.g. when traveling)
-- Use a fantastic set of optional hotkeys
+- Use a fantastic set of extra hotkeys that have got nothing to do with Redshift
 - Make use of Remote Desktop: Redshift hotkeys will stay active locally, while Redshift Tray can also run on the remote system for its optional hotkeys
 
-It also includes a set of optional hotkeys. Admittedly, these are entirely based on my personal preferences, but since this program is put together in [AutoHotkey](http://www.autohotkey.com), it's easy to add your own hotkeys and remove the ones you think are rubbish.
+It also includes a set of extra hotkeys. Admittedly, these are entirely based on my personal preferences, but since this program is put together in [AutoHotkey](http://www.autohotkey.com), it's easy to add your own hotkeys and remove the ones you think are rubbish.
 
 ## List of hotkeys
 
-__Default Hotkeys__ | &nbsp;
+__Hotkeys__ | &nbsp;
 :---: |---
 Alt Home | Reset Redshift
 Alt Pause | Toggle pause for %pauseminutes% minutes
@@ -31,9 +31,10 @@ AltGr Home | Force night temperature (reset)
 AltGr End | End forced temperature
 AltGr PgUp | Increase forced temperature
 AltGr PgDn | Decrease forced temperature
-__Optional Hotkeys__ | &nbsp;
-LCtrl Win | Windows Run dialog
+__Extra Hotkeys__ | &nbsp;
+LCtrl LWin | Windows Run dialog
 RCtrl Menu | 
+RWin | 
 AltGr 9 | Toggle window always on top
 AltGr 0 | Toggle window on top click-through
 AltGr - | Increase window transparency
@@ -67,9 +68,9 @@ Wheel on taskbar | MM: Volume up/down
     - If you want total control over the times at which Redshift will be enabled and disabled, just set __nighttime=1800__ and __daytime=0600__, where the values depict 24h military time. Then, set __customtimes=1__.
     - If you get annoyed by the fact that your mouse cursor does not assume the same color temperature, set __colorizecursor=1__ and Redshift Tray will write _MouseTrails=-1_ to _HKCU\Control Panel\Mouse_ in your registry to fix this. You'll need to save and exit the config file, then __restart Windows or log off__ to get this working.
     - If you loathe the fading transition upon start-up, just set __notransitions=1__.
-    - The setting __optionalhotkeys=1__ will enable the extra set of hotkeys (right-click the tray icon and choose __Hotkeys__ to see a list), while (big surprise) __optionalhotkeys=0__ disables them. The _Hotkeys List_ dialog's yes/no buttons control this setting.
+    - The setting __hotkeys=1__ will enable the set of hotkeys, while (big surprise) __hotkeys=0__ disables them. Similarly, you can control the extra set of hotkeys with the entry __extrahotkey__.
     - If you're a Remote Desktop addict like me, be sure to set __remotedesktop=1__. This way, you can run this gem in both environments, switch between local and remote sessions by double-tapping RCtrl, and change the local Redshift settings while in a remote screen.
-    - If you want to use the (default and/or optional) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set __runasadmin=1__ so that Redshift Tray will try to run as admin, too. If this scenario doesn't really occur on your system, leave the damn thing alone.
+    - If you want to use the (default and/or extra) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set __runasadmin=1__ so that Redshift Tray will try to run as admin, too. If this scenario doesn't really occur on your system, leave the damn thing alone.
     - If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set __startdisabled=1__.
     - Traveling with your laptop? You can set __traveling=1__ after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though. Since the location is based on your IP, don't use this when a VPN is active.
 3. Now save the settings file and close it. Redshift Tray will restart with the settings you've defined.

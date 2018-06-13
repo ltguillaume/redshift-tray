@@ -1,4 +1,4 @@
-; Redshift Tray v1.6.3 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.6.4 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -10,7 +10,7 @@ OnExit, OnExit
 
 ; Global variables (when also used in functions)
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
-Global customtimes, notransitions, colorizecursor, traveling, startdisabled, hotkeys, remotedesktop, runasadmin	; Switches
+Global customtimes, notransitions, colorizecursor, traveling, startdisabled, hotkeys, extrahotkeys, remotedesktop, runasadmin	; Switches
 Global lat, lon, day, night, fullscreen, pauseminutes, fullscreenmode, daytime, nighttime	; Values
 Global mode, temperature, brightness = 1, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, withcaption := Object()	; Internal
 ; Settings from .ini
@@ -26,7 +26,8 @@ IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, customtimes, %ini%, %s%, customtimes, 0
 IniRead, fullscreenmode, %ini%, %s%, fullscreenmode, 0
 IniRead, notransitions, %ini%, %s%, notransitions, 0
-IniRead, hotkeys, %ini%, %s%, optionalhotkeys, 0
+IniRead, hotkeys, %ini%, %s%, hotkeys, 1
+IniRead, extrahotkeys, %ini%, %s%, extrahotkeys, 0
 IniRead, remotedesktop, %ini%, %s%, remotedesktop, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
 IniRead, startdisabled, %ini%, %s%, startdisabled, 0
@@ -50,7 +51,8 @@ Menu, Settings, Add, &Colorize cursor, ColorizeCursor
 Menu, Settings, Add, &Custom times, CustomTimes
 Menu, Settings, Add, &Full-screen mode, FullScreen
 Menu, Settings, Add, &No transitions, NoTransitions
-Menu, Settings, Add, &Optional hotkeys, Hotkeys
+Menu, Settings, Add, &Hotkeys, Hotkeys
+Menu, Settings, Add, &Extra hotkeys, ExtraHotkeys
 Menu, Settings, Add, &Remote Desktop support, RemoteDesktop
 Menu, Settings, Add, &Run as Administrator, RunAsAdmin
 Menu, Settings, Add, &Start disabled, StartDisabled
@@ -73,7 +75,14 @@ if fullscreenmode
 If notransitions
 	Menu, Settings, Check, &No transitions
 If hotkeys
-	Menu, Settings, Check, &Optional hotkeys
+	Menu, Settings, Check, &Hotkeys
+If extrahotkeys
+	Menu, Settings, Check, &Extra hotkeys
+Else
+{
+	Hotkey, RAlt & `,, Off
+	Hotkey, RAlt & ., Off
+}
 If remotedesktop
 	Menu, Settings, Check, &Remote Desktop support
 If runasadmin
@@ -244,12 +253,29 @@ Hotkeys:
 	If hotkeys
 	{
 		hotkeys = 0
-		Menu, Settings, Uncheck, &Optional hotkeys
+		Menu, Settings, Uncheck, &Hotkeys
 	}
 	Else
 	{
 		hotkeys = 1
-		Menu, Settings, Check, &Optional hotkeys
+		Menu, Settings, Check, &Hotkeys
+	}
+Return
+
+ExtraHotkeys:
+	If extrahotkeys
+	{
+		extrahotkeys = 0
+		Hotkey, RAlt & `,, Off
+		Hotkey, RAlt & ., Off
+		Menu, Settings, Uncheck, &Extra hotkeys
+	}
+	Else
+	{
+		extrahotkeys = 1
+		Hotkey, RAlt & `,, On
+		Hotkey, RAlt & ., On
+		Menu, Settings, Check, &Extra hotkeys
 	}
 Return
 
@@ -351,8 +377,11 @@ RemoteDesktopMode:
 	}
 	Else
 	{
-		Hotkey, RAlt & `,, On
-		Hotkey, RAlt & ., On
+		If extrahotkeys
+		{
+			Hotkey, RAlt & `,, On
+			Hotkey, RAlt & ., On
+		}
 		rdpclient = 0
 	}
 	If (RemoteSession() And !remote) {
@@ -394,6 +423,7 @@ Return
 Exit:
 	ExitApp
 
+#If, hotkeys
 !Home::
 	Brightness(1)
 	Goto, Enable
@@ -448,7 +478,8 @@ WriteSettings() {
 	IniWrite, %customtimes%, %ini%, %s%, customtimes
 	IniWrite, %fullscreenmode%, %ini%, %s%, fullscreenmode
 	IniWrite, %notransitions%, %ini%, %s%, notransitions
-	IniWrite, %hotkeys%, %ini%, %s%, optionalhotkeys
+	IniWrite, %hotkeys%, %ini%, %s%, hotkeys
+	IniWrite, %extrahotkeys%, %ini%, %s%, extrahotkeys
 	IniWrite, %remotedesktop%, %ini%, %s%, remotedesktop
 	IniWrite, %runasadmin%, %ini%, %s%, runasadmin
 	IniWrite, %startdisabled%, %ini%, %s%, startdisabled
@@ -589,14 +620,15 @@ Temperature(value) {
 	}
 }
 
-#If, hotkeys And !WinActive("ahk_class TscShellContainerClass")
+RAlt & ,::ShiftAltTab
+RAlt & .::AltTab
+
+#If, extrahotkeys And !WinActive("ahk_class TscShellContainerClass")
 <^LWin::WinRunDialog()
 <^>!9::WinSet, AlwaysOnTop, Toggle, A
 <^>!0::ClickThroughWindow()
 <^>!-::Opacity(-5)
 <^>!=::Opacity(5)
-RAlt & ,::ShiftAltTab
-RAlt & .::AltTab
 RAlt::
 	If (!ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
 		ralt = 1
@@ -624,21 +656,23 @@ AppsKey & /::Send {Media_Play_Pause}
 AppsKey & m::Send {Volume_Mute}
 AppsKey & p::Send #p
 AppsKey::Send {AppsKey}
+RWin & RAlt::Send {RWin}	; Needed to allow RWin & combi's
+RWin::WinRunDialog()
 >^Up::Send {Volume_Up}
 >^Down::Send {Volume_Down}
 >^AppsKey::WinRunDialog()
 
-#If, hotkeys And MouseOnTaskbar()
+#If, extrahotkeys And MouseOnTaskbar()
 ~LButton::ShowDesktop()
 MButton::TaskMgr()
 WheelUp::Send {Volume_Up}
 WheelDown::Send {Volume_Down}
 
-#If, hotkeys And remotedesktop And WinActive("ahk_class TscShellContainerClass")
+#If, extrahotkeys And remotedesktop And WinActive("ahk_class TscShellContainerClass")
 >^Up::SetVolume("+1")
 >^Down::SetVolume("-1")
 
-#If, hotkeys And !RemoteSession()
+#If, extrahotkeys And !RemoteSession()
 RCtrl::
 	If (!rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
 		rctrl = 1

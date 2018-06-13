@@ -30,13 +30,13 @@ tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
 <li>Pause the temperature adjustment for x minutes</li>
 <li>Adjust the screen brightness and forced temperature via hotkeys</li>
 <li>Optionally update your current coordinates every time you enable Redshift (e.g. when traveling)</li>
-<li>Use a fantastic set of optional hotkeys</li>
-<li>Make use of Remote Desktop: Redshift hotkeys will stay active locally, while Redshift Tray can also run on the remote system for its optional hotkeys</li>
+<li>Use a fantastic set of extra hotkeys that have got nothing to do with Redshift</li>
+<li>Make use of Remote Desktop: Redshift hotkeys will stay active locally, while Redshift Tray can also run on the remote system for its extra hotkeys</li>
 </ul>
-<p>It also includes a set of optional hotkeys. Admittedly, these are entirely based on my personal preferences, but since this program is put together in <a href="http://www.autohotkey.com">AutoHotkey</a>, it’s easy to add your own hotkeys and remove the ones you think are rubbish.</p>
+<p>It also includes a set of extra hotkeys. Admittedly, these are entirely based on my personal preferences, but since this program is put together in <a href="http://www.autohotkey.com">AutoHotkey</a>, it’s easy to add your own hotkeys and remove the ones you think are rubbish.</p>
 <h2>List of hotkeys</h2>
 <table>
-<tr><td colspan="2"><strong>Default Hotkeys</strong></td></tr>
+<tr><td colspan="2"><strong>Hotkeys</strong></td></tr>
 <tr><td>Alt Home</td><td>Reset Redshift</td></tr>
 <tr><td>Alt Pause</td><td>Toggle pause for the set amount of minutes</td></tr>
 <tr><td>Alt End</td><td>Disable Redshift</td></tr>
@@ -46,8 +46,8 @@ tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
 <tr><td>AltGr End</td><td>End forced temperature</td></tr>
 <tr><td>AltGr PgUp</td><td>Increase forced temperature</td></tr>
 <tr><td>AltGr PgDn</td><td>Decrease forced temperature</td></tr>
-<tr><td colspan="2"><strong>Optional Hotkeys</strong></td>
-<tr><td>LCtrl Win<br>RCtrl Menu</td><td>Windows Run dialog</td></tr>
+<tr><td colspan="2"><strong>Hotkeys</strong></td>
+<tr><td>LCtrl LWin<br>RCtrl Menu<br>RWin</td><td>Windows Run dialog</td></tr>
 <tr><td>AltGr 9</td><td>Toggle window always on top</td></tr>
 <tr><td>AltGr 0</td><td>Toggle window on top click-through</td></tr>
 <tr><td>AltGr -</td><td>Increase window transparency</td></tr>
@@ -83,10 +83,10 @@ tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
 <li>If you want total control over the times at which Redshift will be enabled and disabled, just set <strong>nighttime=1800</strong> and <strong>daytime=0600</strong>, where the values depict 24h military time. Then, set <strong>customtimes=1</strong>.</li>
 <li>If you get annoyed by the fact that your mouse cursor does not assume the same color temperature, set <strong>colorizecursor=1</strong> and Redshift Tray will write <em>MouseTrails=-1</em> to <em>HKCU\Control Panel\Mouse</em> in your registry to fix this. You'll need to save and exit the config file, then <strong>restart Windows or log off</strong> to get this working.</li>
 <li>If you loathe the fading transition upon start-up, just set <strong>notransitions=1</strong>.</li>
-<li>The setting <strong>optionalhotkeys=1</strong> will enable the extra set of hotkeys (right-click the tray icon and choose <strong>Hotkeys</strong> to see a list), while (big surprise) <strong>optionalhotkeys=0</strong> disables them. The <em>Hotkeys List</em> dialog’s yes/no buttons control this setting.</li>
+<li>The setting <strong>hotkeys=1</strong> will enable the set of hotkeys, while (big surprise) <strong>hotkeys=0</strong> disables them. Similarly, you can control the extra set of hotkeys with the entry <strong>extrahotkeys</strong>.</li>
 <li>If you're a Remote Desktop addict like me, be sure to set <strong>remotedesktop=1</strong>. This way, you can run this gem in both environments, switch between local and remote sessions by double-tapping RCtrl, and change the local Redshift settings while in a remote screen.</li>
 <li>If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set <strong>startdisabled=1</strong>.</li>
-<li>If you want to use the (default and/or optional) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set <strong>runasadmin=1</strong> so that Redshift Tray will try to run as admin, too. If this scenario doesn’t really occur on your system, leave the damn thing alone.</li>
+<li>If you want to use the optional (default and/or extra) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set <strong>runasadmin=1</strong> so that Redshift Tray will try to run as admin, too. If this scenario doesn’t really occur on your system, leave the damn thing alone.</li>
 <li>Traveling with your laptop? You can set <strong>traveling=1</strong> after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though. Since the location is based on your IP, don't use this when a VPN is active.</li>
 </ul>
 </li>
