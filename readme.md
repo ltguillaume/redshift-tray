@@ -35,8 +35,8 @@ __Extra Hotkeys__ | &nbsp;
 LCtrl LWin | Windows Run dialog
 RCtrl Menu | 
 RWin | 
-AltGr 9 | Toggle window always on top
-AltGr 0 | Toggle window on top click-through
+AltGr 9 | Toggle window on top click-through
+AltGr 0 | Toggle window always on top
 AltGr - | Increase window transparency
 AltGr = | Decrease window transparency
 AltGr . | Switch between open items (Alt Tab)

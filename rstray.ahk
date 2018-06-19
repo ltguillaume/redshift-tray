@@ -1,4 +1,4 @@
-; Redshift Tray v1.6.4 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.6.5 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -371,6 +371,7 @@ RemoteDesktopMode:
 			Hotkey, RAlt & ., Off
 			Send, {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
 			Suspend, On
+			Sleep, 250
 			Suspend, Off
 			rdpclient = 1
 		}
@@ -423,7 +424,7 @@ Return
 Exit:
 	ExitApp
 
-#If, hotkeys
+#If, hotkeys And !RemoteSession()
 !Home::
 	Brightness(1)
 	Goto, Enable
@@ -625,8 +626,8 @@ RAlt & .::AltTab
 
 #If, extrahotkeys And !WinActive("ahk_class TscShellContainerClass")
 <^LWin::WinRunDialog()
-<^>!9::WinSet, AlwaysOnTop, Toggle, A
-<^>!0::ClickThroughWindow()
+<^>!9::ClickThroughWindow()
+<^>!0::WinSet, AlwaysOnTop, Toggle, A
 <^>!-::Opacity(-5)
 <^>!=::Opacity(5)
 RAlt::
