@@ -3,6 +3,7 @@
 #SingleInstance, force
 #Persistent
 #MaxHotkeysPerInterval, 200
+Process, Priority,, High
 SetKeyDelay, -1
 SetTitleMatchMode, 2
 SetWorkingDir, %A_ScriptDir%
