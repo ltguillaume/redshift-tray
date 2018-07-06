@@ -1,4 +1,4 @@
-; Redshift Tray v1.6.5 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.6.6 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -371,6 +371,7 @@ RemoteDesktopMode:
 			Hotkey, RAlt & `,, Off
 			Hotkey, RAlt & ., Off
 			Send, {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
+			Sleep, 1500
 			Suspend, On
 			Sleep, 250
 			Suspend, Off
@@ -538,7 +539,7 @@ Run(adjust = FALSE) {
 		cfg = %cfg% -r
 	Else
 		Restore()
-	Run, %exe% %cfg%,,Hide
+	Run, %exe% %cfg% -P,,Hide
 	TrayTip()
 }
 
@@ -681,7 +682,7 @@ RCtrl::
 		SetTimer, RCtrlReset, 400
 		Sleep, 50
 		IfWinActive, ahk_class TscShellContainerClass
-			WinMinimize
+			PostMessage, 0x112, 0xF020
 		Else IfWinExist, ahk_class TscShellContainerClass
 			WinActivate
 	} Else {
