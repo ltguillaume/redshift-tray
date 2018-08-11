@@ -1,4 +1,4 @@
-; Redshift Tray v1.6.6 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.6.7 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -11,7 +11,7 @@ OnExit, OnExit
 
 ; Global variables (when also used in functions)
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
-Global customtimes, notransitions, colorizecursor, traveling, startdisabled, hotkeys, extrahotkeys, remotedesktop, runasadmin	; Switches
+Global customtimes, nofading, colorizecursor, traveling, startdisabled, hotkeys, extrahotkeys, remotedesktop, runasadmin	; Switches
 Global lat, lon, day, night, fullscreen, pauseminutes, fullscreenmode, daytime, nighttime	; Values
 Global mode, temperature, brightness = 1, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, withcaption := Object()	; Internal
 ; Settings from .ini
@@ -26,7 +26,7 @@ IniRead, nighttime, %ini%, %v%, nighttime, HHmm
 IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, customtimes, %ini%, %s%, customtimes, 0
 IniRead, fullscreenmode, %ini%, %s%, fullscreenmode, 0
-IniRead, notransitions, %ini%, %s%, notransitions, 0
+IniRead, nofading, %ini%, %s%, nofading, 0
 IniRead, hotkeys, %ini%, %s%, hotkeys, 1
 IniRead, extrahotkeys, %ini%, %s%, extrahotkeys, 0
 IniRead, remotedesktop, %ini%, %s%, remotedesktop, 0
@@ -51,7 +51,7 @@ Menu, Settings, Add, &Autorun, Autorun
 Menu, Settings, Add, &Colorize cursor, ColorizeCursor
 Menu, Settings, Add, &Custom times, CustomTimes
 Menu, Settings, Add, &Full-screen mode, FullScreen
-Menu, Settings, Add, &No transitions, NoTransitions
+Menu, Settings, Add, &No fading, NoFading
 Menu, Settings, Add, &Hotkeys, Hotkeys
 Menu, Settings, Add, &Extra hotkeys, ExtraHotkeys
 Menu, Settings, Add, &Remote Desktop support, RemoteDesktop
@@ -73,8 +73,8 @@ If customtimes
 	Menu, Settings, Check, &Custom times
 if fullscreenmode
 	Menu, Settings, Check, &Full-screen mode
-If notransitions
-	Menu, Settings, Check, &No transitions
+If nofading
+	Menu, Settings, Check, &No fading
 If hotkeys
 	Menu, Settings, Check, &Hotkeys
 If extrahotkeys
@@ -237,16 +237,16 @@ FullScreen:
 	}
 Return
 
-NoTransitions:
-	If notransitions
+NoFading:
+	If nofading
 	{
-		notransitions = 0
-		Menu, Settings, Uncheck, &No transitions
+		nofading = 0
+		Menu, Settings, Uncheck, &No fading
 	}
 	Else
 	{
-		notransitions = 1
-		Menu, Settings, Check, &No transitions
+		nofading = 1
+		Menu, Settings, Check, &No fading
 	}
 Return
 
@@ -480,7 +480,7 @@ WriteSettings() {
 	IniWrite, %colorizecursor%, %ini%, %s%, colorizecursor
 	IniWrite, %customtimes%, %ini%, %s%, customtimes
 	IniWrite, %fullscreenmode%, %ini%, %s%, fullscreenmode
-	IniWrite, %notransitions%, %ini%, %s%, notransitions
+	IniWrite, %nofading%, %ini%, %s%, nofading
 	IniWrite, %hotkeys%, %ini%, %s%, hotkeys
 	IniWrite, %extrahotkeys%, %ini%, %s%, extrahotkeys
 	IniWrite, %remotedesktop%, %ini%, %s%, remotedesktop
@@ -518,9 +518,9 @@ Restore() {
 }
 
 Run(adjust = FALSE) {
-	br := brightness>1 ? "-g " . brightness : "-b " . brightness
+	br := "-P -b " . brightness
 	ntmp := isfullscreen = 1 ? fullscreen : night
-	notr := isfullscreen Or notransitions ? "-r" : ""
+	notr := isfullscreen Or nofading ? "-r" : ""
 	If mode = enabled
 	{
 		If customtimes
@@ -539,7 +539,7 @@ Run(adjust = FALSE) {
 		cfg = %cfg% -r
 	Else
 		Restore()
-	Run, %exe% %cfg% -P,,Hide
+	Run, %exe% %cfg%,,Hide
 	TrayTip()
 }
 
@@ -579,7 +579,7 @@ Brightness(value) {
 	Else
 	{
 		newbrightness := brightness + value
-		If (newbrightness > 0.09 And newbrightness < 10.01)
+		If (newbrightness > 0.09 And newbrightness <= 1)
 			brightness = %newbrightness%
 		Else
 			Return
@@ -655,7 +655,8 @@ AppsKey & Home::Shutdown, 2
 AppsKey & End::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
 AppsKey & ,::Send {Media_Prev}
 AppsKey & .::Send {Media_Next}
-AppsKey & /::Send {Media_Play_Pause}
+AppsKey & /::Send {Media_Stop}
+AppsKey & Shift::Send {Media_Play_Pause}
 AppsKey & m::Send {Volume_Mute}
 AppsKey & p::Send #p
 AppsKey::Send {AppsKey}

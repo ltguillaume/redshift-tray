@@ -48,7 +48,8 @@ Menu End | Hibernate computer
 Menu P | Presentation display mode
 Menu , | MM: Previous
 Menu . | MM: Next
-Menu / | MM: Play/Pause
+Menu / | MM: Stop
+Menu Shift | MM: Play/Pause
 Menu M | MM: Mute
 RCtrl Up | MM: Volume up
 RCtrl Down | MM: Volume down
