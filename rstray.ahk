@@ -1,4 +1,4 @@
-; Redshift Tray v1.6.7 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.7.0 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -11,7 +11,7 @@ OnExit, OnExit
 
 ; Global variables (when also used in functions)
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
-Global customtimes, nofading, colorizecursor, traveling, startdisabled, hotkeys, extrahotkeys, remotedesktop, runasadmin	; Switches
+Global customtimes, nofading, colorizecursor, traveling, startdisabled, hotkeys, extrahotkeys, keepcalibration, remotedesktop, runasadmin	; Switches
 Global lat, lon, day, night, fullscreen, pauseminutes, fullscreenmode, daytime, nighttime	; Values
 Global mode, temperature, brightness = 1, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, withcaption := Object()	; Internal
 ; Settings from .ini
@@ -29,14 +29,15 @@ IniRead, fullscreenmode, %ini%, %s%, fullscreenmode, 0
 IniRead, nofading, %ini%, %s%, nofading, 0
 IniRead, hotkeys, %ini%, %s%, hotkeys, 1
 IniRead, extrahotkeys, %ini%, %s%, extrahotkeys, 0
+IniRead, keepcalibration, %ini%, %s%, keepcalibration, 0
 IniRead, remotedesktop, %ini%, %s%, remotedesktop, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
 IniRead, startdisabled, %ini%, %s%, startdisabled, 0
 IniRead, traveling, %ini%, %s%, traveling, 0
 
 ; Initialize
-If (runasadmin And !A_IsAdmin)
-	Run *RunAs "%A_ScriptFullPath%" /restart
+If ((runasadmin Or keepcalibration) And !A_IsAdmin)
+	Run, *RunAs "%A_ScriptFullPath%" /restart
 
 ; Set up tray menu
 Menu, Tray, NoStandard
@@ -54,6 +55,7 @@ Menu, Settings, Add, &Full-screen mode, FullScreen
 Menu, Settings, Add, &No fading, NoFading
 Menu, Settings, Add, &Hotkeys, Hotkeys
 Menu, Settings, Add, &Extra hotkeys, ExtraHotkeys
+Menu, Settings, Add, &Keep Windows calibration, KeepCalibration
 Menu, Settings, Add, &Remote Desktop support, RemoteDesktop
 Menu, Settings, Add, &Run as Administrator, RunAsAdmin
 Menu, Settings, Add, &Start disabled, StartDisabled
@@ -65,8 +67,9 @@ Menu, Tray, Add
 Menu, Tray, Add, &Restart, Restart
 Menu, Tray, Add, E&xit, Exit
 
-RegRead, autorun, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
-If !ErrorLevel
+If (A_Args.Length() > 0)
+	Autorun(A_Args[1])
+If AutorunOn()
 	Menu, Settings, Check, &Autorun
 ColorizeCursor()
 If customtimes
@@ -84,6 +87,8 @@ Else
 	Hotkey, RAlt & `,, Off
 	Hotkey, RAlt & ., Off
 }
+If keepcalibration
+	Menu, Settings, Check, &Keep Windows calibration
 If remotedesktop
 	Menu, Settings, Check, &Remote Desktop support
 If runasadmin
@@ -200,17 +205,7 @@ GuiClose:
 Return
 
 Autorun:
-	RegRead, autorun, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
-	If ErrorLevel
-	{
-		RegWrite, REG_SZ, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift, "%A_ScriptFullPath%"
-		Menu, Settings, Check, &Autorun
-	}
-	Else
-	{
-		RegDelete, HKCU\Software\Microsoft\Windows\CurrentVersion\Run, Redshift
-		Menu, Settings, Uncheck, &Autorun
-	}
+	Autorun()
 Return
 
 ColorizeCursor:
@@ -280,6 +275,20 @@ ExtraHotkeys:
 	}
 Return
 
+KeepCalibration:
+	keepcalibration := !keepcalibration
+	If AutorunOn()
+		Autorun(TRUE)
+	If keepcalibration
+	{
+		Menu, Settings, Check, &Keep Windows calibration
+		If !A_IsAdmin
+			Goto, Restart
+	}
+	Else
+		Menu, Settings, Uncheck, &Keep Windows calibration
+Return
+
 RemoteDesktop:
 	remotedesktop := !remotedesktop
 	If remotedesktop
@@ -296,6 +305,8 @@ Return
 
 RunAsAdmin:
 	runasadmin := !runasadmin
+	If AutorunOn()
+		Autorun(TRUE)
 	Goto, Restart
 Return
 
@@ -370,9 +381,8 @@ RemoteDesktopMode:
 		{
 			Hotkey, RAlt & `,, Off
 			Hotkey, RAlt & ., Off
-			Send, {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
-			Sleep, 1500
 			Suspend, On
+			Send, {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
 			Sleep, 250
 			Suspend, Off
 			rdpclient = 1
@@ -414,7 +424,7 @@ RemoveToolTip:
 Return
 
 Restart:
-	Run "%A_ScriptFullPath%" /restart
+	Run, "%A_ScriptFullPath%" /restart
 Return
 
 OnExit:
@@ -483,10 +493,42 @@ WriteSettings() {
 	IniWrite, %nofading%, %ini%, %s%, nofading
 	IniWrite, %hotkeys%, %ini%, %s%, hotkeys
 	IniWrite, %extrahotkeys%, %ini%, %s%, extrahotkeys
+	IniWrite, %keepcalibration%, %ini%, %s%, keepcalibration
 	IniWrite, %remotedesktop%, %ini%, %s%, remotedesktop
 	IniWrite, %runasadmin%, %ini%, %s%, runasadmin
 	IniWrite, %startdisabled%, %ini%, %s%, startdisabled
 	IniWrite, %traveling%, %ini%, %s%, traveling
+}
+
+Autorun(force = FALSE) {
+	If !A_IsAdmin
+		Run, *RunAs "%A_ScriptFullPath%" /restart force
+	
+	sch := ComObjCreate("Schedule.Service")
+	sch.Connect()
+	root := sch.GetFolder("\")
+	
+	If (!AutorunOn() Or force) {
+		task := sch.NewTask(0)
+		If (runasadmin Or keepcalibration)
+			task.Principal.RunLevel := 1
+		task.Triggers.Create(9)
+		action := task.Actions.Create(0)
+		action.ID := "Redshift Tray"
+		action.Path := A_ScriptFullPath
+		task.Settings.DisallowStartIfOnBatteries := FALSE
+		root.RegisterTaskDefinition("Redshift Tray", task, 6, "", "", 3)
+		If AutorunOn()
+			Menu, Settings, Check, &Autorun
+	} Else {
+		root.DeleteTask("RedShift Tray", 0)
+		Menu, Settings, Uncheck, &Autorun
+	}
+}
+
+AutorunOn() {
+	RunWait, schtasks.exe /query /tn "Redshift Tray",, Hide
+	Return !ErrorLevel
 }
 
 ColorizeCursor() {
@@ -514,11 +556,14 @@ Close() {
 
 Restore() {
 	Close()
-	RunWait, %exe% -x,,Hide
+	If keepcalibration
+		RunWait, schtasks /run /tn "\Microsoft\Windows\WindowsColorSystem\Calibration Loader",, Hide
+	Else
+		RunWait, %exe% -x,,Hide
 }
 
 Run(adjust = FALSE) {
-	br := "-P -b " . brightness
+	br := brightness>1 ? "-g " . brightness : "-b " . brightness
 	ntmp := isfullscreen = 1 ? fullscreen : night
 	notr := isfullscreen Or nofading ? "-r" : ""
 	If mode = enabled
@@ -536,9 +581,15 @@ Run(adjust = FALSE) {
 		cfg = -O 6500 %br%
 	Close()
 	If adjust
+	{
+		If keepcalibration
+			RunWait, schtasks /run /tn "\Microsoft\Windows\WindowsColorSystem\Calibration Loader",, Hide
 		cfg = %cfg% -r
+	}
 	Else
 		Restore()
+	If Not keepcalibration
+		cfg .= " -P"
 	Run, %exe% %cfg%,,Hide
 	TrayTip()
 }
@@ -579,7 +630,7 @@ Brightness(value) {
 	Else
 	{
 		newbrightness := brightness + value
-		If (newbrightness > 0.09 And newbrightness <= 1)
+		If (newbrightness > 0.09 And newbrightness < 10.01)
 			brightness = %newbrightness%
 		Else
 			Return
@@ -811,8 +862,5 @@ TaskMgr() {
 	Click, Middle
 	WinGetClass, after, A
 	If (after = "Shell_TrayWnd" And before <> after)
-		If A_Is64bitOS
-			Run, %A_WinDir%\SysNative\taskmgr.exe
-		Else
-			Run, taskmgr.exe
+		Send ^+{Esc}
 }
