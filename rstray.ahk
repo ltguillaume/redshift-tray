@@ -1,4 +1,4 @@
-; Redshift Tray v1.7.0 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.8.0 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -11,14 +11,15 @@ OnExit, OnExit
 
 ; Global variables (when also used in functions)
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
-Global customtimes, nofading, colorizecursor, traveling, startdisabled, hotkeys, extrahotkeys, keepcalibration, remotedesktop, runasadmin	; Switches
-Global lat, lon, day, night, fullscreen, pauseminutes, fullscreenmode, daytime, nighttime	; Values
-Global mode, temperature, brightness = 1, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, withcaption := Object()	; Internal
+Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, runasadmin, startdisabled, traveling	; Switches
+Global lat, lon, day, night, brightness, fullscreen, pauseminutes, daytime, nighttime	; Values
+Global mode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, withcaption := Object()	; Internal
 ; Settings from .ini
 IniRead, lat, %ini%, %v%, latitude
 IniRead, lon, %ini%, %v%, longitude
 IniRead, day, %ini%, %v%, daytemp, 6500
 IniRead, night, %ini%, %v%, nighttemp, 3500
+IniRead, brightness, %ini%, %v%, brightness, 1
 IniRead, fullscreen, %ini%, %v%, fullscreentemp, 6500
 IniRead, pauseminutes, %ini%, %v%, pauseminutes, 10
 IniRead, daytime, %ini%, %v%, daytime, HHmm
@@ -26,10 +27,11 @@ IniRead, nighttime, %ini%, %v%, nighttime, HHmm
 IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, customtimes, %ini%, %s%, customtimes, 0
 IniRead, fullscreenmode, %ini%, %s%, fullscreenmode, 0
-IniRead, nofading, %ini%, %s%, nofading, 0
 IniRead, hotkeys, %ini%, %s%, hotkeys, 1
 IniRead, extrahotkeys, %ini%, %s%, extrahotkeys, 0
+IniRead, keepbrightness, %ini%, %s%, keepbrightness, 0
 IniRead, keepcalibration, %ini%, %s%, keepcalibration, 0
+IniRead, nofading, %ini%, %s%, nofading, 0
 IniRead, remotedesktop, %ini%, %s%, remotedesktop, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
 IniRead, startdisabled, %ini%, %s%, startdisabled, 0
@@ -52,12 +54,13 @@ Menu, Settings, Add, &Autorun, Autorun
 Menu, Settings, Add, &Colorize cursor, ColorizeCursor
 Menu, Settings, Add, &Custom times, CustomTimes
 Menu, Settings, Add, &Full-screen mode, FullScreen
-Menu, Settings, Add, &No fading, NoFading
 Menu, Settings, Add, &Hotkeys, Hotkeys
 Menu, Settings, Add, &Extra hotkeys, ExtraHotkeys
-Menu, Settings, Add, &Keep Windows calibration, KeepCalibration
+Menu, Settings, Add, &Keep brightness when disabled, KeepBrightness
+Menu, Settings, Add, Keep &Windows calibration, KeepCalibration
+Menu, Settings, Add, &No fading, NoFading
 Menu, Settings, Add, &Remote Desktop support, RemoteDesktop
-Menu, Settings, Add, &Run as Administrator, RunAsAdmin
+Menu, Settings, Add, &Run as administrator, RunAsAdmin
 Menu, Settings, Add, &Start disabled, StartDisabled
 Menu, Settings, Add, &Traveling, Traveling
 Menu, Settings, Add
@@ -76,6 +79,8 @@ If customtimes
 	Menu, Settings, Check, &Custom times
 if fullscreenmode
 	Menu, Settings, Check, &Full-screen mode
+If keepbrightness
+	Menu, Settings, Check, &Keep brightness when disabled
 If nofading
 	Menu, Settings, Check, &No fading
 If hotkeys
@@ -87,12 +92,16 @@ Else
 	Hotkey, RAlt & `,, Off
 	Hotkey, RAlt & ., Off
 }
+If keepbrightness
+	Menu, Settings, Check, &Keep brightness when disabled
 If keepcalibration
-	Menu, Settings, Check, &Keep Windows calibration
+	Menu, Settings, Check, Keep &Windows calibration
+If nofading
+	Menu, Settings, Check, &No fading
 If remotedesktop
 	Menu, Settings, Check, &Remote Desktop support
 If runasadmin
-	Menu, Settings, Check, &Run as Administrator
+	Menu, Settings, Check, &Run as administrator
 If startdisabled
 	Menu, Settings, Check, &Start disabled
 If traveling
@@ -128,6 +137,11 @@ Enable:
 		GetLocation()
 	If (lat = "ERROR" Or lon = "ERROR")
 		Goto, Settings
+	If (!keepbrightness And restorebrightness)
+	{
+		brightness = %restorebrightness%
+		restorebrightness =
+	}
 	Run()
 	If fullscreenmode
 		SetTimer, FullScreenMode, 1000
@@ -150,7 +164,11 @@ Disable:
 	If isfullscreen <> 1
 		mode = disabled
 	timer = 0
-	brightness = 1
+	If Not keepbrightness
+	{
+		restorebrightness = %brightness%
+		brightness = 1
+	}
 	Menu, Tray, Uncheck, &Enabled
 	Menu, Tray, UnCheck, &Forced
 	Menu, Tray, Uncheck, &Paused
@@ -158,6 +176,8 @@ Disable:
 	Menu, Tray, Default, &Enabled
 	Menu, Tray, Icon, %A_ScriptFullPath%, 2, 1
 	Restore()
+	If keepbrightness
+		Run()
 	TrayTip()
 Return
 
@@ -167,8 +187,11 @@ Pause:
 	endtime =
 	endtime += timer, seconds
 	FormatTime, endtime, %endtime%, HH:mm:ss
-	restorebrightness = %brightness%
-	brightness = 1
+	If Not keepbrightness
+	{
+		restorebrightness = %brightness%
+		brightness = 1
+	}
 	Menu, Tray, Uncheck, &Enabled
 	Menu, Tray, Uncheck, &Disabled
 	Menu, Tray, UnCheck, &Forced
@@ -176,6 +199,8 @@ Pause:
 	Menu, Tray, Default, &Enabled
 	Menu, Tray, Icon, %A_ScriptFullPath%, 2, 1
 	Restore()
+	If keepbrightness
+		Run()
 	TrayTip()
 	timer -= 10
 	SetTimer, Paused, 10000
@@ -187,10 +212,7 @@ Paused:
 	} Else {
 		SetTimer,, Delete
 		If mode = paused
-		{
-			brightness = %restorebrightness%
 			Goto, Enable
-		}
 	}
 Return
 
@@ -232,19 +254,6 @@ FullScreen:
 	}
 Return
 
-NoFading:
-	If nofading
-	{
-		nofading = 0
-		Menu, Settings, Uncheck, &No fading
-	}
-	Else
-	{
-		nofading = 1
-		Menu, Settings, Check, &No fading
-	}
-Return
-
 Hotkeys:
 	If hotkeys
 	{
@@ -275,18 +284,44 @@ ExtraHotkeys:
 	}
 Return
 
+KeepBrightness:
+	If keepbrightness
+	{
+		keepbrightness = 0
+		Menu, Settings, Uncheck, &Keep brightness when disabled
+	}
+	Else
+	{
+		keepbrightness = 1
+		Menu, Settings, Check, &Keep brightness when disabled
+	}
+Return
+
 KeepCalibration:
 	keepcalibration := !keepcalibration
 	If AutorunOn()
 		Autorun(TRUE)
 	If keepcalibration
 	{
-		Menu, Settings, Check, &Keep Windows calibration
+		Menu, Settings, Check, Keep &Windows calibration
 		If !A_IsAdmin
 			Goto, Restart
 	}
 	Else
-		Menu, Settings, Uncheck, &Keep Windows calibration
+		Menu, Settings, Uncheck, Keep &Windows calibration
+Return
+
+NoFading:
+	If nofading
+	{
+		nofading = 0
+		Menu, Settings, Uncheck, &No fading
+	}
+	Else
+	{
+		nofading = 1
+		Menu, Settings, Check, &No fading
+	}
 Return
 
 RemoteDesktop:
@@ -390,8 +425,7 @@ RemoteDesktopMode:
 	}
 	Else
 	{
-		If extrahotkeys
-		{
+		If (rdpclient And extrahotkeys) {
 			Hotkey, RAlt & `,, On
 			Hotkey, RAlt & ., On
 		}
@@ -438,7 +472,8 @@ Exit:
 
 #If, hotkeys And !RemoteSession()
 !Home::
-	Brightness(1)
+	If (mode = "enabled" And brightness <> 1)
+		Brightness(1)
 	Goto, Enable
 Return
 !Pause::
@@ -450,7 +485,11 @@ Return
 !End::Goto, Disable
 !PgUp::Brightness(0.05)
 !PgDn::Brightness(-0.05)
-<^>!Home::Goto, Force
+<^>!Home::
+	If (mode = "forced" And brightness <> 1)
+		Brightness(1)
+	Goto, Force
+	Return
 <^>!End::Goto, Enable
 <^>!PgUp::Temperature(100)
 <^>!PgDn::Temperature(-100)
@@ -483,12 +522,16 @@ WriteSettings() {
 	IniWrite, %lon%, %ini%, %v%, longitude
 	IniWrite, %day%, %ini%, %v%, daytemp
 	IniWrite, %night%, %ini%, %v%, nighttemp
+	If ((mode = "disabled" Or mode = "paused") And restorebrightness)
+		brightness = %restorebrightness%
+	IniWrite, %brightness%, %ini%, %v%, brightness
 	IniWrite, %fullscreen%, %ini%, %v%, fullscreentemp
 	IniWrite, %pauseminutes%, %ini%, %v%, pauseminutes
 	IniWrite, %daytime%, %ini%, %v%, daytime
 	IniWrite, %nighttime%, %ini%, %v%, nighttime
 	IniWrite, %colorizecursor%, %ini%, %s%, colorizecursor
 	IniWrite, %customtimes%, %ini%, %s%, customtimes
+	IniWrite, %keepbrightness%, %ini%, %s%, keepbrightness
 	IniWrite, %fullscreenmode%, %ini%, %s%, fullscreenmode
 	IniWrite, %nofading%, %ini%, %s%, nofading
 	IniWrite, %hotkeys%, %ini%, %s%, hotkeys
@@ -565,7 +608,7 @@ Restore() {
 Run(adjust = FALSE) {
 	br := brightness>1 ? "-g " . brightness : "-b " . brightness
 	ntmp := isfullscreen = 1 ? fullscreen : night
-	notr := isfullscreen Or nofading ? "-r" : ""
+	notr := adjust Or isfullscreen Or nofading ? "-r" : ""
 	If mode = enabled
 	{
 		If customtimes
@@ -580,13 +623,9 @@ Run(adjust = FALSE) {
 	Else If mode = disabled
 		cfg = -O 6500 %br%
 	Close()
-	If adjust
-	{
-		If keepcalibration
-			RunWait, schtasks /run /tn "\Microsoft\Windows\WindowsColorSystem\Calibration Loader",, Hide
-		cfg = %cfg% -r
-	}
-	Else
+	If (adjust And keepcalibration)
+		RunWait, schtasks /run /tn "\Microsoft\Windows\WindowsColorSystem\Calibration Loader",, Hide
+	If Not adjust
 		Restore()
 	If Not keepcalibration
 		cfg .= " -P"
@@ -618,7 +657,7 @@ TrayTip() {
 	}
 	br := Round(brightness * 100, 0)
 	Menu, Tray, Tip, Redshift`n%status%`nBrightness: %br%`%
-	If (!isfullscreen And (A_ThisHotkey <> A_PriorHotkey Or (InStr(A_ThisHotkey, "Pg") And A_TimeSinceThisHotkey < 2500))) {
+	If (!isfullscreen And (A_ThisHotkey <> A_PriorHotkey Or InStr(A_ThisHotkey, "Pg") Or InStr(A_ThisHotkey, "Home")) And A_TimeSinceThisHotkey < 2500) {
 		Tooltip, %status%`nBrightness: %br%`%
 		SetTimer, RemoveToolTip, 1000
 	}
