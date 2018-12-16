@@ -37,12 +37,12 @@ tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
 <h2>List of hotkeys</h2>
 <table>
 <tr><td colspan="2"><b>Hotkeys</b></td></tr>
-<tr><td>Alt Home</td><td>Reset Redshift</td></tr>
+<tr><td>Alt Home</td><td>Reset Redshift (again to reset brightness)</td></tr>
 <tr><td>Alt Pause</td><td>Toggle pause for the set amount of minutes</td></tr>
 <tr><td>Alt End</td><td>Disable Redshift</td></tr>
 <tr><td>Alt PgUp</td><td>Increase brightness</td></tr>
 <tr><td>Alt PgDn</td><td>Decrease brightness</td></tr>
-<tr><td>AltGr Home</td><td>Force night temperature (reset)</td></tr>
+<tr><td>AltGr Home</td><td>Force night temperature (again to reset brightness)</td></tr>
 <tr><td>AltGr End</td><td>End forced temperature</td></tr>
 <tr><td>AltGr PgUp</td><td>Increase forced temperature</td></tr>
 <tr><td>AltGr PgDn</td><td>Decrease forced temperature</td></tr>
@@ -83,9 +83,10 @@ tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
 <li>You can temporarily disable Redshift’s color adjustment for a few (or a whole lotta) minutes. Set the amount of those hella blue minutes with the <b>pauseminutes</b> setting.</li>
 <li>If you want total control over the times at which Redshift will be enabled and disabled, just set <b>nighttime=1800</b> and <b>daytime=0600</b>, where the values depict 24h military time. Then, set <b>customtimes=1</b>.</li>
 <li>If you get annoyed by the fact that your mouse cursor does not assume the same color temperature, set <b>colorizecursor=1</b> and Redshift Tray will write <em>MouseTrails=-1</em> to <em>HKCU\Control Panel\Mouse</em> in your registry to fix this. You'll need to save and exit the config file, then <b>restart Windows or log off</b> to get this working.</li>
-<li>If you loathe the fading transition upon start-up, just set <b>notransitions=1</b>.</li>
 <li>The setting <b>hotkeys=1</b> will enable the set of hotkeys, while (big surprise) <b>hotkeys=0</b> disables them. Similarly, you can control the extra set of hotkeys with the entry <b>extrahotkeys</b>.</li>
+<li>With <b>keepbrightness=1</b> you can apply the brightness setting even when you disable the gamma adjustment (when paused or disabled). This could help if your monitor starts humming or flickering with a low backlight brightness. You will lose some "color space", though.</li>
 <li>If you have loaded an ICC profile or have done a custom display calibration (Control Panel > Color Management > Advanced), Redshift might interfere with this. As such, you can set <b>keepcalibration=1</b> to have Redshift Tray keep that into account. This will, however, require Redshift Tray to run as administrator (it will take care of that for you).</li>
+<li>If you loathe the fading transition upon start-up, just set <b>notransitions=1</b>.</li>
 <li>If you're a Remote Desktop addict like me, be sure to set <b>remotedesktop=1</b>. This way, you can run this gem in both environments, switch between local and remote sessions by double-tapping RCtrl, and change the local Redshift settings while in a remote screen.</li>
 <li>If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set <b>startdisabled=1</b>.</li>
 <li>If you want to use the optional (default and/or extra) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set <b>runasadmin=1</b> so that Redshift Tray will try to run as admin, too. If this scenario doesn’t really occur on your system, leave the damn thing alone.</li>
