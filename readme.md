@@ -43,6 +43,7 @@ AltGr . | Switch between open items (Alt Tab)
 AltGr , | Switch between open items (Shift Alt Tab)
 AltGr x2 | Close current tab/window
 Menu + Arrows | Aero Snap
+Menu Pause | Suspend computer
 Menu Home | Restart computer
 Menu End | Hibernate computer
 Menu P | Presentation display mode

@@ -1,4 +1,4 @@
-; Redshift Tray v1.8.0 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.8.1 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -741,6 +741,7 @@ AppsKey & Up::Send #{Up}
 AppsKey & Down::Send #{Down}
 AppsKey & Left::Send #{Left}
 AppsKey & Right::Send #{Right}
+AppsKey & Pause::DllCall("PowrProf\SetSuspendState", "int", 0, "int", 0, "int", 0)
 AppsKey & Home::Shutdown, 2
 AppsKey & End::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
 AppsKey & ,::Send {Media_Prev}
