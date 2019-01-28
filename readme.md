@@ -1,3 +1,5 @@
+##### NOTE: The compiled version of Redshift Tray `rstray.exe` offered [here](https://github.com/ltGuillaume/Redshift-Tray/releases) is completely free of viruses and other malware. Unfortunately, many pesky virus scanners mark compiled AutoHotkey scripts as infected (see [here](https://www.autohotkey.com/docs/FAQ.htm#Virus)). So please tell your antivirus software to back off and mind its own business, or - if you can - report the executable as safe.
+
 <img src="https://github.com/ltGuillaume/Redshift-Tray/blob/master/Icons/redshift.ico" align="right"/>
 
 # Redshift Tray
