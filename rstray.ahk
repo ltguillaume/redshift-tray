@@ -1,4 +1,4 @@
-; Redshift Tray v1.8.1 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.8.2 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -13,7 +13,8 @@ OnExit, OnExit
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
 Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, runasadmin, startdisabled, traveling	; Switches
 Global lat, lon, day, night, brightness, fullscreen, pauseminutes, daytime, nighttime	; Values
-Global mode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, withcaption := Object()	; Internal
+Global mode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, withcaption := Object()	; Internal
+EnvGet, tmp, Temp
 ; Settings from .ini
 IniRead, lat, %ini%, %v%, latitude
 IniRead, lon, %ini%, %v%, longitude
@@ -38,8 +39,10 @@ IniRead, startdisabled, %ini%, %s%, startdisabled, 0
 IniRead, traveling, %ini%, %s%, traveling, 0
 
 ; Initialize
-If ((runasadmin Or keepcalibration) And !A_IsAdmin)
+If ((runasadmin Or keepcalibration) And !A_IsAdmin) {
 	Run, *RunAs "%A_ScriptFullPath%" /restart
+	ExitApp
+}
 
 ; Set up tray menu
 Menu, Tray, NoStandard
@@ -86,7 +89,10 @@ If nofading
 If hotkeys
 	Menu, Settings, Check, &Hotkeys
 If extrahotkeys
+{
+	PrepRunGui()
 	Menu, Settings, Check, &Extra hotkeys
+}
 Else
 {
 	Hotkey, RAlt & `,, Off
@@ -217,12 +223,13 @@ Paused:
 Return
 
 Help:
-	Gui, Add, ActiveX, w800 h600 vbrowser, Shell.Explorer
+	Gui, Add, ActiveX, w800 h600 vBrowser, Shell.Explorer
 	browser.Navigate("file://" . A_ScriptDir . "/readme.htm")
 	Gui, Show,, Help
 Return
 
 GuiClose:
+GuiEscape:
 	Gui, Destroy
 Return
 
@@ -278,6 +285,7 @@ ExtraHotkeys:
 	Else
 	{
 		extrahotkeys = 1
+		PrepRunGui()
 		Hotkey, RAlt & `,, On
 		Hotkey, RAlt & ., On
 		Menu, Settings, Check, &Extra hotkeys
@@ -417,7 +425,7 @@ RemoteDesktopMode:
 			Hotkey, RAlt & `,, Off
 			Hotkey, RAlt & ., Off
 			Suspend, On
-			Send, {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
+			Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
 			Sleep, 250
 			Suspend, Off
 			rdpclient = 1
@@ -437,6 +445,8 @@ RemoteDesktopMode:
 		Menu, Tray, Disable, &Paused
 		Menu, Tray, Disable, &Disabled
 		Menu, Tray, Tip, Redshift`nDisabled (Remote Desktop)
+		If extrahotkeys
+			Gui, RunGui:Show, Hide AutoSize xCenter yCenter
 		Restore()
 		remote = 1
 	} Else If (!RemoteSession() And remote) {
@@ -444,6 +454,8 @@ RemoteDesktopMode:
 		Menu, Tray, Enable, &Forced
 		Menu, Tray, Enable, &Paused
 		Menu, Tray, Enable, &Disabled
+		If extrahotkeys
+			Gui, RunGui:Show, Hide AutoSize xCenter yCenter
 		If mode = enabled
 			Gosub, Enable
 		If mode = forced
@@ -458,7 +470,8 @@ RemoveToolTip:
 Return
 
 Restart:
-	Run, "%A_ScriptFullPath%" /restart
+	ShellRun(A_ScriptFullPath, "/restart")
+	ExitApp
 Return
 
 OnExit:
@@ -500,6 +513,7 @@ GetLocation() {
 		whr.Open("GET", "https://ipapi.co/latlong", FALSE)
 		whr.Send()
 		response := whr.ResponseText
+		ObjRelease(whr)
 	}
 	If (InStr(response, "Undefined") Or response = "") {
 		If (lat = "ERROR" Or lon = "ERROR") {
@@ -567,6 +581,8 @@ Autorun(force = FALSE) {
 		root.DeleteTask("RedShift Tray", 0)
 		Menu, Settings, Uncheck, &Autorun
 	}
+	
+	ObjRelease(sch)
 }
 
 AutorunOn() {
@@ -717,7 +733,6 @@ RAlt & ,::ShiftAltTab
 RAlt & .::AltTab
 
 #If, extrahotkeys And !WinActive("ahk_class TscShellContainerClass")
-<^LWin::WinRunDialog()
 <^>!9::ClickThroughWindow()
 <^>!0::WinSet, AlwaysOnTop, Toggle, A
 <^>!-::Opacity(-5)
@@ -752,10 +767,19 @@ AppsKey & m::Send {Volume_Mute}
 AppsKey & p::Send #p
 AppsKey::Send {AppsKey}
 RWin & RAlt::Send {RWin}	; Needed to allow RWin & combi's
-RWin::WinRunDialog()
 >^Up::Send {Volume_Up}
 >^Down::Send {Volume_Down}
->^AppsKey::WinRunDialog()
+<^LWin::
+RWin::
+>^AppsKey::
+	If (!rundialog And !WinActive("ahk_id" . rungui))
+		Gui, RunGui:Show, AutoSize
+	Else
+	{
+		Gui, RunGui:Cancel
+		WinRunDialog()
+	}
+Return
 
 #If, extrahotkeys And MouseOnTaskbar()
 ~LButton::ShowDesktop()
@@ -792,6 +816,19 @@ RCtrlReset:
 	SetTimer,, Delete
 Return
 
+Run:
+	Gui, Submit
+	If (runcmd <> "" And runcmd <> "Command...")
+		PrepShellRun(runcmd)
+RunGuiGuiEscape:
+	Gui, RunGui:Cancel
+	GuiControl,, runcmd
+Return
+
+RunGuiGuiSize:
+	Gui, RunGui:Show, AutoSize xCenter yCenter
+Return
+
 MouseOnTaskbar() {
 	MouseGetPos,,, id
 	Return WinExist("ahk_id" . id . " ahk_class Shell_TrayWnd")
@@ -800,7 +837,7 @@ MouseOnTaskbar() {
 SetVolume(value) {
 	SoundSet, %value%
 	SoundGet, volume
-	Tooltip, % Round(volume)`%
+	Tooltip, % "Volume: " . Round(volume)`%
 	SetTimer, RemoveToolTip, 1000
 	SoundGet, mute,, mute
 	If mute = On
@@ -812,21 +849,32 @@ RemoteSession() {
 	Return isremote > 0
 }
 
+
+PrepRunGui() {
+	Gui, RunGui:new, AlwaysOnTop -Caption +HwndRungui ToolWindow 0x40000
+	Gui, Margin, -2, -2
+	Gui, Add, Edit, Center vRuncmd, Command...
+	Gui, Color,, fafbfc
+	Gui, Add, Button, w0 h0 Default gRun
+	ShellRun(FALSE)
+}
+
 WinRunDialog() {
 	If (rundialog <> "" And WinExist("ahk_id" . rundialog)) {
-		IfWinActive, ahk_id %rundialog%
+		IfWinNotActive, ahk_id %rundialog%
+			WinActivate, ahk_id %rundialog%
+		Else
 		{
 			Send !{Esc}
 			WinClose, ahk_id %rundialog%
 			rundialog =
 		}
-		Else
-			WinActivate, ahk_id %rundialog%
 	} Else {
 		Send #r
-		WinWait, ahk_class #32770 ahk_exe explorer.exe
-		If !ErrorLevel
-			WinActivate
+		WinWait, ahk_class #32770 ahk_exe explorer.exe,, 2
+		If ErrorLevel
+			Return
+		WinActivate
 		WinGet, rundialog, ID, A
 	}
 }
@@ -903,4 +951,41 @@ TaskMgr() {
 	WinGetClass, after, A
 	If (after = "Shell_TrayWnd" And before <> after)
 		Send ^+{Esc}
+}
+
+PrepShellRun(cmd) {
+	If !InStr(cmd, " ")
+		Return shell.ShellExecute(cmd, "", tmp)
+	If (SubStr(cmd, 1, 1) <> """") {
+		cmd := StrSplit(cmd, " ",, 2)
+		Return shell.ShellExecute(cmd[1], cmd[2], tmp)
+	}
+	cmd := StrSplit(SubStr(cmd, 2), """",, 2)
+	shell.ShellExecute("""" . cmd[1] . """", cmd[2], tmp)
+}
+
+ShellRun(prms*) {	; From Installer.ahk
+	isprep := (extrahotkeys And !shell)
+	windows := ComObjCreate("Shell.Application").Windows
+	VarSetCapacity(_hwnd, 4, 0)
+	desktop := windows.FindWindowSW(0, "", 8, ComObj(0x4003, &_hwnd), 1)
+	if ptlb := ComObjQuery(desktop
+		, "{4C96BE40-915C-11CF-99D3-00AA004AE837}"  ; SID_STopLevelBrowser
+		, "{000214E2-0000-0000-C000-000000000046}") ; IID_IShellBrowser
+	{
+		if DllCall(NumGet(NumGet(ptlb+0)+15*A_PtrSize), "ptr", ptlb, "ptr*", psv:=0) = 0
+		{
+			VarSetCapacity(IID_IDispatch, 16)
+			NumPut(0x46000000000000C0, NumPut(0x20400, IID_IDispatch, "int64"), "int64")
+			DllCall(NumGet(NumGet(psv+0)+15*A_PtrSize), "ptr", psv
+				, "uint", 0, "ptr", &IID_IDispatch, "ptr*", pdisp:=0)
+						WinActivate, ahk_exe explorer.exe
+			shell := ComObj(9,pdisp,1).Application
+			If isprep
+				Return
+			shell.ShellExecute(prms*)
+			ObjRelease(psv)
+		}
+		ObjRelease(ptlb)
+	}
 }

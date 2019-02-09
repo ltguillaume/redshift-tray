@@ -1,5 +1,3 @@
-##### NOTE: The compiled version of Redshift Tray `rstray.exe` offered [here](https://github.com/ltGuillaume/Redshift-Tray/releases) is completely free of viruses and other malware. Unfortunately, many pesky virus scanners mark compiled AutoHotkey scripts as infected (see [here](https://www.autohotkey.com/docs/FAQ.htm#Virus)). So please tell your antivirus software to back off and mind its own business, or - if you can - report the executable as safe.
-
 <img src="https://github.com/ltGuillaume/Redshift-Tray/blob/master/Icons/redshift.ico" align="right"/>
 
 # Redshift Tray
@@ -34,9 +32,12 @@ AltGr End | End forced temperature
 AltGr PgUp | Increase forced temperature
 AltGr PgDn | Decrease forced temperature
 __Extra Hotkeys__ | &nbsp;
-LCtrl LWin | Windows Run dialog
-RCtrl Menu | 
+LCtrl LWin | Type to run
 RWin | 
+RCtrl Menu | 
+LCtrl LWin x2 | Windows Run dialog
+RWin x2 | 
+RCtrl Menu x2 | 
 AltGr 9 | Toggle window on top click-through
 AltGr 0 | Toggle window always on top
 AltGr - | Increase window transparency
