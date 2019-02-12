@@ -1,4 +1,4 @@
-; Redshift Tray v1.8.2 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.8.3 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -123,7 +123,7 @@ If customtimes
 		Goto, Settings
 	}
 	SetTimer, CustomTimesMode, 60000
-	If !startdisabled
+	If Not startdisabled
 		Goto, CustomTimesMode
 }
 If startdisabled
@@ -312,7 +312,7 @@ KeepCalibration:
 	If keepcalibration
 	{
 		Menu, Settings, Check, Keep &Windows calibration
-		If !A_IsAdmin
+		If Not A_IsAdmin
 			Goto, Restart
 	}
 	Else
@@ -420,7 +420,7 @@ Return
 RemoteDesktopMode:
 	IfWinActive, ahk_class TscShellContainerClass
 	{
-		If !rdpclient
+		If Not rdpclient
 		{
 			Hotkey, RAlt & `,, Off
 			Hotkey, RAlt & ., Off
@@ -446,7 +446,7 @@ RemoteDesktopMode:
 		Menu, Tray, Disable, &Disabled
 		Menu, Tray, Tip, Redshift`nDisabled (Remote Desktop)
 		If extrahotkeys
-			Gui, RunGui:Show, Hide AutoSize xCenter yCenter
+			PrepRunGui()
 		Restore()
 		remote = 1
 	} Else If (!RemoteSession() And remote) {
@@ -455,7 +455,7 @@ RemoteDesktopMode:
 		Menu, Tray, Enable, &Paused
 		Menu, Tray, Enable, &Disabled
 		If extrahotkeys
-			Gui, RunGui:Show, Hide AutoSize xCenter yCenter
+			PrepRunGui()
 		If mode = enabled
 			Gosub, Enable
 		If mode = forced
@@ -558,7 +558,7 @@ WriteSettings() {
 }
 
 Autorun(force = FALSE) {
-	If !A_IsAdmin
+	If Not A_IsAdmin
 		Run, *RunAs "%A_ScriptFullPath%" /restart force
 	
 	sch := ComObjCreate("Schedule.Service")
@@ -695,7 +695,7 @@ Brightness(value) {
 	{
 		Sleep, 200
 		Process, Exist, %exe%
-		If !ErrorLevel
+		If Not ErrorLevel
 		{
 			brightness -= value
 			Run(TRUE)
@@ -721,7 +721,7 @@ Temperature(value) {
 	{
 		Sleep, 200
 		Process, Exist, %exe%
-		If !ErrorLevel
+		If Not ErrorLevel
 		{
 			temperature -= value
 			Run(TRUE)
@@ -819,7 +819,7 @@ Return
 Run:
 	Gui, Submit
 	If (runcmd <> "" And runcmd <> "Command...")
-		PrepShellRun(runcmd)
+		PrepRun(runcmd)
 RunGuiGuiEscape:
 	Gui, RunGui:Cancel
 	GuiControl,, runcmd
@@ -856,7 +856,8 @@ PrepRunGui() {
 	Gui, Add, Edit, Center vRuncmd, Command...
 	Gui, Color,, fafbfc
 	Gui, Add, Button, w0 h0 Default gRun
-	ShellRun(FALSE)
+	If Not shell
+		PrepShell()
 }
 
 WinRunDialog() {
@@ -953,26 +954,14 @@ TaskMgr() {
 		Send ^+{Esc}
 }
 
-PrepShellRun(cmd) {
-	If !InStr(cmd, " ")
-		Return shell.ShellExecute(cmd, "", tmp)
-	If (SubStr(cmd, 1, 1) <> """") {
-		cmd := StrSplit(cmd, " ",, 2)
-		Return shell.ShellExecute(cmd[1], cmd[2], tmp)
-	}
-	cmd := StrSplit(SubStr(cmd, 2), """",, 2)
-	shell.ShellExecute("""" . cmd[1] . """", cmd[2], tmp)
-}
-
-ShellRun(prms*) {	; From Installer.ahk
-	isprep := (extrahotkeys And !shell)
+PrepShell() {	; From Installer.ahk
 	windows := ComObjCreate("Shell.Application").Windows
 	VarSetCapacity(_hwnd, 4, 0)
 	desktop := windows.FindWindowSW(0, "", 8, ComObj(0x4003, &_hwnd), 1)
-	if ptlb := ComObjQuery(desktop
-		, "{4C96BE40-915C-11CF-99D3-00AA004AE837}"  ; SID_STopLevelBrowser
-		, "{000214E2-0000-0000-C000-000000000046}") ; IID_IShellBrowser
-	{
+	try {
+		ptlb := ComObjQuery(desktop
+			, "{4C96BE40-915C-11CF-99D3-00AA004AE837}"  ; SID_STopLevelBrowser
+			, "{000214E2-0000-0000-C000-000000000046}") ; IID_IShellBrowser
 		if DllCall(NumGet(NumGet(ptlb+0)+15*A_PtrSize), "ptr", ptlb, "ptr*", psv:=0) = 0
 		{
 			VarSetCapacity(IID_IDispatch, 16)
@@ -981,11 +970,29 @@ ShellRun(prms*) {	; From Installer.ahk
 				, "uint", 0, "ptr", &IID_IDispatch, "ptr*", pdisp:=0)
 						WinActivate, ahk_exe explorer.exe
 			shell := ComObj(9,pdisp,1).Application
-			If isprep
-				Return
-			shell.ShellExecute(prms*)
 			ObjRelease(psv)
 		}
 		ObjRelease(ptlb)
+	} catch
+		PrepShell()
+}
+
+PrepRun(cmd) {
+	If Not InStr(cmd, " ")
+		Return ShellRun(cmd, "", tmp)
+	If (SubStr(cmd, 1, 1) <> """") {
+		cmd := StrSplit(cmd, " ",, 2)
+		Return ShellRun(cmd[1], cmd[2], tmp)
+	}
+	cmd := StrSplit(SubStr(cmd, 2), """",, 2)
+	ShellRun("""" . cmd[1] . """", cmd[2], tmp)
+}
+
+ShellRun(prms*) {
+	try
+		shell.ShellExecute(prms*)
+	catch {
+		PrepShell()
+		shell.ShellExecute(prms*)
 	}
 }
