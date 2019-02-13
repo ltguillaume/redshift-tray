@@ -1,4 +1,4 @@
-; Redshift Tray v1.8.3 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.8.4 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -856,7 +856,7 @@ PrepRunGui() {
 	Gui, Add, Edit, Center vRuncmd, Command...
 	Gui, Color,, fafbfc
 	Gui, Add, Button, w0 h0 Default gRun
-	If Not shell
+	If (!shell And !PrepShell())
 		PrepShell()
 }
 
@@ -973,8 +973,9 @@ PrepShell() {	; From Installer.ahk
 			ObjRelease(psv)
 		}
 		ObjRelease(ptlb)
+		Return TRUE
 	} catch
-		PrepShell()
+		Return FALSE
 }
 
 PrepRun(cmd) {
@@ -989,10 +990,19 @@ PrepRun(cmd) {
 }
 
 ShellRun(prms*) {
+	If !shell
+		PrepShell()
 	try
 		shell.ShellExecute(prms*)
 	catch {
-		PrepShell()
-		shell.ShellExecute(prms*)
+		If Not PrepShell()
+			PrepShell()
+		If shell
+			try
+				shell.ShellExecute(prms*)
+			catch
+				shell =
 	}
+	If !shell
+		MsgBox, 16, Redshift Tray, Explorer.exe needs to be running
 }

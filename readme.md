@@ -57,10 +57,10 @@ Menu Shift | MM: Play/Pause
 Menu M | MM: Mute
 RCtrl Up | MM: Volume up
 RCtrl Down | MM: Volume down
-RCtrl x2 | Switch between RDP host/client
+Wheel on taskbar | MM: Volume up/down
 DblClick on taskbar | Show desktop
 MidClick on taskbar | Open Task Manager
-Wheel on taskbar | MM: Volume up/down
+RCtrl x2 | Switch between RDP host/client
 
 ## Getting started
 1. Download Redshift Tray from the [releases page](https://github.com/ltGuillaume/Redshift-Tray/releases) and extract it to a folder you really like.
