@@ -1,4 +1,4 @@
-; Redshift Tray v1.8.4 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.9.0 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -13,7 +13,7 @@ OnExit, OnExit
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
 Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, runasadmin, startdisabled, traveling	; Switches
 Global lat, lon, day, night, brightness, fullscreen, pauseminutes, daytime, nighttime	; Values
-Global mode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, withcaption := Object()	; Internal
+Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, shell, shellran, tmp, winchange, withcaption := Object()	; Internal
 EnvGet, tmp, Temp
 ; Settings from .ini
 IniRead, lat, %ini%, %v%, latitude
@@ -115,7 +115,7 @@ If traveling
 
 ; Set mode
 If remotedesktop
-	SetTimer, RemoteDesktopMode, 1500
+	PrepWinChange()
 If customtimes
 {
 	If (daytime = "HHmm" Or nighttime = "HHmm") {
@@ -128,6 +128,8 @@ If customtimes
 }
 If startdisabled
 	Goto, Disable
+If RemoteSession()
+	Goto, RemoteDesktopMode
 
 ; Or else, Enable:
 Enable:
@@ -149,11 +151,14 @@ Enable:
 		restorebrightness =
 	}
 	Run()
-	If fullscreenmode
-		SetTimer, FullScreenMode, 1000
+	If fullscreenmode And !winchange
+		PrepWinChange()
 Return
 
 Force:
+	If mode = forced
+		Return
+	prevmode = %mode%
 	mode = forced
 	timer = 0
 	temperature = %night%
@@ -164,6 +169,15 @@ Force:
 	Menu, Tray, Default, &Enabled
 	Menu, Tray, Icon, %A_ScriptFullPath%, 1, 1
 	Run()
+Return
+
+EndForce:
+	If mode <> forced
+		Return
+	If prevmode = disabled
+		Goto, Disable
+	Else
+		Goto, Enable
 Return
 
 Disable:
@@ -251,14 +265,12 @@ FullScreen:
 	fullscreenmode := !fullscreenmode
 	If fullscreenmode
 	{
-		SetTimer, FullScreenMode, 1000
+		If !winchange
+			PrepWinChange()
 		Menu, Settings, Check, &Full-screen mode
 	}
 	Else
-	{
-		SetTimer, FullScreenMode, Delete
 		Menu, Settings, Uncheck, &Full-screen mode
-	}
 Return
 
 Hotkeys:
@@ -336,14 +348,13 @@ RemoteDesktop:
 	remotedesktop := !remotedesktop
 	If remotedesktop
 	{
-		SetTimer, RemoteDesktopMode, 2500
+		If !winchange
+			PrepWinChange()
 		Menu, Settings, Check, &Remote Desktop support
 	}
 	Else
-	{
-		SetTimer, RemoteDesktopMode, Delete
+
 		Menu, Settings, Uncheck, &Remote Desktop support
-	}
 Return
 
 RunAsAdmin:
@@ -439,27 +450,32 @@ RemoteDesktopMode:
 		}
 		rdpclient = 0
 	}
+
 	If (RemoteSession() And !remote) {
 		Menu, Tray, Disable, &Enabled
 		Menu, Tray, Disable, &Forced
 		Menu, Tray, Disable, &Paused
 		Menu, Tray, Disable, &Disabled
 		Menu, Tray, Tip, Redshift`nDisabled (Remote Desktop)
+		Menu, Tray, Icon, %A_ScriptFullPath%, 2, 1
+		Restore()
 		If extrahotkeys
 			PrepRunGui()
-		Restore()
+		PrepWinChange()
 		remote = 1
 	} Else If (!RemoteSession() And remote) {
 		Menu, Tray, Enable, &Enabled
 		Menu, Tray, Enable, &Forced
 		Menu, Tray, Enable, &Paused
 		Menu, Tray, Enable, &Disabled
+		Sleep, 2000
 		If extrahotkeys
 			PrepRunGui()
-		If mode = enabled
+		If (mode = "enabled" Or !mode)
 			Gosub, Enable
 		If mode = forced
 			Gosub, Force
+		PrepWinChange()
 		remote = 0
 	}
 Return
@@ -503,7 +519,7 @@ Return
 		Brightness(1)
 	Goto, Force
 	Return
-<^>!End::Goto, Enable
+<^>!End::Goto, EndForce
 <^>!PgUp::Temperature(100)
 <^>!PgDn::Temperature(-100)
 
@@ -529,6 +545,31 @@ GetLocation() {
 	StringSplit, latlon, response, `,
 	lat = %latlon1%
 	lon = %latlon2%
+}
+
+PrepWinChange() {
+	Gui +LastFound
+	hwnd := WinExist()
+	DllCall("RegisterShellHookWindow", "uint", hwnd)
+	MsgNum := DllCall("RegisterWindowMessage", "str", "ShellHook")
+	winchange := OnMessage(MsgNum, "WinChange")
+}
+
+WinChange(w, l)
+{
+	If (w = 1 And shellran) {	; HSHELL_WINDOWCREATED
+		shellran = 0
+		IfWinNotActive, ahk_id %l%
+			WinActivate, ahk_id %l%
+	}
+	Else If ((w = 53 Or w = 54) And fullscreenmode)
+		Gosub, FullScreenMode
+	Else If (w = 32772 Or w = 4 Or w = 16) {	; HSHELL_RUDEAPPACTIVATED / HSHELL_WINDOWACTIVATED / HSHELL_FLASH
+		If fullscreenmode
+			Gosub, FullScreenMode
+		If remotedesktop
+			Gosub, RemoteDesktopMode
+	}	
 }
 
 WriteSettings() {
@@ -772,7 +813,7 @@ RWin & RAlt::Send {RWin}	; Needed to allow RWin & combi's
 <^LWin::
 RWin::
 >^AppsKey::
-	If (!rundialog And !WinActive("ahk_id" . rungui))
+	If (!WinExist("ahk_id" . rundialog) And !WinActive("ahk_id" . rungui))
 		Gui, RunGui:Show, AutoSize
 	Else
 	{
@@ -924,7 +965,7 @@ Opacity(value) {
 		tr = 255
 	tr += value
 	WinGet, exstyle, ExStyle, A
-	If (tr > 254 And Not exstyle & 0x20)
+	If (tr > 254 And !exstyle & 0x20)
 		tr = Off
 	Else If tr < 15
 		tr = 15
@@ -979,6 +1020,8 @@ PrepShell() {	; From Installer.ahk
 }
 
 PrepRun(cmd) {
+	If InStr(cmd, "%")
+		cmd := ExpandEnvVars(cmd)
 	If Not InStr(cmd, " ")
 		Return ShellRun(cmd, "", tmp)
 	If (SubStr(cmd, 1, 1) <> """") {
@@ -989,18 +1032,26 @@ PrepRun(cmd) {
 	ShellRun("""" . cmd[1] . """", cmd[2], tmp)
 }
 
+ExpandEnvVars(in) {
+	VarSetCapacity(out, 2048)
+	DllCall("ExpandEnvironmentStrings", "str", in, "str", out, int, 2047, "cdecl int")
+	Return out
+}
+
 ShellRun(prms*) {
 	If !shell
 		PrepShell()
-	try
+	try {
+		shellran = 1
 		shell.ShellExecute(prms*)
-	catch {
+	} catch {
 		If Not PrepShell()
 			PrepShell()
 		If shell
-			try
+			try {
+				shellran = 1
 				shell.ShellExecute(prms*)
-			catch
+			} catch
 				shell =
 	}
 	If !shell
