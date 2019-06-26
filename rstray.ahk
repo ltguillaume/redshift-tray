@@ -473,8 +473,10 @@ RemoteDesktopMode:
 			PrepRunGui()
 		If (mode = "enabled" Or !mode)
 			Gosub, Enable
-		If mode = forced
+		If (mode = "forced") {
+			mode = %prevmode%
 			Gosub, Force
+		}
 		PrepWinChange()
 		remote = 0
 	}
