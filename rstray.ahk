@@ -1,8 +1,9 @@
-; Redshift Tray v1.9.0 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.9.1 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
 #MaxHotkeysPerInterval, 200
+DetectHiddenWindows, On
 Process, Priority,, High
 SetKeyDelay, -1
 SetTitleMatchMode, 2
@@ -13,7 +14,7 @@ OnExit, OnExit
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
 Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, runasadmin, startdisabled, traveling	; Switches
 Global lat, lon, day, night, brightness, fullscreen, pauseminutes, daytime, nighttime	; Values
-Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, shell, shellran, tmp, winchange, withcaption := Object()	; Internal
+Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, winchange, withcaption := Object()	; Internal
 EnvGet, tmp, Temp
 ; Settings from .ini
 IniRead, lat, %ini%, %v%, latitude
@@ -559,12 +560,7 @@ PrepWinChange() {
 
 WinChange(w, l)
 {
-	If (w = 1 And shellran) {	; HSHELL_WINDOWCREATED
-		shellran = 0
-		IfWinNotActive, ahk_id %l%
-			WinActivate, ahk_id %l%
-	}
-	Else If ((w = 53 Or w = 54) And fullscreenmode)
+	If ((w = 53 Or w = 54) And fullscreenmode)
 		Gosub, FullScreenMode
 	Else If (w = 32772 Or w = 4 Or w = 16) {	; HSHELL_RUDEAPPACTIVATED / HSHELL_WINDOWACTIVATED / HSHELL_FLASH
 		If fullscreenmode
@@ -1011,7 +1007,6 @@ PrepShell() {	; From Installer.ahk
 			NumPut(0x46000000000000C0, NumPut(0x20400, IID_IDispatch, "int64"), "int64")
 			DllCall(NumGet(NumGet(psv+0)+15*A_PtrSize), "ptr", psv
 				, "uint", 0, "ptr", &IID_IDispatch, "ptr*", pdisp:=0)
-						WinActivate, ahk_exe explorer.exe
 			shell := ComObj(9,pdisp,1).Application
 			ObjRelease(psv)
 		}
@@ -1043,19 +1038,19 @@ ExpandEnvVars(in) {
 ShellRun(prms*) {
 	If !shell
 		PrepShell()
+	WinActivate, ahk_exe explorer.exe
 	try {
-		shellran = 1
 		shell.ShellExecute(prms*)
 	} catch {
 		If Not PrepShell()
 			PrepShell()
 		If shell
 			try {
-				shellran = 1
 				shell.ShellExecute(prms*)
 			} catch
 				shell =
 	}
+	WinSet, Bottom,, ahk_exe explorer.exe
 	If !shell
 		MsgBox, 16, Redshift Tray, Explorer.exe needs to be running
 }
