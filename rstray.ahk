@@ -1,4 +1,4 @@
-; Redshift Tray v1.9.1 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.9.2 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -432,8 +432,6 @@ Return
 RemoteDesktopMode:
 	IfWinActive, ahk_class TscShellContainerClass
 	{
-		If Not rdpclient
-		{
 			Hotkey, RAlt & `,, Off
 			Hotkey, RAlt & ., Off
 			Suspend, On
@@ -441,7 +439,6 @@ RemoteDesktopMode:
 			Sleep, 250
 			Suspend, Off
 			rdpclient = 1
-		}
 	}
 	Else
 	{
@@ -560,14 +557,10 @@ PrepWinChange() {
 
 WinChange(w, l)
 {
-	If ((w = 53 Or w = 54) And fullscreenmode)
+	If (fullscreenmode And (w = 53 Or w = 54 Or w = 32772))
 		Gosub, FullScreenMode
-	Else If (w = 32772 Or w = 4 Or w = 16) {	; HSHELL_RUDEAPPACTIVATED / HSHELL_WINDOWACTIVATED / HSHELL_FLASH
-		If fullscreenmode
-			Gosub, FullScreenMode
-		If remotedesktop
-			Gosub, RemoteDesktopMode
-	}	
+	If (remotedesktop And w = 32772)
+		Gosub, RemoteDesktopMode
 }
 
 WriteSettings() {
@@ -771,7 +764,7 @@ Temperature(value) {
 RAlt & ,::ShiftAltTab
 RAlt & .::AltTab
 
-#If, extrahotkeys And !WinActive("ahk_class TscShellContainerClass")
+#If, extrahotkeys And Not rdpclient
 <^>!9::ClickThroughWindow()
 <^>!0::WinSet, AlwaysOnTop, Toggle, A
 <^>!-::Opacity(-5)
@@ -826,7 +819,7 @@ MButton::TaskMgr()
 WheelUp::Send {Volume_Up}
 WheelDown::Send {Volume_Down}
 
-#If, extrahotkeys And remotedesktop And WinActive("ahk_class TscShellContainerClass")
+#If, extrahotkeys And rdpclient
 >^Up::SetVolume("+1")
 >^Down::SetVolume("-1")
 
@@ -1019,7 +1012,7 @@ PrepShell() {	; From Installer.ahk
 PrepRun(cmd) {
 	If InStr(cmd, "%")
 		cmd := ExpandEnvVars(cmd)
-	If Not InStr(cmd, " ")
+	If Instr(cmd, "reg:") = 1 Or Not InStr(cmd, " ")
 		Return ShellRun(cmd, "", tmp)
 	If (SubStr(cmd, 1, 1) <> """") {
 		cmd := StrSplit(cmd, " ",, 2)
