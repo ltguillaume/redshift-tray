@@ -2,7 +2,7 @@
 
 # Redshift Tray
 [Redshift Tray](https://github.com/ltGuillaume/Redshift-Tray) by ltGuillaume  
-[Redshift](https://github.com/jonls/redshift) by [Jon Lund Steffensen](https://github.com/jonls) 
+[Redshift](https://github.com/jonls/redshift) by [Jon Lund Steffensen](https://github.com/jonls)
 
 ## Overview
 Redshift Tray is a no-frills GUI for the excellent screen temperature adjustment tool [Redshift](https://github.com/jonls/redshift) by Jon Lund Steffensen. Redshift Tray allows you to:
@@ -77,6 +77,7 @@ RCtrl x2 | Switch between RDP host/client
     - If you have loaded an ICC profile or have done a custom display calibration (Control Panel > Color Management > Advanced), Redshift might interfere with this. As such, you can set __keepcalibration=1__ to have Redshift Tray keep that into account. This will, however, require Redshift Tray to run as administrator (it will take care of that for you).
     - If you loathe the fading transition upon start-up, just set __notransitions=1__.
     - If you're a Remote Desktop addict like me, be sure to set __remotedesktop=1__. This way, you can run this gem in both environments, switch between local and remote sessions by double-tapping RCtrl, and change the local Redshift settings while in a remote screen.
+    - I often continue a session remotely via a laptop without numeric keypad. Once I return to the system and log on locally, I want the NumLock state to be enabled again. __rdpnumlock=1__ will take care of this.
     - If you want to use the (default and/or extra) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set __runasadmin=1__ so that Redshift Tray will try to run as admin, too. If this scenario doesn't really occur on your system, leave the damn thing alone.
     - If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set __startdisabled=1__.
     - Traveling with your laptop? You can set __traveling=1__ after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though. Since the location is based on your IP, don't use this when a VPN is active.

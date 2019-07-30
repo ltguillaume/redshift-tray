@@ -1,4 +1,4 @@
-; Redshift Tray v1.9.2 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.9.3 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -12,7 +12,7 @@ OnExit, OnExit
 
 ; Global variables (when also used in functions)
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
-Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, runasadmin, startdisabled, traveling	; Switches
+Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, rdpnumlock, runasadmin, startdisabled, traveling	; Switches
 Global lat, lon, day, night, brightness, fullscreen, pauseminutes, daytime, nighttime	; Values
 Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, winchange, withcaption := Object()	; Internal
 EnvGet, tmp, Temp
@@ -35,6 +35,7 @@ IniRead, keepbrightness, %ini%, %s%, keepbrightness, 0
 IniRead, keepcalibration, %ini%, %s%, keepcalibration, 0
 IniRead, nofading, %ini%, %s%, nofading, 0
 IniRead, remotedesktop, %ini%, %s%, remotedesktop, 0
+IniRead, rdpnumlock, %ini%, %s%, rdpnumlock, 0
 IniRead, runasadmin, %ini%, %s%, runasadmin, 0
 IniRead, startdisabled, %ini%, %s%, startdisabled, 0
 IniRead, traveling, %ini%, %s%, traveling, 0
@@ -64,6 +65,7 @@ Menu, Settings, Add, &Keep brightness when disabled, KeepBrightness
 Menu, Settings, Add, Keep &Windows calibration, KeepCalibration
 Menu, Settings, Add, &No fading, NoFading
 Menu, Settings, Add, &Remote Desktop support, RemoteDesktop
+Menu, Settings, Add, Set Num&Lock on RDP disconnect, RDPNumLock
 Menu, Settings, Add, &Run as administrator, RunAsAdmin
 Menu, Settings, Add, &Start disabled, StartDisabled
 Menu, Settings, Add, &Traveling, Traveling
@@ -107,6 +109,8 @@ If nofading
 	Menu, Settings, Check, &No fading
 If remotedesktop
 	Menu, Settings, Check, &Remote Desktop support
+If rdpnumlock
+	Menu, Settings, Check, Set Num&Lock on RDP disconnect
 If runasadmin
 	Menu, Settings, Check, &Run as administrator
 If startdisabled
@@ -124,7 +128,7 @@ If customtimes
 		Goto, Settings
 	}
 	SetTimer, CustomTimesMode, 60000
-	If Not startdisabled
+	If !startdisabled
 		Goto, CustomTimesMode
 }
 If startdisabled
@@ -185,7 +189,7 @@ Disable:
 	If isfullscreen <> 1
 		mode = disabled
 	timer = 0
-	If Not keepbrightness
+	If !keepbrightness
 	{
 		restorebrightness = %brightness%
 		brightness = 1
@@ -208,7 +212,7 @@ Pause:
 	endtime =
 	endtime += timer, seconds
 	FormatTime, endtime, %endtime%, HH:mm:ss
-	If Not keepbrightness
+	If !keepbrightness
 	{
 		restorebrightness = %brightness%
 		brightness = 1
@@ -253,128 +257,88 @@ Autorun:
 Return
 
 ColorizeCursor:
-	colorizecursor := !colorizecursor
+	colorizecursor ^= 1
 	ColorizeCursor()
 Return
 
 CustomTimes:
-	customtimes := !customtimes
+	customtimes ^= 1
 	Goto, Restart
 Return
 
 FullScreen:
-	fullscreenmode := !fullscreenmode
-	If fullscreenmode
-	{
-		If !winchange
+	fullscreenmode ^= 1
+	Menu, Settings, ToggleCheck, &Full-screen mode
+	If fullscreenmode And !winchange
 			PrepWinChange()
-		Menu, Settings, Check, &Full-screen mode
-	}
-	Else
-		Menu, Settings, Uncheck, &Full-screen mode
 Return
 
 Hotkeys:
-	If hotkeys
-	{
-		hotkeys = 0
-		Menu, Settings, Uncheck, &Hotkeys
-	}
-	Else
-	{
-		hotkeys = 1
-		Menu, Settings, Check, &Hotkeys
-	}
+	hotkeys ^= 1
+	Menu, Settings, ToggleCheck, &Hotkeys
 Return
 
 ExtraHotkeys:
+	extrahotkeys ^= 1
+	Menu, Settings, ToggleCheck, &Extra hotkeys
 	If extrahotkeys
 	{
-		extrahotkeys = 0
-		Hotkey, RAlt & `,, Off
-		Hotkey, RAlt & ., Off
-		Menu, Settings, Uncheck, &Extra hotkeys
-	}
-	Else
-	{
-		extrahotkeys = 1
 		PrepRunGui()
 		Hotkey, RAlt & `,, On
 		Hotkey, RAlt & ., On
-		Menu, Settings, Check, &Extra hotkeys
+	}
+	Else
+	{
+		Hotkey, RAlt & `,, Off
+		Hotkey, RAlt & ., Off
 	}
 Return
 
 KeepBrightness:
-	If keepbrightness
-	{
-		keepbrightness = 0
-		Menu, Settings, Uncheck, &Keep brightness when disabled
-	}
-	Else
-	{
-		keepbrightness = 1
-		Menu, Settings, Check, &Keep brightness when disabled
-	}
+	keepbrightness ^= 1
+	Menu, Settings, ToggleCheck, &Keep brightness when disabled
 Return
 
 KeepCalibration:
-	keepcalibration := !keepcalibration
+	keepcalibration ^= 1
+	Menu, Settings, ToggleCheck, Keep &Windows calibration
 	If AutorunOn()
 		Autorun(TRUE)
-	If keepcalibration
-	{
-		Menu, Settings, Check, Keep &Windows calibration
-		If Not A_IsAdmin
-			Goto, Restart
-	}
-	Else
-		Menu, Settings, Uncheck, Keep &Windows calibration
+	If keepcalibration And !A_IsAdmin
+		Goto, Restart
 Return
 
 NoFading:
-	If nofading
-	{
-		nofading = 0
-		Menu, Settings, Uncheck, &No fading
-	}
-	Else
-	{
-		nofading = 1
-		Menu, Settings, Check, &No fading
-	}
+	nofading ^= 1
+	Menu, Settings, ToggleCheck, &No fading
 Return
 
 RemoteDesktop:
-	remotedesktop := !remotedesktop
-	If remotedesktop
-	{
-		If !winchange
-			PrepWinChange()
-		Menu, Settings, Check, &Remote Desktop support
-	}
-	Else
+	remotedesktop ^= 1
+	Menu, Settings, ToggleCheck, &Remote Desktop support
+	If (remotedesktop And !winchange)
+		PrepWinChange()
+Return
 
-		Menu, Settings, Uncheck, &Remote Desktop support
+RDPNumLock:
+	rdpnumlock ^= 1
+	Menu, Settings, ToggleCheck, Set Num&Lock on RDP disconnect
 Return
 
 RunAsAdmin:
-	runasadmin := !runasadmin
+	runasadmin ^= 1
 	If AutorunOn()
 		Autorun(TRUE)
 	Goto, Restart
 Return
 
 StartDisabled:
-	startdisabled := !startdisabled
-	If startdisabled
-		Menu, Settings, Check, &Start disabled
-	Else
-		Menu, Settings, Uncheck, &Start disabled
+	startdisabled ^= 1
+	Menu, Settings, ToggleCheck, &Start disabled
 Return
 
 Traveling:
-	traveling := !traveling
+	traveling ^= 1
 	Goto, Restart
 Return
 
@@ -467,6 +431,8 @@ RemoteDesktopMode:
 		Menu, Tray, Enable, &Paused
 		Menu, Tray, Enable, &Disabled
 		Sleep, 2000
+		If rdpnumlock
+			SetNumLockState, On
 		If extrahotkeys
 			PrepRunGui()
 		If (mode = "enabled" Or !mode)
@@ -584,19 +550,20 @@ WriteSettings() {
 	IniWrite, %extrahotkeys%, %ini%, %s%, extrahotkeys
 	IniWrite, %keepcalibration%, %ini%, %s%, keepcalibration
 	IniWrite, %remotedesktop%, %ini%, %s%, remotedesktop
+	IniWrite, %rdpnumlock%, %ini%, %s%, rdpnumlock
 	IniWrite, %runasadmin%, %ini%, %s%, runasadmin
 	IniWrite, %startdisabled%, %ini%, %s%, startdisabled
 	IniWrite, %traveling%, %ini%, %s%, traveling
 }
 
 Autorun(force = FALSE) {
-	If Not A_IsAdmin
+	If !A_IsAdmin
 		Run, *RunAs "%A_ScriptFullPath%" /restart force
-	
+
 	sch := ComObjCreate("Schedule.Service")
 	sch.Connect()
 	root := sch.GetFolder("\")
-	
+
 	If (!AutorunOn() Or force) {
 		task := sch.NewTask(0)
 		If (runasadmin Or keepcalibration)
@@ -613,7 +580,7 @@ Autorun(force = FALSE) {
 		root.DeleteTask("RedShift Tray", 0)
 		Menu, Settings, Uncheck, &Autorun
 	}
-	
+
 	ObjRelease(sch)
 }
 
@@ -624,18 +591,12 @@ AutorunOn() {
 
 ColorizeCursor() {
 	RegRead, mousetrails, HKCU\Control Panel\Mouse, MouseTrails
-	If colorizecursor
-	{
-		If mousetrails <> -1
-			RegWrite, REG_SZ, HKCU\Control Panel\Mouse, MouseTrails, -1
-		Menu, Settings, Check, &Colorize cursor
-	}
-	Else
-	{
-		If mousetrails = -1
-			RegDelete, HKCU\Control Panel\Mouse, MouseTrails
-		Menu, Settings, Uncheck, &Colorize cursor
-	}
+	If colorizecursor And mousetrails <> -1
+		RegWrite, REG_SZ, HKCU\Control Panel\Mouse, MouseTrails, -1
+	Else If !colorizecursor And mousetrails = -1
+		RegDelete, HKCU\Control Panel\Mouse, MouseTrails
+	If !ErrorLevel
+		Menu, Settings, ToggleCheck, &Colorize cursor
 }
 
 Close() {
@@ -673,9 +634,9 @@ Run(adjust = FALSE) {
 	Close()
 	If (adjust And keepcalibration)
 		RunWait, schtasks /run /tn "\Microsoft\Windows\WindowsColorSystem\Calibration Loader",, Hide
-	If Not adjust
+	If !adjust
 		Restore()
-	If Not keepcalibration
+	If !keepcalibration
 		cfg .= " -P"
 	Run, %exe% %cfg%,,Hide
 	TrayTip()
@@ -727,7 +688,7 @@ Brightness(value) {
 	{
 		Sleep, 200
 		Process, Exist, %exe%
-		If Not ErrorLevel
+		If !ErrorLevel
 		{
 			brightness -= value
 			Run(TRUE)
@@ -753,7 +714,7 @@ Temperature(value) {
 	{
 		Sleep, 200
 		Process, Exist, %exe%
-		If Not ErrorLevel
+		If !ErrorLevel
 		{
 			temperature -= value
 			Run(TRUE)
@@ -764,7 +725,7 @@ Temperature(value) {
 RAlt & ,::ShiftAltTab
 RAlt & .::AltTab
 
-#If, extrahotkeys And Not rdpclient
+#If, extrahotkeys And !rdpclient
 <^>!9::ClickThroughWindow()
 <^>!0::WinSet, AlwaysOnTop, Toggle, A
 <^>!-::Opacity(-5)
@@ -1012,7 +973,7 @@ PrepShell() {	; From Installer.ahk
 PrepRun(cmd) {
 	If InStr(cmd, "%")
 		cmd := ExpandEnvVars(cmd)
-	If Instr(cmd, "reg:") = 1 Or Not InStr(cmd, " ")
+	If Instr(cmd, "reg:") = 1 Or !InStr(cmd, " ")
 		Return ShellRun(cmd, "", tmp)
 	If (SubStr(cmd, 1, 1) <> """") {
 		cmd := StrSplit(cmd, " ",, 2)
@@ -1035,7 +996,7 @@ ShellRun(prms*) {
 	try {
 		shell.ShellExecute(prms*)
 	} catch {
-		If Not PrepShell()
+		If !PrepShell()
 			PrepShell()
 		If shell
 			try {
