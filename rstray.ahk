@@ -41,7 +41,7 @@ IniRead, startdisabled, %ini%, %s%, startdisabled, 0
 IniRead, traveling, %ini%, %s%, traveling, 0
 
 ; Initialize
-If ((runasadmin Or keepcalibration) And !A_IsAdmin) {
+If !A_IsAdmin And (runasadmin Or keepcalibration) {
 	Run, *RunAs "%A_ScriptFullPath%" /restart
 	ExitApp
 }
@@ -76,7 +76,7 @@ Menu, Tray, Add
 Menu, Tray, Add, &Restart, Restart
 Menu, Tray, Add, E&xit, Exit
 
-If (A_Args.Length() > 0)
+If A_Args.Length() > 0
 	Autorun(A_Args[1])
 If AutorunOn()
 	Menu, Settings, Check, &Autorun
@@ -91,13 +91,10 @@ If nofading
 	Menu, Settings, Check, &No fading
 If hotkeys
 	Menu, Settings, Check, &Hotkeys
-If extrahotkeys
-{
+If extrahotkeys {
 	PrepRunGui()
 	Menu, Settings, Check, &Extra hotkeys
-}
-Else
-{
+} Else {
 	Hotkey, RAlt & `,, Off
 	Hotkey, RAlt & ., Off
 }
@@ -121,8 +118,7 @@ If traveling
 ; Set mode
 If remotedesktop
 	PrepWinChange()
-If customtimes
-{
+If customtimes {
 	If (daytime = "HHmm" Or nighttime = "HHmm") {
 		MsgBox, 64, Custom Times, Please fill in nighttime and daytime (use military times),`nthen save and close the settings file.
 		Goto, Settings
@@ -146,12 +142,11 @@ Enable:
 	Menu, Tray, Check, &Enabled
 	Menu, Tray, Default, &Disabled
 	Menu, Tray, Icon, %A_ScriptFullPath%, 1, 1
-	If (traveling Or (lat = "ERROR" Or lon = "ERROR"))
+	If traveling Or (lat = "ERROR" Or lon = "ERROR")
 		GetLocation()
 	If (lat = "ERROR" Or lon = "ERROR")
 		Goto, Settings
-	If (!keepbrightness And restorebrightness)
-	{
+	If !keepbrightness And restorebrightness {
 		brightness = %restorebrightness%
 		restorebrightness =
 	}
@@ -189,8 +184,7 @@ Disable:
 	If isfullscreen <> 1
 		mode = disabled
 	timer = 0
-	If !keepbrightness
-	{
+	If !keepbrightness {
 		restorebrightness = %brightness%
 		brightness = 1
 	}
@@ -212,8 +206,7 @@ Pause:
 	endtime =
 	endtime += timer, seconds
 	FormatTime, endtime, %endtime%, HH:mm:ss
-	If !keepbrightness
-	{
+	If !keepbrightness {
 		restorebrightness = %brightness%
 		brightness = 1
 	}
@@ -281,14 +274,11 @@ Return
 ExtraHotkeys:
 	extrahotkeys ^= 1
 	Menu, Settings, ToggleCheck, &Extra hotkeys
-	If extrahotkeys
-	{
+	If extrahotkeys {
 		PrepRunGui()
 		Hotkey, RAlt & `,, On
 		Hotkey, RAlt & ., On
-	}
-	Else
-	{
+	} Else {
 		Hotkey, RAlt & `,, Off
 		Hotkey, RAlt & ., Off
 	}
@@ -316,7 +306,7 @@ Return
 RemoteDesktop:
 	remotedesktop ^= 1
 	Menu, Settings, ToggleCheck, &Remote Desktop support
-	If (remotedesktop And !winchange)
+	If remotedesktop And !winchange
 		PrepWinChange()
 Return
 
@@ -356,14 +346,14 @@ Return
 CustomTimesMode:
 	FormatTime, time,, HHmm
 	If (daytime <= time And time < nighttime) {
-		If (customnight Or mode = "") {
+		If customnight Or !mode {
 			customnight = 0
-			If (mode = "" Or mode = "enabled")
+			If !mode Or mode = "enabled"
 				Goto, Disable
 		}
-	} Else If (!customnight) {
+	} Else If !customnight {
 		customnight = 1
-		If (mode = "" Or mode = "disabled")
+		If !mode Or mode = "disabled"
 			Goto, Enable
 	}
 Return
@@ -403,17 +393,15 @@ RemoteDesktopMode:
 			Sleep, 250
 			Suspend, Off
 			rdpclient = 1
-	}
-	Else
-	{
-		If (rdpclient And extrahotkeys) {
+	} Else {
+		If rdpclient And extrahotkeys {
 			Hotkey, RAlt & `,, On
 			Hotkey, RAlt & ., On
 		}
 		rdpclient = 0
 	}
 
-	If (RemoteSession() And !remote) {
+	If RemoteSession() And !remote {
 		Menu, Tray, Disable, &Enabled
 		Menu, Tray, Disable, &Forced
 		Menu, Tray, Disable, &Paused
@@ -425,7 +413,7 @@ RemoteDesktopMode:
 			PrepRunGui()
 		PrepWinChange()
 		remote = 1
-	} Else If (!RemoteSession() And remote) {
+	} Else If !RemoteSession() And remote {
 		Menu, Tray, Enable, &Enabled
 		Menu, Tray, Enable, &Forced
 		Menu, Tray, Enable, &Paused
@@ -435,7 +423,7 @@ RemoteDesktopMode:
 			SetNumLockState, On
 		If extrahotkeys
 			PrepRunGui()
-		If (mode = "enabled" Or !mode)
+		If !mode Or mode = "enabled"
 			Gosub, Enable
 		If (mode = "forced") {
 			mode = %prevmode%
@@ -467,7 +455,7 @@ Exit:
 
 #If, hotkeys And !RemoteSession()
 !Home::
-	If (mode = "enabled" And brightness <> 1)
+	If (brightness <> 1 And mode = "enabled")
 		Brightness(1)
 	Goto, Enable
 Return
@@ -481,7 +469,7 @@ Return
 !PgUp::Brightness(0.05)
 !PgDn::Brightness(-0.05)
 <^>!Home::
-	If (mode = "forced" And brightness <> 1)
+	If (brightness <> 1 And mode = "forced")
 		Brightness(1)
 	Goto, Force
 	Return
@@ -490,14 +478,14 @@ Return
 <^>!PgDn::Temperature(-100)
 
 GetLocation() {
-	try {
+	Try {
 		whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
 		whr.Open("GET", "https://ipapi.co/latlong", FALSE)
 		whr.Send()
 		response := whr.ResponseText
 		ObjRelease(whr)
 	}
-	If (InStr(response, "Undefined") Or response = "") {
+	If InStr(response, "Undefined") Or !response {
 		If (lat = "ERROR" Or lon = "ERROR") {
 			MsgBox, 308, Location Error
 				, An error occurred while determining your location!`nChoose Yes to retry, or No to manually specify latitude and longitude.
@@ -523,9 +511,9 @@ PrepWinChange() {
 
 WinChange(w, l)
 {
-	If (fullscreenmode And (w = 53 Or w = 54 Or w = 32772))
+	If fullscreenmode And (w = 53 Or w = 54 Or w = 32772)
 		Gosub, FullScreenMode
-	If (remotedesktop And w = 32772)
+	If remotedesktop And w = 32772
 		Gosub, RemoteDesktopMode
 }
 
@@ -534,7 +522,7 @@ WriteSettings() {
 	IniWrite, %lon%, %ini%, %v%, longitude
 	IniWrite, %day%, %ini%, %v%, daytemp
 	IniWrite, %night%, %ini%, %v%, nighttemp
-	If ((mode = "disabled" Or mode = "paused") And restorebrightness)
+	If restorebrightness And (mode = "disabled" Or mode = "paused")
 		brightness = %restorebrightness%
 	IniWrite, %brightness%, %ini%, %v%, brightness
 	IniWrite, %fullscreen%, %ini%, %v%, fullscreentemp
@@ -564,9 +552,9 @@ Autorun(force = FALSE) {
 	sch.Connect()
 	root := sch.GetFolder("\")
 
-	If (!AutorunOn() Or force) {
+	If !AutorunOn() Or force {
 		task := sch.NewTask(0)
-		If (runasadmin Or keepcalibration)
+		If runasadmin Or keepcalibration
 			task.Principal.RunLevel := 1
 		task.Triggers.Create(9)
 		action := task.Actions.Create(0)
@@ -632,7 +620,7 @@ Run(adjust = FALSE) {
 	Else If mode = disabled
 		cfg = -O 6500 %br%
 	Close()
-	If (adjust And keepcalibration)
+	If adjust And keepcalibration
 		RunWait, schtasks /run /tn "\Microsoft\Windows\WindowsColorSystem\Calibration Loader",, Hide
 	If !adjust
 		Restore()
@@ -647,8 +635,7 @@ TrayTip() {
 	{
 		If customtimes
 			status := "Enabled until " . SubStr(daytime, 1, 2) . ":" . SubStr(daytime, 3) . " (" . night . "K)"
-		Else
-		{
+		Else {
 			latitude := Round(Abs(lat), 2) . "°" . (lat > 0 ? "N" : "S")
 			longitude := Round(Abs(lon), 2) . "°" . (lon > 0 ? "E" : "W")
 			status = Enabled: %night%K/%day%K`nLocation: %latitude% %longitude%
@@ -658,15 +645,14 @@ TrayTip() {
 		status = Forced: %temperature%K
 	Else If mode = paused
 		status = Paused until %endtime%
-	Else
-	{
+	Else {
 		status = Disabled
 		if customtimes
 			status .= " until " . SubStr(nighttime, 1, 2) . ":" . SubStr(nighttime, 3)
 	}
 	br := Round(brightness * 100, 0)
 	Menu, Tray, Tip, Redshift`n%status%`nBrightness: %br%`%
-	If (!isfullscreen And (A_ThisHotkey <> A_PriorHotkey Or InStr(A_ThisHotkey, "Pg") Or InStr(A_ThisHotkey, "Home")) And A_TimeSinceThisHotkey < 2500) {
+	If !isfullscreen And (A_ThisHotkey <> A_PriorHotkey Or InStr(A_ThisHotkey, "Pg") Or InStr(A_ThisHotkey, "Home")) And A_TimeSinceThisHotkey < 2500 {
 		Tooltip, %status%`nBrightness: %br%`%
 		SetTimer, RemoveToolTip, 1000
 	}
@@ -675,8 +661,7 @@ TrayTip() {
 Brightness(value) {
 	If value = 1
 		brightness = 1
-	Else
-	{
+	Else {
 		newbrightness := brightness + value
 		If (newbrightness > 0.09 And newbrightness < 10.01)
 			brightness = %newbrightness%
@@ -688,8 +673,7 @@ Brightness(value) {
 	{
 		Sleep, 200
 		Process, Exist, %exe%
-		If !ErrorLevel
-		{
+		If !ErrorLevel {
 			brightness -= value
 			Run(TRUE)
 		}
@@ -701,8 +685,7 @@ Temperature(value) {
 		Gosub, Force
 	If value = 1
 		temperature = night
-	Else
-	{
+	Else {
 		temp := temperature + value
 		If (temp > 999 And temp < 25001)
 			temperature = %temp%
@@ -714,8 +697,7 @@ Temperature(value) {
 	{
 		Sleep, 200
 		Process, Exist, %exe%
-		If !ErrorLevel
-		{
+		If !ErrorLevel {
 			temperature -= value
 			Run(TRUE)
 		}
@@ -731,19 +713,18 @@ RAlt & .::AltTab
 <^>!-::Opacity(-5)
 <^>!=::Opacity(5)
 RAlt::
-	If (!ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
+	If !ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
 		ralt = 1
 		SetTimer, RAltReset, 400
-		If (WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
-			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass"))
+		If WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
+			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass")
 			Send ^{F4}
 		Else IfWinActive, ahk_class TTOTAL_CMD
 			Send ^w
 		Else
 			Send !{F4}
-	} Else {
+	} Else
 		ralt = 0
-	}
 Return
 AppsKey & Up::Send #{Up}
 AppsKey & Down::Send #{Down}
@@ -765,10 +746,9 @@ RWin & RAlt::Send {RWin}	; Needed to allow RWin & combi's
 <^LWin::
 RWin::
 >^AppsKey::
-	If (!WinExist("ahk_id" . rundialog) And !WinActive("ahk_id" . rungui))
+	If !WinExist("ahk_id" . rundialog) And !WinActive("ahk_id" . rungui)
 		Gui, RunGui:Show, AutoSize
-	Else
-	{
+	Else {
 		Gui, RunGui:Cancel
 		WinRunDialog()
 	}
@@ -786,7 +766,7 @@ WheelDown::Send {Volume_Down}
 
 #If, extrahotkeys And !RemoteSession()
 RCtrl::
-	If (!rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
+	If !rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
 		rctrl = 1
 		SetTimer, RCtrlReset, 400
 		Sleep, 50
@@ -794,9 +774,8 @@ RCtrl::
 			PostMessage, 0x112, 0xF020
 		Else IfWinExist, ahk_class TscShellContainerClass
 			WinActivate
-	} Else {
+	} Else
 		rctrl = 0
-	}
 Return
 
 RAltReset:
@@ -849,7 +828,7 @@ PrepRunGui() {
 	Gui, Add, Edit, Center vRuncmd, Command...
 	Gui, Color,, fafbfc
 	Gui, Add, Button, w0 h0 Default gRun
-	If (!shell And !PrepShell())
+	If !shell And !PrepShell()
 		PrepShell()
 }
 
@@ -857,8 +836,7 @@ WinRunDialog() {
 	If (rundialog <> "" And WinExist("ahk_id" . rundialog)) {
 		IfWinNotActive, ahk_id %rundialog%
 			WinActivate, ahk_id %rundialog%
-		Else
-		{
+		Else {
 			Send !{Esc}
 			WinClose, ahk_id %rundialog%
 			rundialog =
@@ -881,8 +859,7 @@ ClickThroughWindow() {
 	_id = ahk_id %id%
 	WinGet, exstyle, ExStyle, %_id%
 	If (exstyle & 0x20) {	; Clickthrough
-		If withcaption.HasKey(id)
-		{
+		If withcaption.HasKey(id) {
 			max := withcaption.Delete(id)
 			if max = 1
 				WinSet, Style, -0x1000000, %_id%	; -Maximize
@@ -892,7 +869,7 @@ ClickThroughWindow() {
 		WinSet, ExStyle, -0x20, %_id%	; -Clickthrough
 	} Else {
 		WinGet, tr, Transparent, %_id%
-		If (tr = "")
+		If !tr
 			WinSet, Transparent, 255, %_id%
 		WinGet, style, Style, %_id%
 		If (style & 0xC00000) {	; Has caption
@@ -913,7 +890,7 @@ ClickThroughWindow() {
 
 Opacity(value) {
 	WinGet, tr, Transparent, A
-	If (tr = "")
+	If !tr
 		tr = 255
 	tr += value
 	WinGet, exstyle, ExStyle, A
@@ -951,12 +928,11 @@ PrepShell() {	; From Installer.ahk
 	windows := ComObjCreate("Shell.Application").Windows
 	VarSetCapacity(_hwnd, 4, 0)
 	desktop := windows.FindWindowSW(0, "", 8, ComObj(0x4003, &_hwnd), 1)
-	try {
+	Try {
 		ptlb := ComObjQuery(desktop
 			, "{4C96BE40-915C-11CF-99D3-00AA004AE837}"  ; SID_STopLevelBrowser
 			, "{000214E2-0000-0000-C000-000000000046}") ; IID_IShellBrowser
-		if DllCall(NumGet(NumGet(ptlb+0)+15*A_PtrSize), "ptr", ptlb, "ptr*", psv:=0) = 0
-		{
+		If DllCall(NumGet(NumGet(ptlb+0)+15*A_PtrSize), "ptr", ptlb, "ptr*", psv:=0) = 0 {
 			VarSetCapacity(IID_IDispatch, 16)
 			NumPut(0x46000000000000C0, NumPut(0x20400, IID_IDispatch, "int64"), "int64")
 			DllCall(NumGet(NumGet(psv+0)+15*A_PtrSize), "ptr", psv
@@ -966,16 +942,16 @@ PrepShell() {	; From Installer.ahk
 		}
 		ObjRelease(ptlb)
 		Return TRUE
-	} catch
+	} Catch
 		Return FALSE
 }
 
 PrepRun(cmd) {
 	If InStr(cmd, "%")
 		cmd := ExpandEnvVars(cmd)
-	If Instr(cmd, "reg:") = 1 Or !InStr(cmd, " ")
+	If !InStr(cmd, " ") Or Instr(cmd, "reg:") = 1
 		Return ShellRun(cmd, "", tmp)
-	If (SubStr(cmd, 1, 1) <> """") {
+	If SubStr(cmd, 1, 1) <> """" {
 		cmd := StrSplit(cmd, " ",, 2)
 		Return ShellRun(cmd[1], cmd[2], tmp)
 	}
@@ -993,15 +969,15 @@ ShellRun(prms*) {
 	If !shell
 		PrepShell()
 	WinActivate, ahk_exe explorer.exe
-	try {
+	Try {
 		shell.ShellExecute(prms*)
-	} catch {
+	} Catch {
 		If !PrepShell()
 			PrepShell()
 		If shell
-			try {
+			Try {
 				shell.ShellExecute(prms*)
-			} catch
+			} Catch
 				shell =
 	}
 	WinSet, Bottom,, ahk_exe explorer.exe
