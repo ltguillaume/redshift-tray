@@ -468,12 +468,12 @@ Return
 !End::Goto, Disable
 !PgUp::Brightness(0.05)
 !PgDn::Brightness(-0.05)
-<^>!Home::
+RAlt & Home::
 	If (brightness <> 1 And mode = "forced")
 		Brightness(1)
 	Goto, Force
-	Return
-<^>!End::Goto, EndForce
+Return
+RAlt & End::Goto, EndForce
 <^>!PgUp::Temperature(100)
 <^>!PgDn::Temperature(-100)
 
