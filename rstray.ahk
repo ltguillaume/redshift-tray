@@ -1,8 +1,9 @@
-; Redshift Tray v1.9.3 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.9.4 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
 #MaxHotkeysPerInterval, 200
+#MenuMaskKey, vk07	; Use unassigned key instead of Ctrl to mask Win/Alt keyup
 DetectHiddenWindows, On
 Process, Priority,, High
 SetKeyDelay, -1
@@ -389,7 +390,6 @@ RemoteDesktopMode:
 			Hotkey, RAlt & `,, Off
 			Hotkey, RAlt & ., Off
 			Suspend, On
-			Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
 			Sleep, 250
 			Suspend, Off
 			rdpclient = 1
@@ -474,8 +474,8 @@ RAlt & Home::
 	Goto, Force
 Return
 RAlt & End::Goto, EndForce
-<^>!PgUp::Temperature(100)
-<^>!PgDn::Temperature(-100)
+RAlt & PgUp::Temperature(100)
+RAlt & PgDn::Temperature(-100)
 
 GetLocation() {
 	Try {
@@ -708,10 +708,10 @@ RAlt & ,::ShiftAltTab
 RAlt & .::AltTab
 
 #If, extrahotkeys And !rdpclient
-<^>!9::ClickThroughWindow()
-<^>!0::WinSet, AlwaysOnTop, Toggle, A
-<^>!-::Opacity(-5)
-<^>!=::Opacity(5)
+RAlt & 9::ClickThroughWindow()
+RAlt & 0::WinSet, AlwaysOnTop, Toggle, A
+RAlt & -::Opacity(-5)
+RAlt & =::Opacity(5)
 RAlt::
 	If !ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
 		ralt = 1

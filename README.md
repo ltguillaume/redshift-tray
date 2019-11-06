@@ -40,8 +40,8 @@ RWin x2 |
 RCtrl Menu x2 | 
 AltGr 9 | Toggle window on top click-through
 AltGr 0 | Toggle window always on top
-AltGr - | Increase window transparency
-AltGr = | Decrease window transparency
+AltGr - | Decrease window opacity
+AltGr = | Increase window opacity
 AltGr . | Switch between open items (Alt Tab)
 AltGr , | Switch between open items (Shift Alt Tab)
 AltGr x2 | Close current tab/window
