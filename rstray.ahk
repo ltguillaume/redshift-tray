@@ -1,4 +1,4 @@
-; Redshift Tray v1.9.4 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.9.5 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -199,6 +199,7 @@ Disable:
 	If keepbrightness
 		Run()
 	TrayTip()
+	ClearMem()
 Return
 
 Pause:
@@ -244,6 +245,7 @@ Return
 GuiClose:
 GuiEscape:
 	Gui, Destroy
+	ClearMem()
 Return
 
 Autorun:
@@ -357,6 +359,7 @@ CustomTimesMode:
 		If !mode Or mode = "disabled"
 			Goto, Enable
 	}
+	ClearMem()
 Return
 
 FullScreenMode:
@@ -382,6 +385,7 @@ FullScreenMode:
 		Else
 			Goto, Enable
 	}
+	ClearMem()
 Return
 
 RemoteDesktopMode:
@@ -390,6 +394,7 @@ RemoteDesktopMode:
 			Hotkey, RAlt & `,, Off
 			Hotkey, RAlt & ., Off
 			Suspend, On
+ 			Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
 			Sleep, 250
 			Suspend, Off
 			rdpclient = 1
@@ -432,6 +437,7 @@ RemoteDesktopMode:
 		PrepWinChange()
 		remote = 0
 	}
+	ClearMem()
 Return
 
 RemoveToolTip:
@@ -626,8 +632,11 @@ Run(adjust = FALSE) {
 		Restore()
 	If !keepcalibration
 		cfg .= " -P"
-	Run, %exe% %cfg%,,Hide
+	Run, %exe% %cfg%,, Hide, pid
 	TrayTip()
+	Sleep, 1000
+	ClearMem(pid)
+	ClearMem()
 }
 
 TrayTip() {
@@ -795,6 +804,7 @@ Run:
 RunGuiGuiEscape:
 	Gui, RunGui:Cancel
 	GuiControl,, runcmd
+	ClearMem()
 Return
 
 RunGuiGuiSize:
@@ -983,4 +993,12 @@ ShellRun(prms*) {
 	WinSet, Bottom,, ahk_exe explorer.exe
 	If !shell
 		MsgBox, 16, Redshift Tray, Explorer.exe needs to be running
+}
+
+ClearMem(pid = "this") {	; http://www.autohotkey.com/forum/topic32876.html
+	If pid = this
+		pid := DllCall("GetCurrentProcessId")
+	h := DllCall("OpenProcess", "UInt", 0x001F0FFF, "Int", 0, "Int", pid)
+	DllCall("SetProcessWorkingSetSize", "UInt", h, "Int", -1, "Int", -1)
+	DllCall("CloseHandle", "Int", h)
 }
