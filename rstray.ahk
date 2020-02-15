@@ -1,4 +1,4 @@
-; Redshift Tray v1.9.5 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.9.6 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -739,9 +739,15 @@ AppsKey & Up::Send #{Up}
 AppsKey & Down::Send #{Down}
 AppsKey & Left::Send #{Left}
 AppsKey & Right::Send #{Right}
-AppsKey & Pause::DllCall("PowrProf\SetSuspendState", "int", 0, "int", 0, "int", 0)
+AppsKey & Pause::
+	KeyWait, AppsKey
+	DllCall("PowrProf\SetSuspendState", "int", 0, "int", 0, "int", 0)
+Return
 AppsKey & Home::Shutdown, 2
-AppsKey & End::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
+AppsKey & End::
+	KeyWait, AppsKey
+	DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
+Return
 AppsKey & ,::Send {Media_Prev}
 AppsKey & .::Send {Media_Next}
 AppsKey & /::Send {Media_Stop}
@@ -775,6 +781,7 @@ WheelDown::Send {Volume_Down}
 
 #If, extrahotkeys And !RemoteSession()
 RCtrl::
+	KeyWait, RCtrl
 	If !rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
 		rctrl = 1
 		SetTimer, RCtrlReset, 400
