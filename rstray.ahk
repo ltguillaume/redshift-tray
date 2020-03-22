@@ -1,4 +1,4 @@
-; Redshift Tray v1.9.6 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.9.7 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance, force
 #Persistent
@@ -15,7 +15,7 @@ OnExit, OnExit
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
 Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, rdpnumlock, runasadmin, startdisabled, traveling	; Switches
 Global lat, lon, day, night, brightness, fullscreen, pauseminutes, daytime, nighttime	; Values
-Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, winchange, withcaption := Object()	; Internal
+Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, pid, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, winchange, withcaption := Object()	; Internal
 EnvGet, tmp, Temp
 ; Settings from .ini
 IniRead, lat, %ini%, %v%, latitude
@@ -391,13 +391,13 @@ Return
 RemoteDesktopMode:
 	IfWinActive, ahk_class TscShellContainerClass
 	{
-			Hotkey, RAlt & `,, Off
-			Hotkey, RAlt & ., Off
-			Suspend, On
- 			Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
-			Sleep, 250
-			Suspend, Off
-			rdpclient = 1
+		Hotkey, RAlt & `,, Off
+		Hotkey, RAlt & ., Off
+		Suspend, On
+		Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
+		Sleep, 250
+		Suspend, Off
+		rdpclient = 1
 	} Else {
 		If rdpclient And extrahotkeys {
 			Hotkey, RAlt & `,, On
@@ -515,8 +515,7 @@ PrepWinChange() {
 	winchange := OnMessage(MsgNum, "WinChange")
 }
 
-WinChange(w, l)
-{
+WinChange(w, l) {
 	If fullscreenmode And (w = 53 Or w = 54 Or w = 32772)
 		Gosub, FullScreenMode
 	If remotedesktop And w = 32772
@@ -634,9 +633,7 @@ Run(adjust = FALSE) {
 		cfg .= " -P"
 	Run, %exe% %cfg%,, Hide, pid
 	TrayTip()
-	Sleep, 1000
-	ClearMem(pid)
-	ClearMem()
+	SetTimer, ClearMem, -1000
 }
 
 TrayTip() {
@@ -1001,6 +998,11 @@ ShellRun(prms*) {
 	If !shell
 		MsgBox, 16, Redshift Tray, Explorer.exe needs to be running
 }
+
+ClearMem:
+	ClearMem(pid)
+	ClearMem()
+Return
 
 ClearMem(pid = "this") {	; http://www.autohotkey.com/forum/topic32876.html
 	If pid = this
