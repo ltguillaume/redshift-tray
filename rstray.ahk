@@ -391,17 +391,24 @@ Return
 RemoteDesktopMode:
 	IfWinActive, ahk_class TscShellContainerClass
 	{
+		Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
 		Hotkey, RAlt & `,, Off
 		Hotkey, RAlt & ., Off
 		Suspend, On
-		Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
 		Sleep, 250
 		Suspend, Off
 		rdpclient = 1
 	} Else {
-		If rdpclient And extrahotkeys {
+		If rdpclient
+		{
+			Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
+			If extrahotkeys {
 			Hotkey, RAlt & `,, On
 			Hotkey, RAlt & ., On
+		}
+			Suspend, On
+			Sleep, 250
+			Suspend, Off
 		}
 		rdpclient = 0
 	}
