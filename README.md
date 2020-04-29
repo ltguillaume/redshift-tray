@@ -27,24 +27,26 @@ Alt Pause | Toggle pause for %pauseminutes% minutes
 Alt End | Disable Redshift
 Alt PgUp | Increase brightness
 Alt PgDn | Decrease brightness
-AltGr Home | Force night temperature (again to reset brightness)
-AltGr End | End forced temperature
-AltGr PgUp | Increase forced temperature
-AltGr PgDn | Decrease forced temperature
+RAlt Home | Force night temperature (again to reset brightness)
+RAlt End | End forced temperature
+RAlt PgUp | Increase forced temperature
+RAlt PgDn | Decrease forced temperature
 __Extra Hotkeys__ | &nbsp;
 LCtrl LWin | Type to run
 RWin | 
+RCtrl RAlt | 
 RCtrl Menu | 
 LCtrl LWin x2 | Windows Run dialog
 RWin x2 | 
+RCtrl RAlt x2 | 
 RCtrl Menu x2 | 
-AltGr 9 | Toggle window on top click-through
-AltGr 0 | Toggle window always on top
-AltGr - | Decrease window opacity
-AltGr = | Increase window opacity
-AltGr . | Switch between open items (Alt Tab)
-AltGr , | Switch between open items (Shift Alt Tab)
-AltGr x2 | Close current tab/window
+RAlt 9 | Toggle window on top click-through
+RAlt 0 | Toggle window always on top
+RAlt - | Decrease window opacity
+RAlt = | Increase window opacity
+RAlt . | Switch between open items (Alt Tab)
+RAlt , | Switch between open items (Shift Alt Tab)
+RAlt x2 | Close current tab/window
 Menu + Arrows | Aero Snap
 Menu Pause | Suspend computer
 Menu Home | Restart computer

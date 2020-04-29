@@ -764,6 +764,7 @@ RWin & RAlt::Send {RWin}	; Needed to allow RWin & combi's
 >^Down::Send {Volume_Down}
 <^LWin::
 RWin::
+>^Ralt::
 >^AppsKey::
 	If !WinExist("ahk_id" . rundialog) And !WinActive("ahk_id" . rungui)
 		Gui, RunGui:Show
