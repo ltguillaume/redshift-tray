@@ -766,7 +766,7 @@ RWin & RAlt::Send {RWin}	; Needed to allow RWin & combi's
 RWin::
 >^AppsKey::
 	If !WinExist("ahk_id" . rundialog) And !WinActive("ahk_id" . rungui)
-		Gui, RunGui:Show, AutoSize
+		Gui, RunGui:Show
 	Else {
 		Gui, RunGui:Cancel
 		WinRunDialog()
@@ -846,7 +846,7 @@ RemoteSession() {
 PrepRunGui() {
 	Gui, RunGui:new, AlwaysOnTop -Caption +HwndRungui ToolWindow 0x40000
 	Gui, Margin, -2, -2
-	Gui, Add, Edit, Center vRuncmd, Command...
+	Gui, Add, Edit, Center vRuncmd
 	Gui, Color,, fafbfc
 	Gui, Add, Button, w0 h0 Default gRun
 	If !shell And !PrepShell()
