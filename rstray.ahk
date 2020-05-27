@@ -687,7 +687,7 @@ Brightness(value) {
 	Run(TRUE)
 	If mode = enabled
 	{
-		Process, Wait, %exe%, .250
+		Process, Wait, %exe%, .5
 		If !ErrorLevel {
 			brightness -= value
 			Run(TRUE)
@@ -795,6 +795,7 @@ RCtrl::
 		IfWinActive, ahk_class TscShellContainerClass
 		{
 			PostMessage, 0x112, 0xF020
+			Sleep, 50
 			IfWinActive, ahk_class TscShellContainerClass
 				WinActivate, ahk_class Shell_TrayWnd
 		}
