@@ -1,4 +1,4 @@
-<img src="https://github.com/ltGuillaume/Redshift-Tray/blob/master/Icons/redshift.ico" align="right"/>
+<img src="https://raw.githubusercontent.com/ltGuillaume/Redshift-Tray/master/Icons/redshift.ico" align="right"/>
 
 # Redshift Tray
 [Redshift Tray](https://github.com/ltGuillaume/Redshift-Tray) by ltGuillaume  
