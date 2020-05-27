@@ -391,21 +391,24 @@ Return
 RemoteDesktopMode:
 	IfWinActive, ahk_class TscShellContainerClass
 	{
-		Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
-		Hotkey, RAlt & `,, Off
-		Hotkey, RAlt & ., Off
-		Suspend, On
-		Sleep, 250
-		Suspend, Off
-		rdpclient = 1
+		If !rdpclient
+		{
+			Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
+			Hotkey, RAlt & `,, Off
+			Hotkey, RAlt & ., Off
+			Suspend, On
+			Sleep, 250
+			Suspend, Off
+			rdpclient = 1
+		}
 	} Else {
 		If rdpclient
 		{
 			Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
 			If extrahotkeys {
-			Hotkey, RAlt & `,, On
-			Hotkey, RAlt & ., On
-		}
+				Hotkey, RAlt & `,, On
+				Hotkey, RAlt & ., On
+			}
 			Suspend, On
 			Sleep, 250
 			Suspend, Off
@@ -525,8 +528,8 @@ PrepWinChange() {
 WinChange(w, l) {
 	If fullscreenmode And (w = 53 Or w = 54 Or w = 32772)
 		Gosub, FullScreenMode
-	If remotedesktop And w = 32772
-		Gosub, RemoteDesktopMode
+	If rdpclient Or (remotedesktop And w = 32772)
+		SetTimer, RemoteDesktopMode, -250
 }
 
 WriteSettings() {
@@ -792,7 +795,11 @@ RCtrl::
 		SetTimer, RCtrlReset, 400
 		Sleep, 50
 		IfWinActive, ahk_class TscShellContainerClass
+		{
 			PostMessage, 0x112, 0xF020
+			IfWinActive, ahk_class TscShellContainerClass
+				WinActivate, ahk_class Shell_TrayWnd
+		}
 		Else IfWinExist, ahk_class TscShellContainerClass
 			WinActivate
 	} Else
