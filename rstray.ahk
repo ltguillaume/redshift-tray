@@ -687,8 +687,7 @@ Brightness(value) {
 	Run(TRUE)
 	If mode = enabled
 	{
-		Sleep, 200
-		Process, Exist, %exe%
+		Process, Wait, %exe%, .250
 		If !ErrorLevel {
 			brightness -= value
 			Run(TRUE)
@@ -711,8 +710,7 @@ Temperature(value) {
 	Run(TRUE)
 	If mode = enabled
 	{
-		Sleep, 200
-		Process, Exist, %exe%
+		Process, Wait, %exe%, .250
 		If !ErrorLevel {
 			temperature -= value
 			Run(TRUE)
