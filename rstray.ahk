@@ -481,8 +481,8 @@ Return
 		Goto, Pause
 Return
 !End::Goto, Disable
-!PgUp::Brightness(0.05)
-!PgDn::Brightness(-0.05)
+!PgUp::Brightness(.05)
+!PgDn::Brightness(-.05)
 RAlt & Home::
 	If (brightness <> 1 And mode = "forced")
 		Brightness(1)
@@ -678,7 +678,7 @@ Brightness(value) {
 		brightness = 1
 	Else {
 		newbrightness := brightness + value
-		If (newbrightness > 0.09 And newbrightness < 10.01)
+		If (newbrightness > .09 And newbrightness < 10.01)
 			brightness = %newbrightness%
 		Else
 			Return
