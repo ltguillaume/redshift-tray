@@ -415,7 +415,7 @@ RemoteDesktopMode:
 		rdpclient = 0
 	}
 
-	If RemoteSession() And !remote {
+	If !remote And RemoteSession() {
 		Menu, Tray, Disable, &Enabled
 		Menu, Tray, Disable, &Forced
 		Menu, Tray, Disable, &Paused
@@ -427,7 +427,7 @@ RemoteDesktopMode:
 			PrepRunGui()
 		PrepWinChange()
 		remote = 1
-	} Else If !RemoteSession() And remote {
+	} Else If remote And !RemoteSession() {
 		Menu, Tray, Enable, &Enabled
 		Menu, Tray, Enable, &Forced
 		Menu, Tray, Enable, &Paused
