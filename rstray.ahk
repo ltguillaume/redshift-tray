@@ -1,10 +1,10 @@
-; Redshift Tray v1.9.7 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v1.9.9 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
-#SingleInstance, force
+#SingleInstance force
 #Persistent
 #MaxHotkeysPerInterval, 200
-#MenuMaskKey, vk07	; Use unassigned key instead of Ctrl to mask Win/Alt keyup
-DetectHiddenWindows, On
+#MenuMaskKey vk07	; Use unassigned key instead of Ctrl to mask Win/Alt keyup
+DetectHiddenWindows On
 Process, Priority,, High
 SetKeyDelay, -1
 SetTitleMatchMode, 2
@@ -450,7 +450,7 @@ RemoteDesktopMode:
 Return
 
 RemoveToolTip:
-	SetTimer, RemoveToolTip, Off
+	SetTimer,, Off
 	ToolTip
 Return
 
@@ -569,13 +569,13 @@ Autorun(force = FALSE) {
 	If !AutorunOn() Or force {
 		task := sch.NewTask(0)
 		If runasadmin Or keepcalibration
-			task.Principal.RunLevel := 1
-		task.Triggers.Create(9)
-		action := task.Actions.Create(0)
+			task.Principal.RunLevel := 1	; 1 = Highest
+		task.Triggers.Create(9)	;	9 = Trigger on logon
+		action := task.Actions.Create(0)	; 0 = Executable
 		action.ID := "Redshift Tray"
 		action.Path := A_ScriptFullPath
 		task.Settings.DisallowStartIfOnBatteries := FALSE
-		root.RegisterTaskDefinition("Redshift Tray", task, 6, "", "", 3)
+		root.RegisterTaskDefinition("Redshift Tray", task, 6, "", "", 3)	; 6 = TaskCreateOrUpdate
 		If AutorunOn()
 			Menu, Settings, Check, &Autorun
 	} Else {
