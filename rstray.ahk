@@ -391,24 +391,24 @@ Return
 RemoteDesktopMode:
 	IfWinActive, ahk_class TscShellContainerClass
 	{
+		Suspend, On
 		Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
 		Hotkey, RAlt & `,, Off
 		Hotkey, RAlt & ., Off
-		Suspend, On
 		Sleep, 250
-		Suspend, Off
 		rdpclient = 1
+		Suspend, Off
 	}
 	Else
 	{
 		If rdpclient
 		{
+			Suspend, On
 			Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
 			If extrahotkeys {
 				Hotkey, RAlt & `,, On
 				Hotkey, RAlt & ., On
 			}
-			Suspend, On
 			Sleep, 250
 			Suspend, Off
 		}
@@ -416,6 +416,7 @@ RemoteDesktopMode:
 	}
 
 	If !remote And RemoteSession() {
+		Suspend, On
 		Menu, Tray, Disable, &Enabled
 		Menu, Tray, Disable, &Forced
 		Menu, Tray, Disable, &Paused
@@ -427,6 +428,7 @@ RemoteDesktopMode:
 			PrepRunGui()
 		PrepWinChange()
 		remote = 1
+		Suspend, Off
 	} Else If remote And !RemoteSession() {
 		Menu, Tray, Enable, &Enabled
 		Menu, Tray, Enable, &Forced
