@@ -577,6 +577,8 @@ Autorun(force = FALSE) {
 		action.ID := "Redshift Tray"
 		action.Path := A_ScriptFullPath
 		task.Settings.DisallowStartIfOnBatteries := FALSE
+		task.Settings.ExecutionTimeLimit := "PT0S"
+		task.Settings.StopIfGoingOnBatteries := FALSE
 		root.RegisterTaskDefinition("Redshift Tray", task, 6, "", "", 3)	; 6 = TaskCreateOrUpdate
 		If AutorunOn()
 			Menu, Settings, Check, &Autorun
