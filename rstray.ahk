@@ -821,7 +821,7 @@ Return
 
 Run:
 	Gui, Submit
-	If (runcmd <> "" And runcmd <> "Command...")
+	If (runcmd <> "")
 		PrepRun(runcmd)
 RunGuiGuiEscape:
 	Gui, RunGui:Cancel
