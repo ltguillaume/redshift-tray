@@ -778,17 +778,11 @@ RWin::
 	}
 Return
 
-#If, extrahotkeys And MouseOnTaskbar()
-~LButton::ShowDesktop()
-MButton::TaskMgr()
-WheelUp::Send {Volume_Up}
-WheelDown::Send {Volume_Down}
-
 #If, extrahotkeys And rdpclient
 >^Up::SetVolume("+1")
 >^Down::SetVolume("-1")
 
-#If, extrahotkeys And !RemoteSession()
+#If, remotedesktop And !RemoteSession()
 RCtrl::
 	KeyWait, RCtrl
 	If !rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
@@ -797,9 +791,10 @@ RCtrl::
 		Sleep, 50
 		IfWinActive, ahk_class TscShellContainerClass
 		{
+			WinGet, id, ID, A
 			PostMessage, 0x112, 0xF020
 			Sleep, 50
-			IfWinActive, ahk_class TscShellContainerClass
+			IfWinActive, ahk_id %id%
 				WinActivate, ahk_class Shell_TrayWnd
 		}
 		Else IfWinExist, ahk_class TscShellContainerClass
@@ -807,6 +802,12 @@ RCtrl::
 	} Else
 		rctrl = 0
 Return
+
+#If, extrahotkeys And MouseOnTaskbar()
+~LButton::ShowDesktop()
+MButton::TaskMgr()
+WheelUp::Send {Volume_Up}
+WheelDown::Send {Volume_Down}
 
 RAltReset:
 	ralt = 0
