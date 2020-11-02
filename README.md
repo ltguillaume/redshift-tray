@@ -93,3 +93,5 @@ You. Are. Done!
 * Icon created from a damn good [design](http://www.laytondiament.com/blog/2015/5/3/design-chill-sunset-icon) by [Layton Diament](http://www.laytondiament.com)  
 * [AutoHotkey](https://www.autohotkey.com), a scripting language for desktop automation by Chris Mallet and others.  
 * [Redshift](https://github.com/jonls/redshift) by [Jon Lund Steffensen](https://github.com/jonls)
+* [Chocolatey package](https://chocolatey.org/packages/rstray) by [tunisiano187](https://github.com/tunisiano187)
+* [Scoop package](https://github.com/lukesampson/scoop-extras/blob/master/bucket/redshift-tray.json) by [Ash258](https://github.com/Ash258), [r15ch13](https://github.com/r15ch13) and [linsui](https://github.com/linsui)
