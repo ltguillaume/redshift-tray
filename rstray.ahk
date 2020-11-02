@@ -395,7 +395,7 @@ RemoteDesktopMode:
 		Send {Alt Up}{Ctrl Up}{RAlt Up}{RCtrl Up}
 		Hotkey, RAlt & `,, Off
 		Hotkey, RAlt & ., Off
-		Sleep, 250
+;		Sleep, 250
 		rdpclient = 1
 		Suspend, Off
 	}
@@ -409,7 +409,7 @@ RemoteDesktopMode:
 				Hotkey, RAlt & `,, On
 				Hotkey, RAlt & ., On
 			}
-			Sleep, 250
+;			Sleep, 250
 			Suspend, Off
 		}
 		rdpclient = 0
@@ -530,7 +530,7 @@ WinChange(w, l) {
 	If fullscreenmode And (w = 53 Or w = 54 Or w = 32772)
 		Gosub, FullScreenMode
 	If rdpclient Or (remotedesktop And w = 32772)
-		SetTimer, RemoteDesktopMode, -250
+		SetTimer, RemoteDesktopMode, -150
 }
 
 WriteSettings() {
@@ -788,7 +788,7 @@ RCtrl::
 	If !rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
 		rctrl = 1
 		SetTimer, RCtrlReset, 400
-		Sleep, 50
+;		Sleep, 50
 		IfWinActive, ahk_class TscShellContainerClass
 		{
 			WinGet, id, ID, A
