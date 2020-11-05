@@ -371,7 +371,7 @@ FullScreenMode:
 	WinGetPos ,,, width, height, ahk_id %id%
 	; 0x800000 is WS_BORDER
 	; 0x20000000 is WS_MINIMIZE
-	If ((style & 0x20800000) Or height < A_ScreenHeight Or width < A_ScreenWidth) {	; Not full-screen
+	If ((style & 0x20800000) Or height < A_ScreenHeight Or width < A_ScreenWidth Or cls = "TscShellContainerClass") {	; Not full-screen or remote desktop
 		If isfullscreen = 1	; Was full-screen
 		{
 			isfullscreen = 2	; Full-screen is done
