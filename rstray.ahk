@@ -771,7 +771,7 @@ RWin::
 >^Ralt::
 >^AppsKey::
 	If !WinExist("ahk_id" . rundialog) And !WinActive("ahk_id" . rungui)
-		Gui, RunGui:Show
+		Gui, RunGui:Show, Center
 	Else {
 		Gui, RunGui:Cancel
 		WinRunDialog()
