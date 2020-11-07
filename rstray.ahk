@@ -781,6 +781,7 @@ Return
 #If, extrahotkeys And rdpclient
 >^Up::SetVolume("+1")
 >^Down::SetVolume("-1")
+AppsKey & m::ToggleMute()
 
 #If, remotedesktop And !RemoteSession()
 RCtrl::
@@ -846,6 +847,13 @@ SetVolume(value) {
 	SoundGet, mute,, mute
 	If mute = On
 		SoundSet, 0,, mute
+}
+
+ToggleMute() {
+	SoundSet, -1,, mute
+	SoundGet, mute,, mute
+	Tooltip, Mute: %mute%
+	SetTimer, RemoveToolTip, 1000
 }
 
 RemoteSession() {
