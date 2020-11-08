@@ -836,7 +836,7 @@ Return
 
 MouseOnTaskbar() {
 	MouseGetPos,,, id
-	Return WinExist("ahk_id" . id . " ahk_class Shell_TrayWnd")
+	Return WinExist("ahk_id" . id . " ahk_class Shell_TrayWnd") Or WinExist("ahk_id" . id . " ahk_class Shell_SecondaryTrayWnd")
 }
 
 SetVolume(value) {
