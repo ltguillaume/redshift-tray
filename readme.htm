@@ -10,10 +10,8 @@ h1,h2{font-weight:600;padding-bottom:8px;border-bottom:1px solid #d0d0d0}
 img{float:right;margin:-10px;padding-left:20px;background:#f0f0f0}
 .start li{padding:2px}
 table,td{border:1px solid #d0d0d0;border-collapse:collapse;padding:6px}
-tr{background:#e6e6e6}
-tr+tr{background:#f6f6f6}
-tr+*+*+*+*+*+*+*+*+*+tr{background:#e6e6e6}
-tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
+tr{background:#f6f6f6}
+td[colspan="2"]{background:#e6e6e6}
 </style>
 </head>
 <body>
@@ -37,12 +35,12 @@ tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
 <h2>List of hotkeys</h2>
 <table>
 <tr><td colspan="2"><b>Hotkeys</b></td></tr>
-<tr><td>Alt Home</td><td>Reset Redshift (again to reset brightness)</td></tr>
-<tr><td>Alt Pause</td><td>Toggle pause for the set amount of minutes</td></tr>
+<tr><td>Alt Home</td><td>Reset Redshift (press again to reset brightness)</td></tr>
+<tr><td>Alt Pause</td><td>Pause Redshift for the set amount of minutes</td></tr>
 <tr><td>Alt End</td><td>Disable Redshift</td></tr>
 <tr><td>Alt PgUp</td><td>Increase brightness</td></tr>
 <tr><td>Alt PgDn</td><td>Decrease brightness</td></tr>
-<tr><td>RAlt Home</td><td>Force night temperature (again to reset brightness)</td></tr>
+<tr><td>RAlt Home</td><td>Force night temperature (press again to reset brightness)</td></tr>
 <tr><td>RAlt End</td><td>End forced temperature</td></tr>
 <tr><td>RAlt PgUp</td><td>Increase forced temperature</td></tr>
 <tr><td>RAlt PgDn</td><td>Decrease forced temperature</td></tr>
@@ -69,8 +67,9 @@ tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
 <tr><td>RCtrl Up</td><td>MM: Volume up</td></tr>
 <tr><td>RCtrl Down</td><td>MM: Volume down</td></tr>
 <tr><td>Wheel on taskbar</td><td>MM: Volume up/down</td></tr>
-<tr><td>DblClick on taskbar</td><td>Show desktop</td></tr>
-<tr><td>MidClick on taskbar</td><td>Open Task Manager</td></tr>
+<tr><td>Double-click on taskbar</td><td>Show desktop</td></tr>
+<tr><td>Middle-click on taskbar</td><td>Open Task Manager</td></tr>
+<tr><td colspan="2"><b>Remote Desktop Mode</b></td>
 <tr><td>RCtrl x2</td><td>Switch between RDP host/client</td></tr>
 </table>
 <h2>Getting started</h2>
@@ -92,12 +91,12 @@ tr+*+*+*+*+*+*+*+*+*+*+tr{background:#f6f6f6}
 <li>If you're a Remote Desktop addict like me, be sure to set <b>remotedesktop=1</b>. This way, you can run this gem in both environments, switch between local and remote sessions by double-tapping RCtrl, and change the local Redshift settings while in a remote screen.</li>
 <li>I often continue a session remotely via a laptop without numeric keypad. Once I return to the system and log on locally, I want the NumLock state to be enabled again. <b>rdpnumlock=1</b> will take care of this.</li>
 <li>If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set <b>startdisabled=1</b>.</li>
-<li>If you want to use the optional (default and/or extra) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set <b>runasadmin=1</b> so that Redshift Tray will try to run as admin, too. If this scenario doesn’t really occur on your system, leave the damn thing alone.</li>
+<li>If you want to be able to use the hotkeys when a program that runs as administrator is focused, set <b>runasadmin=1</b> so that Redshift Tray will try to run as admin, too. If this scenario doesn’t really occur on your system, leave the damn thing alone.</li>
 <li>Traveling with your laptop? You can set <b>traveling=1</b> after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though. Since the location is based on your IP, don't use this when a VPN is active.</li>
 </ul>
 </li>
 <li>Now save the settings file and close it. Redshift Tray will restart with the settings you’ve defined.</li>
-<li>If you’d like Redshift Tray to automatically run at startup, right-click the tray icon again and click <b>Autorun</b> under <b>Settings</b>, so that this option is checked. This setting just creates or removes a value in the registry key <em>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</em>.</li>
+<li>If you’d like Redshift Tray to automatically run at startup, right-click the tray icon again and click <b>Autorun</b> under <b>Settings</b>, so that this option is checked. This setting creates a scheduled task so that Redshift Tray will start when the current user is logging on. It will try to run as administrator if you have set <em>keepcalibration=1</em> or <em>runasadmin=1</em>.</li>
 <li>If Redshift <a href="http://jonls.dk/2010/09/windows-gamma-adjustments">fails to adjust the color temperature</a>, or the brightness level gets stuck at a certain percentage, import <b>unlock-gammarange.reg</b> into the registry and restart Windows.</li>
 </ol>
 <p>You. Are. Done!</p>

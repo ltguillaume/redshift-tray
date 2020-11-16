@@ -22,12 +22,12 @@ It also includes a set of extra hotkeys. Admittedly, these are entirely based on
 
 __Hotkeys__ | &nbsp;
 :---: |---
-Alt Home | Reset gamma (again to reset brightness)
-Alt Pause | Toggle pause for %pauseminutes% minutes
+Alt Home | Reset Redshift (press again to reset brightness)
+Alt Pause | Pause Redshift for the set amount of minutes
 Alt End | Disable Redshift
 Alt PgUp | Increase brightness
 Alt PgDn | Decrease brightness
-RAlt Home | Force night temperature (again to reset brightness)
+RAlt Home | Force night temperature (press again to reset brightness)
 RAlt End | End forced temperature
 RAlt PgUp | Increase forced temperature
 RAlt PgDn | Decrease forced temperature
@@ -60,8 +60,9 @@ Menu M | MM: Mute
 RCtrl Up | MM: Volume up
 RCtrl Down | MM: Volume down
 Wheel on taskbar | MM: Volume up/down
-DblClick on taskbar | Show desktop
-MidClick on taskbar | Open Task Manager
+Double-click on taskbar | Show desktop
+Middle-click on taskbar | Open Task Manager
+__Remote Desktop mode__ | &nbsp;
 RCtrl x2 | Switch between RDP host/client
 
 ## Getting started
@@ -80,11 +81,11 @@ RCtrl x2 | Switch between RDP host/client
     - If you loathe the fading transition upon start-up, just set __notransitions=1__.
     - If you're a Remote Desktop addict like me, be sure to set __remotedesktop=1__. This way, you can run this gem in both environments, switch between local and remote sessions by double-tapping RCtrl, and change the local Redshift settings while in a remote screen.
     - I often continue a session remotely via a laptop without numeric keypad. Once I return to the system and log on locally, I want the NumLock state to be enabled again. __rdpnumlock=1__ will take care of this.
-    - If you want to use the (default and/or extra) hotkeys when a program that runs as admin (has elevated privileges) is the active window, set __runasadmin=1__ so that Redshift Tray will try to run as admin, too. If this scenario doesn't really occur on your system, leave the damn thing alone.
+    - If you want to be able to use the hotkeys when a program that runs as administrator is focused, set __runasadmin=1__ so that Redshift Tray will try to run as administrator, too.
     - If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set __startdisabled=1__.
     - Traveling with your laptop? You can set __traveling=1__ after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though. Since the location is based on your IP, don't use this when a VPN is active.
 3. Now save the settings file and close it. Redshift Tray will restart with the settings you've defined.
-4. If you'd like Redshift Tray to automatically run at startup, right-click the tray icon again and click __Autorun__ under __Settings__, so that this option is checked. This setting just creates or removes a value in the registry key _HKCU\Software\Microsoft\Windows\CurrentVersion\Run_.
+4. If you'd like Redshift Tray to automatically run at startup, right-click the tray icon again and click __Autorun__ under __Settings__, so that this option is checked. This setting creates a scheduled task so that Redshift Tray will start when the current user is logging on. It will try to run as administrator if you have set either __keepcalibration=1__ or __runasadmin=1__.
 5. If Redshift [fails to adjust the color temperature](http://jonls.dk/2010/09/windows-gamma-adjustments), or the brightness level gets stuck at a certain percentage, import __unlock-gammarange.reg__ into the registry and restart Windows.
 
 You. Are. Done!
