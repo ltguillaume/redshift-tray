@@ -529,7 +529,7 @@ PrepWinChange() {
 WinChange(w, l) {
 	If fullscreenmode And (w = 53 Or w = 54 Or w = 32772)
 		Gosub, FullScreenMode
-	If rdpclient Or (remotedesktop And w = 32772)
+	If rdpclient Or (remotedesktop And (w = 16 Or w = 32772))
 		SetTimer, RemoteDesktopMode, -150
 }
 
