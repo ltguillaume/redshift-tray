@@ -458,7 +458,6 @@ RemoteDesktopMode:
 Return
 
 RemoveToolTip:
-	SetTimer,, Off
 	ToolTip
 Return
 
@@ -680,7 +679,7 @@ TrayTip() {
 	Menu, Tray, Tip, Redshift`n%status%`nBrightness: %br%`%
 	If !isfullscreen And (A_ThisHotkey <> A_PriorHotkey Or InStr(A_ThisHotkey, "Pg") Or InStr(A_ThisHotkey, "Home")) And A_TimeSinceThisHotkey < 2500 {
 		Tooltip, %status%`nBrightness: %br%`%
-		SetTimer, RemoveToolTip, 1000
+		SetTimer, RemoveToolTip, -1000
 	}
 }
 
@@ -720,7 +719,7 @@ Temperature(value) {
 	Run(TRUE)
 	If mode = enabled
 	{
-		Process, Wait, %exe%, .250
+		Process, Wait, %exe%, .25
 		If !ErrorLevel {
 			temperature -= value
 			Run(TRUE)
@@ -739,7 +738,7 @@ RAlt & =::Opacity(5)
 RAlt::
 	If !ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
 		ralt = 1
-		SetTimer, RAltReset, 400
+		SetTimer, RAltReset, -400
 		If WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
 			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass")
 			Send ^{F4}
@@ -797,7 +796,7 @@ RCtrl::
 	KeyWait, RCtrl
 	If !rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
 		rctrl = 1
-		SetTimer, RCtrlReset, 400
+		SetTimer, RCtrlReset, -400
 ;		Sleep, 50
 		IfWinActive, ahk_class TscShellContainerClass
 		{
@@ -818,12 +817,10 @@ WheelDown::Send {Volume_Down}
 
 RAltReset:
 	ralt = 0
-	SetTimer,, Delete
 Return
 
 RCtrlReset:
 	rctrl = 0
-	SetTimer,, Delete
 Return
 
 Run:
@@ -849,7 +846,7 @@ SetVolume(value) {
 	SoundSet, %value%
 	SoundGet, volume
 	Tooltip, % "Volume: " . Round(volume)`%
-	SetTimer, RemoveToolTip, 1000
+	SetTimer, RemoveToolTip, -1000
 	SoundGet, mute,, mute
 	If mute = On
 		SoundSet, 0,, mute
