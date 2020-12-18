@@ -730,8 +730,8 @@ RAlt & 0::WinSet, AlwaysOnTop, Toggle, A
 RAlt & -::Opacity(-5)
 RAlt & =::Opacity(5)
 RAlt::
-	If !ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
-		ralt = 1
+	If ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
+		ralt = 0
 		SetTimer, RAltReset, 400
 		If WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
 			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass")
@@ -741,7 +741,7 @@ RAlt::
 		Else
 			Send !{F4}
 	} Else
-		ralt = 0
+		ralt = 1
 Return
 AppsKey & Up::Send #{Up}
 AppsKey & Down::Send #{Down}
@@ -785,22 +785,19 @@ Return
 #If, remotedesktop And !RemoteSession()
 RCtrl::
 	KeyWait, RCtrl
-	If !rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
-		rctrl = 1
+	If rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
+		rctrl = 0
 		SetTimer, RCtrlReset, 400
 ;		Sleep, 50
 		IfWinActive, ahk_class TscShellContainerClass
 		{
 			WinGet, id, ID, A
 			PostMessage, 0x112, 0xF020
-			Sleep, 50
-			IfWinActive, ahk_id %id%
-				WinActivate, ahk_class Shell_TrayWnd
 		}
 		Else IfWinExist, ahk_class TscShellContainerClass
 			WinActivate
 	} Else
-		rctrl = 0
+		rctrl = 1
 Return
 
 #If, extrahotkeys And MouseOnTaskbar()
