@@ -1,4 +1,4 @@
-; Redshift Tray v1.9.9 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray v2.0.0 - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance force
 #Persistent
@@ -737,8 +737,8 @@ RAlt & 0::WinSet, AlwaysOnTop, Toggle, A
 RAlt & -::Opacity(-5)
 RAlt & =::Opacity(5)
 RAlt::
-	If ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
-		ralt = 0
+	If !ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
+		ralt = 1
 		SetTimer, RAltReset, 400
 		If WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
 			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass")
@@ -748,7 +748,7 @@ RAlt::
 		Else
 			Send !{F4}
 	} Else {
-		ralt = 1
+		ralt = 0
 		If remotedesktop And WinActive("ahk_class TscShellContainerClass")
 			WinActivate, ahk_class Shell_TrayWnd
 	}
@@ -795,8 +795,8 @@ Return
 #If, remotedesktop And !RemoteSession()
 RCtrl::
 	KeyWait, RCtrl
-	If rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
-		rctrl = 0
+	If !rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
+		rctrl = 1
 		SetTimer, RCtrlReset, 400
 ;		Sleep, 50
 		IfWinActive, ahk_class TscShellContainerClass
@@ -807,7 +807,7 @@ RCtrl::
 		Else IfWinExist, ahk_class TscShellContainerClass
 			WinActivate
 	} Else
-		rctrl = 1
+		rctrl = 0
 Return
 
 #If, extrahotkeys And MouseOnTaskbar()
