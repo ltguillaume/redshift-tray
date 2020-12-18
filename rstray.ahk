@@ -14,7 +14,7 @@ OnExit, OnExit
 ; Global variables (when also used in functions)
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
 Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, rdpnumlock, runasadmin, startdisabled, traveling	; Switches
-Global lat, lon, day, night, brightness, fullscreen, pauseminutes, daytime, nighttime	; Values
+Global lat, lon, day, night, brightness, fullscreen, fullscreenignoreclass, pauseminutes, daytime, nighttime	; Values
 Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, pid, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, winchange, withcaption := Object()	; Internal
 EnvGet, tmp, Temp
 ; Settings from .ini
@@ -24,6 +24,7 @@ IniRead, day, %ini%, %v%, daytemp, 6500
 IniRead, night, %ini%, %v%, nighttemp, 3500
 IniRead, brightness, %ini%, %v%, brightness, 1
 IniRead, fullscreen, %ini%, %v%, fullscreentemp, 6500
+IniRead, fullscreenignoreclass, %ini%, %v%, fullscreenignoreclass, "StrokesPlus;Afx:"
 IniRead, pauseminutes, %ini%, %v%, pauseminutes, 10
 IniRead, daytime, %ini%, %v%, daytime, HHmm
 IniRead, nighttime, %ini%, %v%, nighttime, HHmm
@@ -366,7 +367,12 @@ FullScreenMode:
 	If mode <> enabled
 		Return
 	WinGet, id, ID, A
+	If !id
+		Return
 	WinGetClass, cls, ahk_id %id%
+	Loop, parse, fullscreenignoreclass, `;
+		If Instr(cls, A_LoopField, TRUE)
+			Return
 	WinGet style, Style, ahk_id %id%
 	WinGetPos ,,, width, height, ahk_id %id%
 	; 0x800000 is WS_BORDER
@@ -542,6 +548,7 @@ WriteSettings() {
 		brightness = %restorebrightness%
 	IniWrite, %brightness%, %ini%, %v%, brightness
 	IniWrite, %fullscreen%, %ini%, %v%, fullscreentemp
+	IniWrite, %fullscreenignoreclass%, %ini%, %v%, fullscreenignoreclass
 	IniWrite, %pauseminutes%, %ini%, %v%, pauseminutes
 	IniWrite, %daytime%, %ini%, %v%, daytime
 	IniWrite, %nighttime%, %ini%, %v%, nighttime
