@@ -747,8 +747,11 @@ RAlt::
 			Send ^w
 		Else
 			Send !{F4}
-	} Else
+	} Else {
 		ralt = 1
+		If remotedesktop And WinActive("ahk_class TscShellContainerClass")
+			WinActivate, ahk_class Shell_TrayWnd
+	}
 Return
 AppsKey & Up::Send #{Up}
 AppsKey & Down::Send #{Down}
