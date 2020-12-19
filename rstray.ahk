@@ -4,7 +4,6 @@
 #Persistent
 #MaxHotkeysPerInterval, 200
 #MenuMaskKey vk07	; Use unassigned key instead of Ctrl to mask Win/Alt keyup
-DetectHiddenWindows On
 Process, Priority,, High
 SetKeyDelay, -1
 SetTitleMatchMode, 2
