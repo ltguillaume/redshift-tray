@@ -1,4 +1,4 @@
-; Redshift Tray v2.0.0 - https://github.com/ltGuillaume/Redshift-Tray
+; Redshift Tray - https://github.com/ltGuillaume/Redshift-Tray
 #NoEnv
 #SingleInstance force
 #Persistent
@@ -15,8 +15,10 @@ OnExit, OnExit
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
 Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, rdpnumlock, runasadmin, startdisabled, traveling	; Switches
 Global lat, lon, day, night, brightness, fullscreen, fullscreenignoreclass, pauseminutes, daytime, nighttime	; Values
-Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, pid, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, winchange, withcaption := Object()	; Internal
+Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, pid, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, ver, winchange, withcaption := Object()	; Internal
 EnvGet, tmp, Temp
+FileGetVersion, ver, %A_ScriptFullPath%
+ver := SubStr(ver, 1, -2)
 ; Settings from .ini
 IniRead, lat, %ini%, %v%, latitude
 IniRead, lon, %ini%, %v%, longitude
@@ -50,7 +52,7 @@ If !A_IsAdmin And (runasadmin Or keepcalibration) {
 
 ; Set up tray menu
 Menu, Tray, NoStandard
-Menu, Tray, Tip, Redshift
+Menu, Tray, Tip, Redshift Tray %ver%
 Menu, Tray, Add, &Enabled, Enable, Radio
 Menu, Tray, Add, &Forced, Force, Radio
 Menu, Tray, Add, &Paused, Pause, Radio
@@ -427,7 +429,7 @@ RemoteDesktopMode:
 		Menu, Tray, Disable, &Forced
 		Menu, Tray, Disable, &Paused
 		Menu, Tray, Disable, &Disabled
-		Menu, Tray, Tip, Redshift`nDisabled (Remote Desktop)
+		Menu, Tray, Tip, Redshift Tray %ver%`nDisabled (Remote Desktop)
 		Menu, Tray, Icon, %A_ScriptFullPath%, 2, 1
 		Restore()
 		If extrahotkeys
@@ -676,7 +678,7 @@ TrayTip() {
 			status .= " until " . SubStr(nighttime, 1, 2) . ":" . SubStr(nighttime, 3)
 	}
 	br := Round(brightness * 100, 0)
-	Menu, Tray, Tip, Redshift`n%status%`nBrightness: %br%`%
+	Menu, Tray, Tip, Redshift Tray %ver%`n%status%`nBrightness: %br%`%
 	If !isfullscreen And (A_ThisHotkey <> A_PriorHotkey Or InStr(A_ThisHotkey, "Pg") Or InStr(A_ThisHotkey, "Home")) And A_TimeSinceThisHotkey < 2500 {
 		Tooltip, %status%`nBrightness: %br%`%
 		SetTimer, RemoveToolTip, -1000
