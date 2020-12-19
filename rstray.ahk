@@ -373,7 +373,7 @@ FullScreenMode:
 		Return
 	WinGetClass, cls, ahk_id %id%
 	Loop, parse, fullscreenignoreclass, `;
-		If Instr(cls, A_LoopField, TRUE)
+		If Instr(cls, A_LoopField)
 			Return
 	WinGet style, Style, ahk_id %id%
 	WinGetPos ,,, width, height, ahk_id %id%
