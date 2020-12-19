@@ -448,7 +448,8 @@ RemoteDesktopMode:
 			PrepRunGui()
 		If !mode Or mode = "enabled"
 			Gosub, Enable
-		If (mode = "forced") {
+		If mode = forced
+		{
 			mode = %prevmode%
 			Gosub, Force
 		}
