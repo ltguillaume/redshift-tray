@@ -29,7 +29,7 @@ IniRead, fullscreenignoreclass, %ini%, %v%, fullscreenignoreclass, "StrokesPlus;
 IniRead, pauseminutes, %ini%, %v%, pauseminutes, 10
 IniRead, daytime, %ini%, %v%, daytime, HHmm
 IniRead, nighttime, %ini%, %v%, nighttime, HHmm
-IniRead, keepaliveseconds, %ini%, %v%, 0
+IniRead, keepaliveseconds, %ini%, %v%, keepaliveseconds, 0
 IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, customtimes, %ini%, %s%, customtimes, 0
 IniRead, fullscreenmode, %ini%, %s%, fullscreenmode, 0
@@ -160,7 +160,7 @@ Enable:
 	If fullscreenmode And !winchange
 		PrepWinChange()
 	If keepaliveseconds
-		SetTimer, CheckRunning, %keepaliveseconds%
+		SetTimer, CheckRunning, % keepaliveseconds * 1000
 Return
 
 Force:
