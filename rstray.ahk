@@ -376,7 +376,6 @@ CustomTimesMode:
 		If !mode Or mode = "disabled"
 			Goto, Enable
 	}
-	ClearMem()
 Return
 
 FullScreenMode:
@@ -407,7 +406,6 @@ FullScreenMode:
 		Else
 			Goto, Enable
 	}
-	ClearMem()
 Return
 
 RemoteDesktopMode:
@@ -420,9 +418,8 @@ RemoteDesktopMode:
 ;		Sleep, 250
 		rdpclient = 1
 		Suspend, Off
-	}
-	Else
-	{
+		ClearMem()
+	} Else {
 		If rdpclient
 		{
 			Suspend, On
@@ -433,6 +430,7 @@ RemoteDesktopMode:
 			}
 ;			Sleep, 250
 			Suspend, Off
+			ClearMem()
 		}
 		rdpclient = 0
 	}
@@ -451,6 +449,7 @@ RemoteDesktopMode:
 		PrepWinChange()
 		remote = 1
 		Suspend, Off
+		ClearMem()
 	} Else If remote And !RemoteSession() {
 		Menu, Tray, Enable, &Enabled
 		Menu, Tray, Enable, &Forced
@@ -470,8 +469,8 @@ RemoteDesktopMode:
 		}
 		PrepWinChange()
 		remote = 0
+		ClearMem()
 	}
-	ClearMem()
 Return
 
 RemoveToolTip:
