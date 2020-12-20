@@ -13,7 +13,7 @@ OnExit, OnExit
 ; Global variables (when also used in functions)
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
 Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, rdpnumlock, runasadmin, startdisabled, traveling	; Switches
-Global lat, lon, day, night, brightness, fullscreen, fullscreenignoreclass, pauseminutes, daytime, nighttime	; Values
+Global lat, lon, day, night, brightness, fullscreen, fullscreenignoreclass, pauseminutes, daytime, nighttime, keepaliveseconds	; Values
 Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, pid, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, ver, winchange, withcaption := Object()	; Internal
 EnvGet, tmp, Temp
 FileGetVersion, ver, %A_ScriptFullPath%
@@ -29,6 +29,7 @@ IniRead, fullscreenignoreclass, %ini%, %v%, fullscreenignoreclass, "StrokesPlus;
 IniRead, pauseminutes, %ini%, %v%, pauseminutes, 10
 IniRead, daytime, %ini%, %v%, daytime, HHmm
 IniRead, nighttime, %ini%, %v%, nighttime, HHmm
+IniRead, keepaliveseconds, %ini%, %v%, 0
 IniRead, colorizecursor, %ini%, %s%, colorizecursor, 0
 IniRead, customtimes, %ini%, %s%, customtimes, 0
 IniRead, fullscreenmode, %ini%, %s%, fullscreenmode, 0
@@ -137,6 +138,8 @@ If RemoteSession()
 
 ; Or else, Enable:
 Enable:
+	If keepaliveseconds
+		SetTimer, CheckRunning, Off
 	mode = enabled
 	timer = 0
 	Menu, Tray, Uncheck, &Disabled
@@ -156,6 +159,8 @@ Enable:
 	Run()
 	If fullscreenmode And !winchange
 		PrepWinChange()
+	If keepaliveseconds
+		SetTimer, CheckRunning, %keepaliveseconds%
 Return
 
 Force:
@@ -346,6 +351,16 @@ Settings:
 	If newmodtime <> %modtime%
 		Goto, Restart
 	OnExit, OnExit
+Return
+
+CheckRunning:
+	If mode <> enabled
+		SetTimer,, Delete
+	Else {
+		Process, Exist, %exe%
+		If !ErrorLevel
+			Run(TRUE)
+	}
 Return
 
 CustomTimesMode:
@@ -553,6 +568,7 @@ WriteSettings() {
 	IniWrite, %pauseminutes%, %ini%, %v%, pauseminutes
 	IniWrite, %daytime%, %ini%, %v%, daytime
 	IniWrite, %nighttime%, %ini%, %v%, nighttime
+	IniWrite, %keepaliveseconds%, %ini%, %v%, keepaliveseconds
 	IniWrite, %colorizecursor%, %ini%, %s%, colorizecursor
 	IniWrite, %customtimes%, %ini%, %s%, customtimes
 	IniWrite, %keepbrightness%, %ini%, %s%, keepbrightness
