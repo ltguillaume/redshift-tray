@@ -34,6 +34,7 @@ IniRead, lon, %ini%, %v%, longitude
 IniRead, day, %ini%, %v%, daytemp, 6500
 IniRead, night, %ini%, %v%, nighttemp, 3500
 IniRead, brightness, %ini%, %v%, brightness, 1
+IniRead, ctrlwforralt, %ini%, %v%, ctrlwforralt, |
 IniRead, fullscreen, %ini%, %v%, fullscreentemp, 6500
 IniRead, fullscreenignore, %ini%, %v%, fullscreenignore, |
 IniRead, pauseminutes, %ini%, %v%, pauseminutes, 10
@@ -574,6 +575,7 @@ WriteSettings() {
 	If restorebrightness And (mode = "disabled" Or mode = "paused")
 		brightness = %restorebrightness%
 	IniWrite, %brightness%, %ini%, %v%, brightness
+	IniWrite, %ctrlwforralt%, %ini%, %v%, ctrlwforralt
 	IniWrite, %fullscreen%, %ini%, %v%, fullscreentemp
 	IniWrite, %fullscreenignore%, %ini%, %v%, fullscreenignore
 	IniWrite, %pauseminutes%, %ini%, %v%, pauseminutes
@@ -768,13 +770,20 @@ RAlt::
 	If !ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
 		ralt = 1
 		SetTimer, RAltReset, -400
-		If WinActive("ahk_class Chrome_WidgetWin_1") Or WinActive("ahk_class IEFrame")
-			Or WinActive("Microsoft Edge") Or WinActive("ahk_class MozillaWindowClass")
-			Send ^{F4}
-		Else IfWinActive, ahk_class TTOTAL_CMD
-			Send ^w
-		Else
-			Send !{F4}
+		WinGet, id, ID, A
+		If ctrlwforralt <> |
+			Loop, parse, ctrlwforralt, |
+				If WinExist(A_LoopField " ahk_id" id) {
+					Send ^w
+					Return
+				}
+		WinGetClass, cls, A
+		Loop, parse, % "Chrome_WidgetWin_1|IEFrame|Microsoft Edge|MozillaWindowClass", |
+			If Instr(cls, A_LoopField) {
+				Send ^{F4}
+				Return
+			}
+		Send !{F4}
 	} Else {
 		ralt = 0
 		If remotedesktop And WinActive("ahk_class TscShellContainerClass")
