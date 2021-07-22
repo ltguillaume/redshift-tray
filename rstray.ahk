@@ -1,4 +1,14 @@
 ; Redshift Tray - https://github.com/ltGuillaume/Redshift-Tray
+;@Ahk2Exe-SetFileVersion 2.0.1
+
+;@Ahk2Exe-Bin Unicode 32*
+;@Ahk2Exe-SetDescription Redshift Tray
+;@Ahk2Exe-SetMainIcon Icons\redshift.ico
+;@Ahk2Exe-AddResource Icons\redshift-6500k.ico, 160
+;@Ahk2Exe-PostExec ResourceHacker.exe -open "%A_WorkFileName%" -save "%A_WorkFileName%" -action delete -mask ICONGROUP`,206`, ,,,,1
+;@Ahk2Exe-PostExec ResourceHacker.exe -open "%A_WorkFileName%" -save "%A_WorkFileName%" -action delete -mask ICONGROUP`,207`, ,,,,1
+;@Ahk2Exe-PostExec ResourceHacker.exe -open "%A_WorkFileName%" -save "%A_WorkFileName%" -action delete -mask ICONGROUP`,208`, ,,,,1
+
 #NoEnv
 #SingleInstance force
 #Persistent
