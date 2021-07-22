@@ -391,6 +391,7 @@ Return
 FullScreenMode:
 	If mode <> enabled
 		Return
+	Sleep, 100
 	WinGet, id, ID, A
 	If !id
 		Return
