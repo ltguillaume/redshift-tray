@@ -245,7 +245,7 @@ Return
 
 Help:
 	Gui, Add, ActiveX, w800 h600 vBrowser, Shell.Explorer
-	browser.Navigate("file://" . A_ScriptDir . "/readme.htm")
+	browser.Navigate("file://" A_ScriptDir "/readme.htm")
 	Gui, Show,, Help
 Return
 
@@ -644,7 +644,7 @@ Restore() {
 }
 
 Run(adjust = FALSE) {
-	br := brightness>1 ? "-g " . brightness : "-b " . brightness
+	br := brightness>1 ? "-g " brightness : "-b " brightness
 	ntmp := isfullscreen = 1 ? fullscreen : night
 	notr := adjust Or isfullscreen Or nofading ? "-r" : ""
 	If mode = enabled
@@ -676,10 +676,10 @@ TrayTip() {
 	If mode = enabled
 	{
 		If customtimes
-			status := "Enabled until " . SubStr(daytime, 1, 2) . ":" . SubStr(daytime, 3) . " (" . night . "K)"
+			status := "Enabled until " SubStr(daytime, 1, 2) ":" SubStr(daytime, 3) " (" night "K)"
 		Else {
-			latitude := Round(Abs(lat), 2) . "°" . (lat > 0 ? "N" : "S")
-			longitude := Round(Abs(lon), 2) . "°" . (lon > 0 ? "E" : "W")
+			latitude := Round(Abs(lat), 2) "°" (lat > 0 ? "N" : "S")
+			longitude := Round(Abs(lon), 2) "°" (lon > 0 ? "E" : "W")
 			status = Enabled: %night%K/%day%K`nLocation: %latitude% %longitude%
 		}
 	}
@@ -690,7 +690,7 @@ TrayTip() {
 	Else {
 		status = Disabled
 		if customtimes
-			status .= " until " . SubStr(nighttime, 1, 2) . ":" . SubStr(nighttime, 3)
+			status .= " until " SubStr(nighttime, 1, 2) ":" SubStr(nighttime, 3)
 	}
 	br := Round(brightness * 100, 0)
 	Menu, Tray, Tip, Redshift Tray %ver%`n%status%`nBrightness: %br%`%
@@ -796,7 +796,7 @@ RWin & RAlt::Send {RWin}	; Needed to allow RWin & combi's
 RWin::
 >^Ralt::
 >^AppsKey::
-	If !WinExist("ahk_id" . rundialog) And !WinActive("ahk_id" . rungui)
+	If !WinExist("ahk_id" rundialog) And !WinActive("ahk_id" rungui)
 		Gui, RunGui:Show, Center
 	Else {
 		Gui, RunGui:Cancel
@@ -856,13 +856,13 @@ Return
 
 MouseOnTaskbar() {
 	MouseGetPos,,, id
-	Return WinExist("ahk_id" . id . " ahk_class Shell_TrayWnd") Or WinExist("ahk_id" . id . " ahk_class Shell_SecondaryTrayWnd")
+	Return WinExist("ahk_id" id " ahk_class Shell_TrayWnd") Or WinExist("ahk_id" id " ahk_class Shell_SecondaryTrayWnd")
 }
 
 SetVolume(value) {
 	SoundSet, %value%
 	SoundGet, volume
-	Tooltip, % "Volume: " . Round(volume)`%
+	Tooltip, % "Volume: " Round(volume)`%
 	SetTimer, RemoveToolTip, -1000
 	SoundGet, mute,, mute
 	If mute = On
@@ -873,7 +873,6 @@ RemoteSession() {
 	SysGet, isremote, 4096
 	Return isremote > 0
 }
-
 
 PrepRunGui() {
 	Gui, RunGui:new, AlwaysOnTop -Caption +HwndRungui ToolWindow 0x40000
@@ -886,7 +885,7 @@ PrepRunGui() {
 }
 
 WinRunDialog() {
-	If (rundialog <> "" And WinExist("ahk_id" . rundialog)) {
+	If (rundialog <> "" And WinExist("ahk_id" rundialog)) {
 		IfWinNotActive, ahk_id %rundialog%
 			WinActivate, ahk_id %rundialog%
 		Else {
@@ -927,7 +926,7 @@ ClickThroughWindow() {
 		WinGet, style, Style, %_id%
 		If (style & 0xC00000) {	; Has caption
 			WinGet, maximized, MinMax, %_id%
-			If (maximized = 1 Or WinExist(_id . " ahk_class ApplicationFrameWindow")) {
+			If (maximized = 1 Or WinExist(_id " ahk_class ApplicationFrameWindow")) {
 				max = 0
 			} Else {
 				max = 1
@@ -1009,7 +1008,7 @@ PrepRun(cmd) {
 		Return ShellRun(cmd[1], cmd[2], tmp)
 	}
 	cmd := StrSplit(SubStr(cmd, 2), """",, 2)
-	ShellRun("""" . cmd[1] . """", cmd[2], tmp)
+	ShellRun("""" cmd[1] """", cmd[2], tmp)
 }
 
 ExpandEnvVars(in) {
