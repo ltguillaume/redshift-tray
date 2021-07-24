@@ -766,9 +766,12 @@ RAlt & 0::WinSet, AlwaysOnTop, Toggle, A
 RAlt & -::Opacity(-5)
 RAlt & =::Opacity(5)
 RAlt::
-	If !ralt And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
+	If !ralt {
 		ralt = 1
-		SetTimer, RAltReset, -400
+		If remotedesktop And WinActive("ahk_class TscShellContainerClass")
+			WinActivate, ahk_class Shell_TrayWnd
+	} Else If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
+		ralt = 0
 		WinGet, id, ID, A
 		If ctrlwforralt <> |
 			Loop, parse, ctrlwforralt, |
@@ -776,17 +779,12 @@ RAlt::
 					Send ^w
 					Return
 				}
-		WinGetClass, cls, A
-		Loop, parse, % "Chrome_WidgetWin_1|IEFrame|Microsoft Edge|MozillaWindowClass", |
-			If Instr(cls, A_LoopField) {
+		Loop, parse, % "Chrome_WidgetWin_1|IEFrame|MozillaWindowClass", |
+			If WinActive("ahk_class" A_LoopField) {
 				Send ^{F4}
 				Return
 			}
 		Send !{F4}
-	} Else {
-		ralt = 0
-		If remotedesktop And WinActive("ahk_class TscShellContainerClass")
-			WinActivate, ahk_class Shell_TrayWnd
 	}
 Return
 AppsKey & Up::Send #{Up}
@@ -814,7 +812,7 @@ RWin & RAlt::Send {RWin}	; Needed to allow RWin & combi's
 >^Down::Send {Volume_Down}
 <^LWin::
 RWin::
->^Ralt::
+>^RAlt::
 >^AppsKey::
 	If !WinExist("ahk_id" rundialog) And !WinActive("ahk_id" rungui)
 		Gui, RunGui:Show, Center
@@ -831,9 +829,10 @@ Return
 #If, remotedesktop And !RemoteSession()
 RCtrl::
 	KeyWait, RCtrl
-	If !rctrl And A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 {
+	If !rctrl
 		rctrl = 1
-		SetTimer, RCtrlReset, -400
+	Else If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
+		rctrl = 0
 ;		Sleep, 50
 		IfWinActive, ahk_class TscShellContainerClass
 		{
@@ -842,8 +841,7 @@ RCtrl::
 		}
 		Else IfWinExist, ahk_class TscShellContainerClass
 			WinActivate
-	} Else
-		rctrl = 0
+	}
 Return
 
 #If, extrahotkeys And MouseOnTaskbar()
@@ -851,14 +849,6 @@ Return
 MButton::TaskMgr()
 WheelUp::Send {Volume_Up}
 WheelDown::Send {Volume_Down}
-
-RAltReset:
-	ralt = 0
-Return
-
-RCtrlReset:
-	rctrl = 0
-Return
 
 Run:
 	Gui, Submit
