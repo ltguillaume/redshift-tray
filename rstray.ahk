@@ -392,7 +392,6 @@ Return
 FullScreenMode:
 	If mode <> enabled
 		Return
-	Sleep, 100
 	WinGet, id, ID, A
 	If !id
 		Return
@@ -562,8 +561,8 @@ PrepWinChange() {
 
 WinChange(w, l) {
 	If fullscreenmode And (w = 53 Or w = 54 Or w = 32772)
-		Gosub, FullScreenMode
-	If rdpclient Or (remotedesktop And (w = 16 Or w = 32772))
+		SetTimer, FullScreenMode, -150
+	If rdpclient Or (remotedesktop And (w = 2 Or w = 53 Or w = 54 Or w = 32772))
 		SetTimer, RemoteDesktopMode, -150
 }
 
