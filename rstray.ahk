@@ -10,7 +10,7 @@
 ;@Ahk2Exe-PostExec ResourceHacker.exe -open "%A_WorkFileName%" -save "%A_WorkFileName%" -action delete -mask ICONGROUP`,208`, ,,,,1
 
 #NoEnv
-#SingleInstance force
+#SingleInstance Off
 
 #MaxHotkeysPerInterval, 200
 #MenuMaskKey vk07	; Use unassigned key instead of Ctrl to mask Win/Alt keyup
@@ -18,7 +18,6 @@ Process, Priority,, High
 SetKeyDelay, -1
 SetTitleMatchMode, 2
 SetWorkingDir, %A_ScriptDir%
-OnExit, OnExit
 
 ; Global variables (when also used in functions)
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
@@ -57,9 +56,20 @@ IniRead, traveling, %ini%, %s%, traveling, 0
 
 ; Initialize
 If !A_IsAdmin And (runasadmin Or keepcalibration) {
-	Run, *RunAs "%A_ScriptFullPath%" /restart
+	try {
+		Run, *RunAs "%A_ScriptFullPath%" /r
+	}
 	ExitApp
 }
+
+DetectHiddenWindows, On
+WinGet, self, List, %A_ScriptFullPath%
+Loop, %self%
+	If (self%A_Index% != A_ScriptHwnd)
+		PostMessage, 0x0010,,,, % "ahk_id" self%A_Index%
+DetectHiddenWindows, Off
+
+OnExit("Exit")
 
 ; Set up tray menu
 Menu, Tray, NoStandard
@@ -353,14 +363,14 @@ Traveling:
 Return
 
 Settings:
-	OnExit
+	OnExit("Exit", 0)
 	WriteSettings()
 	FileGetTime, modtime, %ini%
 	RunWait, %ini%
 	FileGetTime, newmodtime, %ini%
 	If newmodtime <> %modtime%
 		Goto, Restart
-	OnExit, OnExit
+	OnExit("Exit")
 Return
 
 CheckRunning:
@@ -493,14 +503,14 @@ Restart:
 	ExitApp
 Return
 
-OnExit:
+Exit:
+	ExitApp
+
+Exit() {
 	WriteSettings()
 	Restore()
 	ExitApp
-Return
-
-Exit:
-	ExitApp
+}
 
 #If, hotkeys And !RemoteSession()
 !Home::
@@ -594,7 +604,9 @@ WriteSettings() {
 
 Autorun(force = FALSE) {
 	If !A_IsAdmin
-		Run, *RunAs "%A_ScriptFullPath%" /restart force
+	try {
+		Run, *RunAs "%A_ScriptFullPath%" /r
+	}
 
 	sch := ComObjCreate("Schedule.Service")
 	sch.Connect()
