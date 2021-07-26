@@ -11,7 +11,7 @@
 
 #NoEnv
 #SingleInstance force
-#Persistent
+
 #MaxHotkeysPerInterval, 200
 #MenuMaskKey vk07	; Use unassigned key instead of Ctrl to mask Win/Alt keyup
 Process, Priority,, High
@@ -973,7 +973,7 @@ ShowDesktop() {
 	}
 }
 
-TaskMgr() {
+TaskMgr() {	; Don't show Task Manager when clicking on buttons
 	WinGetClass, before, A
 	If before = Shell_TrayWnd
 	{
