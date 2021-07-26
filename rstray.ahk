@@ -197,7 +197,6 @@ EndForce:
 		Goto, Disable
 	Else
 		Goto, Enable
-Return
 
 Disable:
 	If isfullscreen <> 1
@@ -508,13 +507,11 @@ Exit:
 	If (brightness <> 1 And mode = "enabled")
 		Brightness(1)
 	Goto, Enable
-Return
 !Pause::
 	If mode = paused
 		Goto, Enable
 	Else
 		Goto, Pause
-Return
 !End::Goto, Disable
 !PgUp::Brightness(.05)
 !PgDn::Brightness(-.05)
@@ -522,7 +519,6 @@ RAlt & Home::
 	If (brightness <> 1 And mode = "forced")
 		Brightness(1)
 	Goto, Force
-Return
 RAlt & End::Goto, EndForce
 RAlt & PgUp::Temperature(100)
 RAlt & PgDn::Temperature(-100)
