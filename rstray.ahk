@@ -63,7 +63,7 @@ If !A_IsAdmin And (runasadmin Or keepcalibration) {
 }
 
 DetectHiddenWindows, On
-WinGet, self, List, %A_ScriptFullPath%
+WinGet, self, List, %A_ScriptName% ahk_exe %A_ScriptName%
 Loop, %self%
 	If (self%A_Index% != A_ScriptHwnd)
 		PostMessage, 0x0010,,,, % "ahk_id" self%A_Index%
