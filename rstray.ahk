@@ -494,7 +494,7 @@ RemoteDesktopMode:
 	}
 Return
 
-RemoveToolTip:
+NoToolTip:
 	ToolTip
 Return
 
@@ -691,6 +691,11 @@ Run(adjust = FALSE) {
 	SetTimer, ClearMem, -1000
 }
 
+Tip(text, time = 1000) {
+	ToolTip, %text%
+	SetTimer, NoToolTip, -%time%
+}
+
 TrayTip() {
 	If mode = enabled
 	{
@@ -713,10 +718,8 @@ TrayTip() {
 	}
 	br := Round(brightness * 100, 0)
 	Menu, Tray, Tip, Redshift Tray %ver%`n%status%`nBrightness: %br%`%
-	If !isfullscreen And (A_ThisHotkey <> A_PriorHotkey Or InStr(A_ThisHotkey, "Pg") Or InStr(A_ThisHotkey, "Home")) And A_TimeSinceThisHotkey < 2500 {
-		Tooltip, %status%`nBrightness: %br%`%
-		SetTimer, RemoveToolTip, -1000
-	}
+	If !isfullscreen And (A_ThisHotkey <> A_PriorHotkey Or InStr(A_ThisHotkey, "Pg") Or InStr(A_ThisHotkey, "Home")) And A_TimeSinceThisHotkey < 2500
+		Tip(status "`nBrightness: " br `%)
 }
 
 Brightness(value) {
@@ -878,8 +881,7 @@ MouseOnTaskbar() {
 SetVolume(value) {
 	SoundSet, %value%
 	SoundGet, volume
-	Tooltip, % "Volume: " Round(volume)`%
-	SetTimer, RemoveToolTip, -1000
+	Tip("Volume: " Round(volume) `%, 1000)
 	SoundGet, mute,, mute
 	If mute = On
 		SoundSet, 0,, mute
