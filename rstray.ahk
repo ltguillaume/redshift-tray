@@ -286,7 +286,7 @@ Return
 
 CustomTimes:
 	customtimes ^= 1
-	Goto, Restart
+	Reload
 Return
 
 FullScreen:
@@ -325,7 +325,7 @@ KeepCalibration:
 	If AutorunOn()
 		Autorun(TRUE)
 	If keepcalibration And !A_IsAdmin
-		Goto, Restart
+		Reload
 Return
 
 NoFading:
@@ -349,7 +349,7 @@ RunAsAdmin:
 	runasadmin ^= 1
 	If AutorunOn()
 		Autorun(TRUE)
-	Goto, Restart
+	Reload
 Return
 
 StartDisabled:
@@ -359,7 +359,7 @@ Return
 
 Traveling:
 	traveling ^= 1
-	Goto, Restart
+	Reload
 Return
 
 Settings:
@@ -369,7 +369,7 @@ Settings:
 	RunWait, %ini%
 	FileGetTime, newmodtime, %ini%
 	If newmodtime <> %modtime%
-		Goto, Restart
+		Reload
 	OnExit("Exit")
 Return
 
@@ -499,9 +499,7 @@ RemoveToolTip:
 Return
 
 Restart:
-	ShellRun(A_ScriptFullPath, "/restart")
-	ExitApp
-Return
+	Reload
 
 Exit:
 	ExitApp
