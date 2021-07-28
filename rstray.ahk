@@ -146,16 +146,16 @@ If remotedesktop
 If customtimes {
 	If (daytime = "HHmm" Or nighttime = "HHmm") {
 		MsgBox, 64, Custom Times, Please fill in nighttime and daytime (use military times),`nthen save and close the settings file.
-		Goto, Settings
+		Goto Settings
 	}
 	SetTimer, CustomTimesMode, 60000
 	If !startdisabled
-		Goto, CustomTimesMode
+		Goto CustomTimesMode
 }
 If startdisabled
-	Goto, Disable
+	Goto Disable
 If RemoteSession()
-	Goto, RemoteDesktopMode
+	Goto RemoteDesktopMode
 
 ; Or else, Enable:
 Enable:
@@ -172,7 +172,7 @@ Enable:
 	If traveling Or (lat = "ERROR" Or lon = "ERROR")
 		GetLocation()
 	If (lat = "ERROR" Or lon = "ERROR")
-		Goto, Settings
+		Goto Settings
 	If !keepbrightness And restorebrightness {
 		brightness = %restorebrightness%
 		restorebrightness =
@@ -204,9 +204,9 @@ EndForce:
 	If mode <> forced
 		Return
 	If prevmode = disabled
-		Goto, Disable
+		Goto Disable
 	Else
-		Goto, Enable
+		Goto Enable
 
 Disable:
 	If isfullscreen <> 1
@@ -259,7 +259,7 @@ Paused:
 	} Else {
 		SetTimer,, Delete
 		If mode = paused
-			Goto, Enable
+			Goto Enable
 	}
 Return
 
@@ -286,8 +286,7 @@ Return
 
 CustomTimes:
 	customtimes ^= 1
-	Reload
-Return
+	Goto Restart
 
 FullScreen:
 	fullscreenmode ^= 1
@@ -325,7 +324,7 @@ KeepCalibration:
 	If AutorunOn()
 		Autorun(TRUE)
 	If keepcalibration And !A_IsAdmin
-		Reload
+		Goto Restart
 Return
 
 NoFading:
@@ -349,8 +348,7 @@ RunAsAdmin:
 	runasadmin ^= 1
 	If AutorunOn()
 		Autorun(TRUE)
-	Reload
-Return
+	Goto Restart
 
 StartDisabled:
 	startdisabled ^= 1
@@ -359,8 +357,7 @@ Return
 
 Traveling:
 	traveling ^= 1
-	Reload
-Return
+	Goto Restart
 
 Settings:
 	OnExit("Exit", 0)
@@ -389,12 +386,12 @@ CustomTimesMode:
 		If customnight Or !mode {
 			customnight = 0
 			If !mode Or mode = "enabled"
-				Goto, Disable
+				Goto Disable
 		}
 	} Else If !customnight {
 		customnight = 1
 		If !mode Or mode = "disabled"
-			Goto, Enable
+			Goto Enable
 	}
 Return
 
@@ -423,9 +420,9 @@ FullScreenMode:
 	} Else If (isfullscreen <> 1 And cls <> "Progman" And cls <> "WorkerW" And cls <> "TscShellContainerClass") {	; Full-screen and not (remote) desktop
 		isfullscreen = 1	; Full-screen is on
 		If fullscreen = 6500
-			Goto, Disable
+			Goto Disable
 		Else
-			Goto, Enable
+			Goto Enable
 	}
 Return
 
@@ -499,6 +496,7 @@ NoToolTip:
 Return
 
 Restart:
+	WriteSettings()
 	Reload
 
 Exit:
@@ -514,20 +512,20 @@ Exit() {
 !Home::
 	If (brightness <> 1 And mode = "enabled")
 		Brightness(1)
-	Goto, Enable
+	Goto Enable
 !Pause::
 	If mode = paused
-		Goto, Enable
+		Goto Enable
 	Else
-		Goto, Pause
-!End::Goto, Disable
+		Goto Pause
+!End::Goto Disable
 !PgUp::Brightness(.05)
 !PgDn::Brightness(-.05)
 RAlt & Home::
 	If (brightness <> 1 And mode = "forced")
 		Brightness(1)
-	Goto, Force
-RAlt & End::Goto, EndForce
+	Goto Force
+RAlt & End::Goto EndForce
 RAlt & PgUp::Temperature(100)
 RAlt & PgDn::Temperature(-100)
 
