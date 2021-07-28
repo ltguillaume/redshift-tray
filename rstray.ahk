@@ -12,12 +12,12 @@
 #NoEnv
 #SingleInstance Off
 
-#MaxHotkeysPerInterval, 200
+#MaxHotkeysPerInterval 200
 #MenuMaskKey vk07	; Use unassigned key instead of Ctrl to mask Win/Alt keyup
 Process, Priority,, High
-SetKeyDelay, -1
-SetTitleMatchMode, 2
-SetWorkingDir, %A_ScriptDir%
+SetKeyDelay -1
+SetTitleMatchMode 2
+SetWorkingDir %A_ScriptDir%
 
 ; Global variables (when also used in functions)
 Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
@@ -510,7 +510,7 @@ Exit() {
 	ExitApp
 }
 
-#If, hotkeys And !RemoteSession()
+#If hotkeys And !RemoteSession()
 !Home::
 	If (brightness <> 1 And mode = "enabled")
 		Brightness(1)
@@ -769,7 +769,7 @@ Temperature(value) {
 RAlt & ,::ShiftAltTab
 RAlt & .::AltTab
 
-#If, extrahotkeys And !rdpclient
+#If extrahotkeys And !rdpclient
 RAlt & 9::ClickThroughWindow()
 RAlt & 0::WinSet, AlwaysOnTop, Toggle, A
 RAlt & -::Opacity(-5)
@@ -831,11 +831,11 @@ RWin::
 	}
 Return
 
-#If, extrahotkeys And rdpclient
+#If extrahotkeys And rdpclient
 >^Up::SetVolume("+1")
 >^Down::SetVolume("-1")
 
-#If, remotedesktop And !RemoteSession()
+#If remotedesktop And !RemoteSession()
 RCtrl::
 	KeyWait, RCtrl
 	If !rctrl
@@ -853,7 +853,7 @@ RCtrl::
 	}
 Return
 
-#If, extrahotkeys And MouseOnTaskbar()
+#If extrahotkeys And MouseOnTaskbar()
 ~LButton::ShowDesktop()
 MButton::TaskMgr()
 WheelUp::Send {Volume_Up}
