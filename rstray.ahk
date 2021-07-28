@@ -842,10 +842,7 @@ RCtrl::
 		rctrl = 0
 ;		Sleep, 50
 		IfWinActive, ahk_class TscShellContainerClass
-		{
-			WinGet, id, ID, A
 			PostMessage, 0x112, 0xF020
-		}
 		Else IfWinExist, ahk_class TscShellContainerClass
 			WinActivate
 	}
