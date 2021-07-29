@@ -968,7 +968,7 @@ Opacity(value) {
 }
 
 ShowDesktop() {
-	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 And WinActive("ahk_class Shell_TrayWnd")) {
+	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 And (WinActive("ahk_class Shell_TrayWnd") Or WinActive("ahk_class Shell_SecondaryTrayWnd"))) {
 		MouseGetPos,,,, control
 		If control = MSTaskListWClass1
 			Send #d
@@ -978,14 +978,13 @@ ShowDesktop() {
 
 TaskMgr() {	; Don't show Task Manager when clicking on buttons
 	WinGetClass, before, A
-	If before = Shell_TrayWnd
-	{
+	If Instr(before, "TrayWnd",, 0) {
 		Send !{Esc}
 		WinGetClass, before, A
 	}
 	Click, Middle
 	WinGetClass, after, A
-	If (after = "Shell_TrayWnd" And before <> after)
+	If Instr(after, "TrayWnd",, 0) And before <> after
 		Send ^+{Esc}
 }
 
