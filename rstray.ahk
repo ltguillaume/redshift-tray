@@ -413,13 +413,13 @@ FullScreenMode:
 	If ((fsstyle & 0x20800000) Or height < A_ScreenHeight Or width < A_ScreenWidth Or fscls = "TscShellContainerClass") {	; Not full-screen or remote desktop
 		If isfullscreen = 1	; Was full-screen
 		{
-;			Tip("Disable full-screen mode:" fscls " | " fsstyle, 10000)
+;			Tip("Disable full-screen:" fscls " | " fsstyle, 10000)
 			isfullscreen = 2	; Full-screen is done
 			Gosub Enable
 			isfullscreen = 0	; Full-screen is off
 		}
 	} Else If (isfullscreen <> 1 And fscls <> "Progman" And fscls <> "WorkerW" And fscls <> "TscShellContainerClass") {	; Full-screen and not (remote) desktop
-;		Tip("Enable full-screen mode:" fscls " | " fsstyle, 10000)
+;		Tip("Enable full-screen:" fscls " | " fsstyle, 10000)
 		isfullscreen = 1	; Full-screen is on
 		If fullscreen = 6500
 			Goto Disable
@@ -547,6 +547,7 @@ PrepWinChange() {
 }
 
 WinChange(w, l) {
+;	Tip("WinChange: w =" w, 10000)
 	If fullscreenmode And (w = 53 Or w = 54 Or w = 32772)
 		SetTimer FullScreenMode, -150
 	If rdpclient Or (remotedesktop And (w = 2 Or w = 53 Or w = 54 Or w = 32772))
@@ -602,7 +603,7 @@ Autorun(force = FALSE) {
 		task := sch.NewTask(0)
 		If runasadmin Or keepcalibration
 			task.Principal.RunLevel := 1	; 1 = Highest
-		task.Triggers.Create(9)	;	9 = Trigger on logon
+		task.Triggers.Create(9)	; 9 = Trigger on logon
 		action := task.Actions.Create(0)	; 0 = Executable
 		action.ID := "Redshift Tray"
 		action.Path := A_ScriptFullPath
