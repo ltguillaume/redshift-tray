@@ -512,27 +512,6 @@ Exit() {
 	Restore()
 }
 
-#If hotkeys And !RemoteSession()
-!Home::
-	If (brightness <> 1 And mode = "enabled")
-		Brightness(1)
-	Goto Enable
-!Pause::
-	If mode = paused
-		Goto Enable
-	Else
-		Goto Pause
-!End::Goto Disable
-!PgUp::Brightness(.05)
-!PgDn::Brightness(-.05)
-RAlt & Home::
-	If (brightness <> 1 And mode = "forced")
-		Brightness(1)
-	Goto Force
-RAlt & End::Goto EndForce
-RAlt & PgUp::Temperature(100)
-RAlt & PgDn::Temperature(-100)
-
 GetLocation() {
 	Try {
 		whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
@@ -775,8 +754,38 @@ Temperature(value) {
 	}
 }
 
+; Default hotkeys
+#If hotkeys And !RemoteSession()
+!Home::
+	If (brightness <> 1 And mode = "enabled")
+		Brightness(1)
+	Goto Enable
+!Pause::
+	If mode = paused
+		Goto Enable
+	Else
+		Goto Pause
+!End::Goto Disable
+!PgUp::Brightness(.05)
+!PgDn::Brightness(-.05)
+RAlt & Home::
+	If (brightness <> 1 And mode = "forced")
+		Brightness(1)
+	Goto Force
+RAlt & End::Goto EndForce
+RAlt & PgUp::Temperature(100)
+RAlt & PgDn::Temperature(-100)
+
+; Extra hotkeys
+; RAlt & ,/. have to be manually enabled/disabled somehow
 RAlt & ,::ShiftAltTab
 RAlt & .::AltTab
+
+#If extrahotkeys And MouseOnTaskbar()
+~LButton::ShowDesktop()
+MButton::TaskMgr()
+WheelUp::Send {Volume_Up}
+WheelDown::Send {Volume_Down}
 
 #If extrahotkeys And !rdpclient
 RAlt & 9::ClickThroughWindow()
@@ -858,12 +867,6 @@ RCtrl::
 			WinActivate
 	}
 Return
-
-#If extrahotkeys And MouseOnTaskbar()
-~LButton::ShowDesktop()
-MButton::TaskMgr()
-WheelUp::Send {Volume_Up}
-WheelDown::Send {Volume_Down}
 
 Run:
 	Gui Submit
