@@ -398,26 +398,28 @@ Return
 FullScreenMode:
 	If mode <> enabled
 		Return
-	WinGet id, ID, A
-	If !id
+	WinGet fsid, ID, A
+	If !fsid
 		Return
 	If fullscreenignore <> |
 		Loop parse, fullscreenignore, |
-			If WinExist(A_LoopField " ahk_id" id)
+			If WinExist(A_LoopField " ahk_id" fsid)
 				Return
-	WinGet style, Style, ahk_id %id%
-	WinGetClass cls, ahk_id %id%
-	WinGetPos ,,, width, height, ahk_id %id%
+	WinGet fsstyle, Style, ahk_id %fsid%
+	WinGetClass fscls, ahk_id %fsid%
+	WinGetPos ,,, width, height, ahk_id %fsid%
 	; 0x800000 is WS_BORDER
 	; 0x20000000 is WS_MINIMIZE
-	If ((style & 0x20800000) Or height < A_ScreenHeight Or width < A_ScreenWidth Or cls = "TscShellContainerClass") {	; Not full-screen or remote desktop
+	If ((fsstyle & 0x20800000) Or height < A_ScreenHeight Or width < A_ScreenWidth Or fscls = "TscShellContainerClass") {	; Not full-screen or remote desktop
 		If isfullscreen = 1	; Was full-screen
 		{
+;			Tip("Disable full-screen mode:" fscls " | " fsstyle, 10000)
 			isfullscreen = 2	; Full-screen is done
 			Gosub Enable
 			isfullscreen = 0	; Full-screen is off
 		}
-	} Else If (isfullscreen <> 1 And cls <> "Progman" And cls <> "WorkerW" And cls <> "TscShellContainerClass") {	; Full-screen and not (remote) desktop
+	} Else If (isfullscreen <> 1 And fscls <> "Progman" And fscls <> "WorkerW" And fscls <> "TscShellContainerClass") {	; Full-screen and not (remote) desktop
+;		Tip("Enable full-screen mode:" fscls " | " fsstyle, 10000)
 		isfullscreen = 1	; Full-screen is on
 		If fullscreen = 6500
 			Goto Disable
@@ -788,10 +790,10 @@ RAlt::
 			WinActivate ahk_class Shell_TrayWnd
 	} Else If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
 		ralt = 0
-		WinGet id, ID, A
+		WinGet raid, ID, A
 		If ctrlwforralt <> |
 			Loop parse, ctrlwforralt, |
-				If WinExist(A_LoopField " ahk_id" id) {
+				If WinExist(A_LoopField " ahk_id" raid) {
 					Send ^w
 					Return
 				}
