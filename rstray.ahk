@@ -280,28 +280,28 @@ Autorun:
 Return
 
 ColorizeCursor:
-	colorizecursor ^= 1
+	Toggle("colorizecursor")
 	ColorizeCursor()
 Return
 
 CustomTimes:
-	customtimes ^= 1
-	Goto Restart
+	Toggle("customtimes")
+Goto Restart
 
 FullScreen:
-	fullscreenmode ^= 1
+	Toggle("fullscreenmode")
 	Menu, Settings, ToggleCheck, &Full-screen mode
 	If fullscreenmode And !winchange
 			PrepWinChange()
 Return
 
 Hotkeys:
-	hotkeys ^= 1
+	Toggle("hotkeys")
 	Menu, Settings, ToggleCheck, &Hotkeys
 Return
 
 ExtraHotkeys:
-	extrahotkeys ^= 1
+	Toggle("extrahotkeys")
 	Menu, Settings, ToggleCheck, &Extra hotkeys
 	If extrahotkeys {
 		PrepRunGui()
@@ -314,60 +314,60 @@ ExtraHotkeys:
 Return
 
 KeepBrightness:
-	keepbrightness ^= 1
+	Toggle("keepbrightness")
 	Menu, Settings, ToggleCheck, &Keep brightness when disabled
 Return
 
 KeepCalibration:
-	keepcalibration ^= 1
+	Toggle("keepcalibration")
 	Menu, Settings, ToggleCheck, Keep &Windows calibration
 	If AutorunOn()
 		Autorun(TRUE)
 	If keepcalibration And !A_IsAdmin
-		Goto Restart
+		Reload
 Return
 
 NoFading:
-	nofading ^= 1
+	Toggle("nofading")
 	Menu, Settings, ToggleCheck, &No fading
 Return
 
 RemoteDesktop:
-	remotedesktop ^= 1
+	Toggle("remotedesktop")
 	Menu, Settings, ToggleCheck, &Remote Desktop support
 	If remotedesktop And !winchange
 		PrepWinChange()
 Return
 
 RDPNumLock:
-	rdpnumlock ^= 1
+	Toggle("rdpnumlock")
 	Menu, Settings, ToggleCheck, Set Num&Lock on RDP disconnect
 Return
 
 RunAsAdmin:
-	runasadmin ^= 1
+	Toggle("runasadmin")
 	If AutorunOn()
 		Autorun(TRUE)
-	Goto Restart
+Goto Restart
 
 StartDisabled:
-	startdisabled ^= 1
+	Toggle("startdisabled")
 	Menu, Settings, ToggleCheck, &Start disabled
 Return
 
 Traveling:
-	traveling ^= 1
-	Goto Restart
+	Toggle("traveling")
+Goto Restart
 
 Settings:
-	OnExit("Exit", 0)
 	WriteSettings()
 	FileGetTime, modtime, %ini%
 	RunWait, %ini%
 	FileGetTime, newmodtime, %ini%
-	If newmodtime <> %modtime%
+	If (newmodtime <> modtime) {
+		OnExit("Exit", 0)
 		Reload
-	OnExit("Exit")
+	}
 Return
 
 CheckRunning:
@@ -496,16 +496,18 @@ NoToolTip:
 Return
 
 Restart:
-	WriteSettings()
 	Reload
 
 Exit:
 	ExitApp
 
 Exit() {
-	WriteSettings()
+	If restorebrightness And (mode = "disabled" Or mode = "paused")
+		brightness = %restorebrightness%
+	IniRead, br, %ini%, %v%, brightness, 1
+	If (brightness <> br)
+		IniWrite, %brightness%, %ini%, %v%, brightness
 	Restore()
-	ExitApp
 }
 
 #If hotkeys And !RemoteSession()
@@ -551,6 +553,8 @@ GetLocation() {
 	StringSplit, latlon, response, `,
 	lat = %latlon1%
 	lon = %latlon2%
+	IniWrite, %lat%, %ini%, %v%, latitude
+	IniWrite, %lon%, %ini%, %v%, longitude
 }
 
 PrepWinChange() {
@@ -566,6 +570,11 @@ WinChange(w, l) {
 		SetTimer, FullScreenMode, -150
 	If rdpclient Or (remotedesktop And (w = 2 Or w = 53 Or w = 54 Or w = 32772))
 		SetTimer, RemoteDesktopMode, -150
+}
+
+Toggle(setting) {
+	%setting% ^= 1
+	IniWrite, % %setting%, %ini%, %s%, %setting%
 }
 
 WriteSettings() {
