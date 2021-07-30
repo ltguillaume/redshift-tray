@@ -1,5 +1,5 @@
 ; Redshift Tray - https://github.com/ltGuillaume/Redshift-Tray
-;@Ahk2Exe-SetFileVersion 2.0.1
+;@Ahk2Exe-SetFileVersion 2.1.0
 
 ;@Ahk2Exe-Bin Unicode 32*
 ;@Ahk2Exe-SetDescription Redshift Tray
