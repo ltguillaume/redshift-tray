@@ -28,8 +28,8 @@ EnvGet tmp, Temp
 FileGetVersion ver, %A_ScriptFullPath%
 ver := SubStr(ver, 1, -2)
 ; Settings from .ini
-IniRead lat, %ini%, %v%, latitude
-IniRead lon, %ini%, %v%, longitude
+IniRead lat, %ini%, %v%, latitude, 0.0
+IniRead lon, %ini%, %v%, longitude, 0.0
 IniRead day, %ini%, %v%, daytemp, 6500
 IniRead night, %ini%, %v%, nighttemp, 3500
 IniRead brightness, %ini%, %v%, brightness, 1
@@ -56,7 +56,7 @@ IniRead traveling, %ini%, %s%, traveling, 0
 
 ; Initialize
 If !A_IsAdmin And (runasadmin Or keepcalibration) {
-	try {
+	Try {
 		Run *RunAs "%A_ScriptFullPath%" /r
 	}
 	ExitApp
@@ -169,9 +169,9 @@ Enable:
 	Menu Tray, Check, &Enabled
 	Menu Tray, Default, &Disabled
 	Menu Tray, Icon, %A_ScriptFullPath%, 1, 1
-	If traveling Or (lat = "ERROR" Or lon = "ERROR")
+	If (traveling Or lat = 0.0 Or lon = 0.0)
 		GetLocation()
-	If (lat = "ERROR" Or lon = "ERROR")
+	If (lat = 0.0 Or lon = 0.0)
 		Goto Settings
 	If !keepbrightness And restorebrightness {
 		brightness = %restorebrightness%
@@ -520,14 +520,16 @@ GetLocation() {
 		response := whr.ResponseText
 		ObjRelease(whr)
 	}
-	If InStr(response, "Undefined") Or !response {
-		If (lat = "ERROR" Or lon = "ERROR") {
+	If !response Or InStr(response, "Undefined") {
+		If (lat = 0.0 Or lon = 0.0) {
 			MsgBox 308, Location Error
 				, An error occurred while determining your location!`nChoose Yes to retry, or No to manually specify latitude and longitude.
 			IfMsgBox Yes
 				GetLocation()
-			IfMsgBox No
+			Else {
 				Gosub Settings
+				ExitApp
+			}
 		}
 		Return
 	}
@@ -591,7 +593,7 @@ WriteSettings() {
 
 Autorun(force = FALSE) {
 	If !A_IsAdmin
-	try {
+	Try {
 		Run *RunAs "%A_ScriptFullPath%" /r
 	}
 
