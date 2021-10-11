@@ -882,7 +882,8 @@ RunGuiGuiEscape:
 Return
 
 RunGuiGuiSize:
-	Gui RunGui:Show, AutoSize xCenter yCenter
+	Gui +MaxSizex%A_GuiHeight%
+	GuiControl, Move, Runcmd, % "w" A_GuiWidth+4
 Return
 
 MouseOnTaskbar() {
@@ -905,7 +906,7 @@ RemoteSession() {
 }
 
 PrepRunGui() {
-	Gui RunGui:new, AlwaysOnTop -Caption +HwndRungui ToolWindow 0x40000
+	Gui RunGui:new, AlwaysOnTop -Caption +HwndRungui MinSize ToolWindow 0x40000
 	Gui Margin, -2, -2
 	Gui Add, Edit, Center vRuncmd
 	Gui Color,, fafbfc
