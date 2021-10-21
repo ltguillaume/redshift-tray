@@ -790,8 +790,18 @@ RAlt & .::AltTab
 ~LButton::ShowDesktop()
 ~^LButton::HideTaskbar()
 MButton::TaskMgr()
-WheelUp::Send {Volume_Up}
-WheelDown::Send {Volume_Down}
+WheelUp::
+	IfWinActive ahk_class TscShellContainerClass
+		SetVolume("+2")
+	Else
+		Send {Volume_Up}
+Return
+WheelDown::
+	IfWinActive ahk_class TscShellContainerClass
+		SetVolume("-2")
+	Else
+		Send {Volume_Down}
+Return
 
 #If extrahotkeys And !rdpclient
 RAlt & 9::ClickThroughWindow()
