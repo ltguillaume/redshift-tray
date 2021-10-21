@@ -63,6 +63,7 @@ If !A_IsAdmin And (runasadmin Or keepcalibration) {
 	ExitApp
 }
 
+; Close other instances
 DetectHiddenWindows On
 WinGet self, List, %A_ScriptName% ahk_exe %A_ScriptName%
 Loop %self%
@@ -787,6 +788,7 @@ RAlt & .::AltTab
 
 #If extrahotkeys And MouseOnTaskbar()
 ~LButton::ShowDesktop()
+~^LButton::HideTaskbar()
 MButton::TaskMgr()
 WheelUp::Send {Volume_Up}
 WheelDown::Send {Volume_Down}
@@ -993,6 +995,12 @@ ShowDesktop() {
 			Send #d
 		Sleep 250
 	}
+}
+
+HideTaskbar() {	; https://www.autohotkey.com/boards/viewtopic.php?t=39123
+	VarSetCapacity(taskbar, A_PtrSize=4 ? 36:48)
+	NumPut(DllCall("Shell32\SHAppBarMessage", "UInt", 4, "Ptr", &taskbar, "Int") ? 2 : 1, taskbar, A_PtrSize=4 ? 32:40)	; 4 = ABM_GETSTATE; 2 = ABS_ALWAYSONTOP, 1 = ABS_AUTOHIDE
+	DllCall("Shell32\SHAppBarMessage", "UInt", 10, "Ptr", &taskbar)	; 10 = ABM_SETSTATE
 }
 
 TaskMgr() {	; Don't show Task Manager when clicking on buttons
