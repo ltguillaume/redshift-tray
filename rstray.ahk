@@ -1,7 +1,8 @@
 ; Redshift Tray - https://github.com/ltGuillaume/Redshift-Tray
 ;@Ahk2Exe-SetFileVersion 2.1.0
 
-;@Ahk2Exe-Bin Unicode 32*
+; AHK 32-bit keybd hook with #If breaks if other apps slow down keybd processing (https://www.autohotkey.com/boards/viewtopic.php?t=82158)
+;@Ahk2Exe-Bin Unicode 64*
 ;@Ahk2Exe-SetDescription Redshift Tray
 ;@Ahk2Exe-SetMainIcon Icons\redshift.ico
 ;@Ahk2Exe-AddResource Icons\redshift-6500k.ico, 160
