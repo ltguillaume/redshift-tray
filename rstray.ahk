@@ -170,7 +170,7 @@ Enable:
 	Menu Tray, Uncheck, &Paused
 	Menu Tray, Check, &Enabled
 	Menu Tray, Default, &Disabled
-	Menu Tray, Icon, %A_ScriptFullPath%, 1, 1
+	TrayIcon()
 	If (traveling Or lat = 0.0 Or lon = 0.0)
 		GetLocation()
 	If (lat = 0.0 Or lon = 0.0)
@@ -198,7 +198,7 @@ Force:
 	Menu Tray, Uncheck, &Paused
 	Menu Tray, Check, &Forced
 	Menu Tray, Default, &Enabled
-	Menu Tray, Icon, %A_ScriptFullPath%, 1, 1
+	TrayIcon()
 	Run()
 Return
 
@@ -223,7 +223,7 @@ Disable:
 	Menu Tray, Uncheck, &Paused
 	Menu Tray, Check, &Disabled
 	Menu Tray, Default, &Enabled
-	Menu Tray, Icon, %A_ScriptFullPath%, 2, 1
+	TrayIcon(0)
 	Restore()
 	If keepbrightness
 		Run()
@@ -246,7 +246,7 @@ Pause:
 	Menu Tray, UnCheck, &Forced
 	Menu Tray, Check, &Paused
 	Menu Tray, Default, &Enabled
-	Menu Tray, Icon, %A_ScriptFullPath%, 2, 1
+	TrayIcon(0)
 	Restore()
 	If keepbrightness
 		Run()
@@ -464,7 +464,7 @@ RemoteDesktopMode:
 		Menu Tray, Disable, &Paused
 		Menu Tray, Disable, &Disabled
 		Menu Tray, Tip, Redshift Tray %ver%`nDisabled (Remote Desktop)
-		Menu Tray, Icon, %A_ScriptFullPath%, 2, 1
+		TrayIcon(0)
 		Restore()
 		If extrahotkeys
 			PrepRunGui()
@@ -687,6 +687,13 @@ Run(adjust = FALSE) {
 Tip(text, time = 1000) {
 	ToolTip %text%
 	SetTimer NoToolTip, -%time%
+}
+
+TrayIcon(enabled = 1) {
+	If A_IsCompiled
+		Menu Tray, Icon, %A_ScriptFullPath%, % enabled ? 1 : 2, 1
+	Else
+		Menu Tray, Icon, % A_ScriptDir "\Icons\redshift" (enabled ? "" : "-6500k") ".ico", 1
 }
 
 TrayTip() {
