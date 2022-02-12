@@ -1,5 +1,5 @@
 ; Redshift Tray - https://github.com/ltGuillaume/Redshift-Tray
-;@Ahk2Exe-SetFileVersion 2.2.0
+;@Ahk2Exe-SetFileVersion 2.2.1
 
 ; AHK 32-bit keybd hook with #If breaks if other apps slow down keybd processing (https://www.autohotkey.com/boards/viewtopic.php?t=82158)
 ;@Ahk2Exe-Bin Unicode 64*
@@ -19,13 +19,14 @@ Process Priority,, High
 SetKeyDelay -1
 SetTitleMatchMode 2
 SetWorkingDir %A_ScriptDir%
+EnvGet tmp, Temp
+EnvGet user, UserName
 
 ; Global variables (when also used in functions)
-Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values"
+Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values", taskname = "Redshift Tray (" user ")"
 Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, rdpnumlock, runasadmin, startdisabled, traveling	; Switches
 Global lat, lon, day, night, brightness, fullscreen, fullscreenignore, pauseminutes, daytime, nighttime, keepaliveseconds, ctrlwforralt	; Values
 Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, pid, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, ver, winchange, withcaption := Object()	; Internal
-EnvGet tmp, Temp
 FileGetVersion ver, %A_ScriptFullPath%
 ver := SubStr(ver, 1, -2)
 ; Settings from .ini
@@ -609,16 +610,16 @@ Autorun(force = FALSE) {
 			task.Principal.RunLevel := 1	; 1 = Highest
 		task.Triggers.Create(9)	; 9 = Trigger on logon
 		action := task.Actions.Create(0)	; 0 = Executable
-		action.ID := "Redshift Tray"
+		action.ID := taskname
 		action.Path := A_ScriptFullPath
 		task.Settings.DisallowStartIfOnBatteries := FALSE
 		task.Settings.ExecutionTimeLimit := "PT0S"
 		task.Settings.StopIfGoingOnBatteries := FALSE
-		root.RegisterTaskDefinition("Redshift Tray", task, 6, "", "", 3)	; 6 = TaskCreateOrUpdate
+		root.RegisterTaskDefinition(taskname, task, 6, "", "", 3)	; 6 = TaskCreateOrUpdate
 		If AutorunOn()
 			Menu Settings, Check, &Autorun
 	} Else {
-		root.DeleteTask("RedShift Tray", 0)
+		root.DeleteTask(taskname, 0)
 		Menu Settings, Uncheck, &Autorun
 	}
 
@@ -626,7 +627,7 @@ Autorun(force = FALSE) {
 }
 
 AutorunOn() {
-	RunWait schtasks.exe /query /tn "Redshift Tray",, Hide
+	RunWait schtasks.exe /query /tn "%taskname%",, Hide
 	Return !ErrorLevel
 }
 
@@ -883,10 +884,16 @@ RCtrl::
 		rctrl = 1
 	Else If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400) {
 		rctrl = 0
-;		Sleep, 50
 		IfWinActive ahk_class TscShellContainerClass
-			PostMessage 0x112, 0xF020
-		Else IfWinExist, ahk_class TscShellContainerClass
+		{
+			_rdpid := "ahk_id" WinExist("A")
+			PostMessage 0x112, 0xF020	; Minimize full-screen
+			WinMinimize, %_rdpid%	; Minimize window (needed for ExStyle below)
+			WinSet ExStyle, +0x80, %_rdpid%	; Force to end of Alt-Tab list by temporarily adding WS_EX_TOOLWINDOW
+			Sleep 100
+			WinSet ExStyle, -0x80, %_rdpid%
+		}
+		Else IfWinExist ahk_class TscShellContainerClass
 			WinActivate
 	}
 Return
@@ -903,7 +910,7 @@ Return
 
 RunGuiGuiSize:
 	Gui +MaxSizex%A_GuiHeight%
-	GuiControl, Move, Runcmd, % "w" A_GuiWidth+4
+	GuiControl Move, Runcmd, % "w" A_GuiWidth+4
 Return
 
 MouseOnTaskbar() {
