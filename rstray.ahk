@@ -19,14 +19,12 @@ Process Priority,, High
 SetKeyDelay -1
 SetTitleMatchMode 2
 SetWorkingDir %A_ScriptDir%
-EnvGet tmp, Temp
-EnvGet user, UserName
 
 ; Global variables (when also used in functions)
-Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values", taskname = "Redshift Tray (" user ")"
+Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values", taskname = "Redshift Tray (" A_UserName ")"
 Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, rdpnumlock, runasadmin, startdisabled, traveling	; Switches
 Global lat, lon, day, night, brightness, fullscreen, fullscreenignore, pauseminutes, daytime, nighttime, keepaliveseconds, ctrlwforralt	; Values
-Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, pid, ralt, rctrl, rdpclient, remote, rundialog, shell, tmp, ver, winchange, withcaption := Object()	; Internal
+Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, pid, ralt, rctrl, rdpclient, remote, rundialog, shell, ver, winchange, withcaption := Object()	; Internal
 FileGetVersion ver, %A_ScriptFullPath%
 ver := SubStr(ver, 1, -2)
 ; Settings from .ini
@@ -1066,13 +1064,13 @@ PrepRun(cmd) {
 	If InStr(cmd, "%")
 		cmd := ExpandEnvVars(cmd)
 	If !InStr(cmd, " ") Or Instr(cmd, "reg:") = 1
-		Return ShellRun(cmd, "", tmp)
+		Return ShellRun(cmd, "", A_Temp)
 	If SubStr(cmd, 1, 1) <> """" {
 		cmd := StrSplit(cmd, " ",, 2)
-		Return ShellRun(cmd[1], cmd[2], tmp)
+		Return ShellRun(cmd[1], cmd[2], A_Temp)
 	}
 	cmd := StrSplit(SubStr(cmd, 2), """",, 2)
-	ShellRun("""" cmd[1] """", cmd[2], tmp)
+	ShellRun("""" cmd[1] """", cmd[2], A_Temp)
 }
 
 ExpandEnvVars(in) {
