@@ -887,9 +887,10 @@ RCtrl::
 		{
 			_rdpid := "ahk_id" WinExist("A")
 			PostMessage 0x112, 0xF020	; Minimize full-screen
+			Sleep 50
 			WinMinimize, %_rdpid%	; Minimize window (needed for ExStyle below)
 			WinSet ExStyle, +0x80, %_rdpid%	; Force to end of Alt-Tab list by temporarily adding WS_EX_TOOLWINDOW
-			Sleep 100
+			Sleep 50
 			WinSet ExStyle, -0x80, %_rdpid%
 		}
 		Else IfWinExist ahk_class TscShellContainerClass
