@@ -1,5 +1,5 @@
 ; Redshift Tray - https://github.com/ltGuillaume/Redshift-Tray
-;@Ahk2Exe-SetFileVersion 2.2.1
+;@Ahk2Exe-SetFileVersion 2.2.2
 
 ; AHK 32-bit keybd hook with #If breaks if other apps slow down keybd processing (https://www.autohotkey.com/boards/viewtopic.php?t=82158)
 ;@Ahk2Exe-Bin Unicode 64*
@@ -119,6 +119,8 @@ If hotkeys
 	Menu Settings, Check, &Hotkeys
 If extrahotkeys {
 	PrepRunGui()
+	Gui RunGui:Show, x9999 y9999 NoActivate
+	Gui RunGui:Cancel
 	Menu Settings, Check, &Extra hotkeys
 } Else {
 	Hotkey RAlt & `,, Off
