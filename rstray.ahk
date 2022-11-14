@@ -596,7 +596,7 @@ WriteSettings() {
 Autorun(force = FALSE) {
 	If !A_IsAdmin
 	Try {
-		Run *RunAs "%A_ScriptFullPath%" /r
+		Run *RunAs "%A_ScriptFullPath%" /r %force%
 	}
 
 	sch := ComObjCreate("Schedule.Service")
@@ -1044,8 +1044,8 @@ PrepShell() {	; From Installer.ahk
 	desktop := windows.FindWindowSW(0, "", 8, ComObj(0x4003, &_hwnd), 1)
 	Try {
 		ptlb := ComObjQuery(desktop
-			, "{4C96BE40-915C-11CF-99D3-00AA004AE837}"  ; SID_STopLevelBrowser
-			, "{000214E2-0000-0000-C000-000000000046}") ; IID_IShellBrowser
+			, "{4C96BE40-915C-11CF-99D3-00AA004AE837}"	; SID_STopLevelBrowser
+			, "{000214E2-0000-0000-C000-000000000046}")	; IID_IShellBrowser
 		If DllCall(NumGet(NumGet(ptlb+0)+15*A_PtrSize), "ptr", ptlb, "ptr*", psv:=0) = 0 {
 			VarSetCapacity(IID_IDispatch, 16)
 			NumPut(0x46000000000000C0, NumPut(0x20400, IID_IDispatch, "int64"), "int64")
