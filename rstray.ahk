@@ -798,13 +798,13 @@ RAlt & .::AltTab
 ~^LButton::HideTaskbar()
 MButton::TaskMgr()
 WheelUp::
-	IfWinActive ahk_class TscShellContainerClass
+	If WinActive("ahk_class TscShellContainerClass") Or WinActive("ahk_exe VirtualBoxVM.exe")
 		SetVolume("+2")
 	Else
 		Send {Volume_Up}
 Return
 WheelDown::
-	IfWinActive ahk_class TscShellContainerClass
+	If WinActive("ahk_class TscShellContainerClass") Or WinActive("ahk_exe VirtualBoxVM.exe")
 		SetVolume("-2")
 	Else
 		Send {Volume_Down}
