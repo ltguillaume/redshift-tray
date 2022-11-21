@@ -605,7 +605,15 @@ Autorun(force = FALSE) {
 	sch.Connect()
 	root := sch.GetFolder("\")
 
-	If !AutorunOn() Or force {
+	; Backwards compatibility with old task name
+	enableAutorun := !AutorunOn()
+	RunWait schtasks.exe /query /tn "Redshift Tray",, Hide
+	If !ErrorLevel {
+		root.DeleteTask("Redshift Tray", 0)
+		deleteTask := False
+	}
+
+	If enableAutorun Or force {
 		task := sch.NewTask(0)
 		If runasadmin Or keepcalibration
 			task.Principal.RunLevel := 1	; 1 = Highest
@@ -620,7 +628,8 @@ Autorun(force = FALSE) {
 		If AutorunOn()
 			Menu Settings, Check, &Autorun
 	} Else {
-		root.DeleteTask(taskname, 0)
+		If deleteTask
+			root.DeleteTask(taskname, 0)
 		Menu Settings, Uncheck, &Autorun
 	}
 
@@ -629,6 +638,8 @@ Autorun(force = FALSE) {
 
 AutorunOn() {
 	RunWait schtasks.exe /query /tn "%taskname%",, Hide
+	If ErrorLevel
+		RunWait schtasks.exe /query /tn "Redshift Tray",, Hide
 	Return !ErrorLevel
 }
 
