@@ -96,7 +96,7 @@ td[colspan="2"]{background:#e6e6e6}
 <li>I often continue a session remotely via a laptop without numeric keypad. Once I return to the system and log on locally, I want the NumLock state to be enabled again. <code>rdpnumlock=1</code> will take care of this.</li>
 <li>If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set <code>startdisabled=1</code>.</li>
 <li>If you want to be able to use the hotkeys when a program that runs as administrator is focused, set <code>runasadmin=1</code> so that Redshift Tray will try to run as admin, too. If this scenario doesn’t really occur on your system, leave the damn thing alone.</li>
-<li>Traveling with your laptop? You can set <code>traveling=1</code> after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though. Since the location is based on your IP, don't use this when a VPN is active.</li>
+<li>Traveling with your laptop? You can set <code>traveling=1</code> after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though. Be aware that each time this will trigger a query to the <a href="https://ipapi.co">ipapi</a> service (specifically to the URL <code>https://ipapi.co/latlong</code>). Since the location is based on your IP, don't use this when a VPN is active.</li>
 </ul>
 </li>
 <li>Now save the settings file and close it. Redshift Tray will restart with the settings you’ve defined.</li>
@@ -109,6 +109,7 @@ td[colspan="2"]{background:#e6e6e6}
 <li>Icon created from a damn good <a href="http://www.laytondiament.com/blog/2015/5/3/design-chill-sunset-icon">design</a> by <a href="http://www.laytondiament.com">Layton Diament</a></li>
 <li><a href="https://www.autohotkey.com">AutoHotkey</a>, a scripting language for desktop automation by Chris Mallet and others.</li>
 <li><a href="https://github.com/jonls/redshift">Redshift</a> by <a href="https://github.com/jonls">Jon Lund Steffensen</a></li>
+<li><a href="https://ipapi.co">ipapi</a> by Kloudend, Inc. (<a href="https://ipapi.co/privacy">Privacy Policy</a>)</li>
 <li><a href="https://chocolatey.org/packages/rstray">Chocolatey package</a> by <a href="https://github.com/tunisiano187">tunisiano187</a></li>
 <li><a href="https://github.com/lukesampson/scoop-extras/blob/master/bucket/redshift-tray.json">Scoop package</a> by <a href="https://github.com/Ash258">Ash258</a>, <a href="https://github.com/r15ch13">r15ch13</a> and <a href="https://github.com/linsui">linsui</a>
 </ul>

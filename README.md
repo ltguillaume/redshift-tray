@@ -88,7 +88,7 @@ RCtrl x2 | Switch between RDP host/client
     - I often continue a session remotely via a laptop without numeric keypad. Once I return to the system and log on locally, I want the NumLock state to be enabled again. `rdpnumlock=1` will take care of this.
     - If you want to be able to use the hotkeys when a program that runs as administrator is focused, set `runasadmin=1` so that Redshift Tray will try to run as administrator, too.
     - If you don't want Redshift to be enabled on start-up (because you just want to use the fancy hotkeys, for example), set `startdisabled=1`.
-    - Traveling with your laptop? You can set `traveling=1` after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though. Since the location is based on your IP, don't use this when a VPN is active.
+    - Traveling with your laptop? You can set `traveling=1` after which the coordinates will be updated every time Redshift is enabled. It'll keep its mouth shut if there's no Internet connection, though. Be aware that each time this will trigger a query to the [ipapi](https://ipapi.co) service (specifically to the URL `https://ipapi.co/latlong`). Since the location is based on your IP, don't use this when a VPN is active.
 3. Now save the settings file and close it. Redshift Tray will restart with the settings you've defined.
 4. If you'd like Redshift Tray to automatically run at startup, right-click the tray icon again and click __Autorun__ under __Settings__, so that this option is checked. This setting creates a scheduled task so that Redshift Tray will start when the current user is logging on. It will try to run as administrator if you have enabled _keepcalibration_ or _runasadmin_.
 5. If Redshift [fails to adjust the color temperature](http://jonls.dk/2010/09/windows-gamma-adjustments), or the brightness level gets stuck at a certain percentage, import __unlock-gammarange.reg__ into the registry and restart Windows.
@@ -99,5 +99,6 @@ You. Are. Done!
 * Icon created from a damn good [design](http://www.laytondiament.com/blog/2015/5/3/design-chill-sunset-icon) by [Layton Diament](http://www.laytondiament.com)  
 * [AutoHotkey](https://www.autohotkey.com), a scripting language for desktop automation by Chris Mallet and others.  
 * [Redshift](https://github.com/jonls/redshift) by [Jon Lund Steffensen](https://github.com/jonls)
+* [ipapi](https://ipapi.co) by Kloudend, Inc. ([Privacy Policy](https://ipapi.co/privacy))
 * [Chocolatey package](https://chocolatey.org/packages/rstray) by [tunisiano187](https://github.com/tunisiano187)
 * [Scoop package](https://github.com/lukesampson/scoop-extras/blob/master/bucket/redshift-tray.json) by [Ash258](https://github.com/Ash258), [r15ch13](https://github.com/r15ch13) and [linsui](https://github.com/linsui)
