@@ -1,5 +1,5 @@
 ; Redshift Tray - https://github.com/ltGuillaume/Redshift-Tray
-;@Ahk2Exe-SetFileVersion 2.2.2
+;@Ahk2Exe-SetFileVersion 2.2.3
 
 ; AHK 32-bit keybd hook with #If breaks if other apps slow down keybd processing (https://www.autohotkey.com/boards/viewtopic.php?t=82158)
 ;@Ahk2Exe-Bin Unicode 64*
@@ -388,13 +388,11 @@ CustomTimesMode:
 	If (daytime <= time And time < nighttime) {
 		If customnight Or !mode {
 			customnight = 0
-			If !mode Or mode = "enabled"
-				Goto Disable
+			Goto Enable
 		}
 	} Else If !customnight {
 		customnight = 1
-		If !mode Or mode = "disabled"
-			Goto Enable
+		Goto Enable
 	}
 Return
 
@@ -670,7 +668,7 @@ Restore() {
 
 Run(adjust = FALSE) {
 	br := brightness>1 ? "-g " brightness : "-b " brightness
-	ntmp := isfullscreen = 1 ? fullscreen : night
+	ntmp := isfullscreen = 1 ? fullscreen : (customtimes And !customnight ? day : night)
 	notr := adjust Or isfullscreen Or nofading ? "-r" : ""
 	If mode = enabled
 	{
@@ -713,7 +711,12 @@ TrayTip() {
 	If mode = enabled
 	{
 		If customtimes
-			status := "Enabled until " SubStr(daytime, 1, 2) ":" SubStr(daytime, 3) " (" night "K)"
+		{
+			If customnight
+				status := "Night mode until " SubStr(daytime, 1, 2) ":" SubStr(daytime, 3) " (" night "K)"
+			Else
+				status := "Day mode until " SubStr(nighttime, 1, 2) ":" SubStr(nighttime, 3) " (" day "K)"
+		}
 		Else {
 			latitude := Round(Abs(lat), 2) "°" (lat > 0 ? "N" : "S")
 			longitude := Round(Abs(lon), 2) "°" (lon > 0 ? "E" : "W")
