@@ -1,10 +1,7 @@
-<a href="https://buymeacoff.ee/ltGuillaume"><img title="Donate using Buy Me a Coffee" src="https://raw.githubusercontent.com/ltGuillaume/Resources/master/buybeer.svg"></a> <a href="https://liberapay.com/ltGuillaume/donate"><img title="Donate using Liberapay" src="https://raw.githubusercontent.com/ltGuillaume/Resources/master/liberapay.svg"></a>
-
-<img src="https://raw.githubusercontent.com/ltGuillaume/Redshift-Tray/master/Icons/redshift.ico" align="right"/>
+<img src="https://raw.githubusercontent.com/ltGuillaume/Redshift-Tray/master/Icons/redshift.ico" align="right">
 
 # Redshift Tray
-[Redshift Tray](https://github.com/ltGuillaume/Redshift-Tray) by ltGuillaume  
-[Redshift](https://github.com/jonls/redshift) by [Jon Lund Steffensen](https://github.com/jonls)
+by ltGuillaume: [Codeberg](https://codeberg.org/ltGuillaume) | [GitHub](https://github.com/ltGuillaume) | [Buy me a beer](https://buymeacoff.ee/ltGuillaume) 🍺
 
 ## Overview
 Redshift Tray is a no-frills GUI for the excellent screen temperature adjustment tool [Redshift](https://github.com/jonls/redshift) by Jon Lund Steffensen. Redshift Tray allows you to:
@@ -96,6 +93,7 @@ RCtrl x2 | Switch between RDP host/client
 You. Are. Done!
 
 ## Credits
+* [Redshift](https://github.com/jonls/redshift) by [Jon Lund Steffensen](https://github.com/jonls)
 * Icon created from a damn good [design](http://www.laytondiament.com/blog/2015/5/3/design-chill-sunset-icon) by [Layton Diament](http://www.laytondiament.com)  
 * [AutoHotkey](https://www.autohotkey.com), a scripting language for desktop automation by Chris Mallet and others.  
 * [Redshift](https://github.com/jonls/redshift) by [Jon Lund Steffensen](https://github.com/jonls)
