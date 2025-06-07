@@ -59,9 +59,10 @@ Menu M | MM: Mute
 RCtrl Up | MM: Volume up
 RCtrl Down | MM: Volume down
 Wheel on taskbar | MM: Volume up/down
-Double-click on taskbar | Show desktop
-Middle-click on taskbar | Open Task Manager
-Ctrl click on taskbar | Toggle autohide taskbar
+Middle-click on taskbar | MM: Mute
+Double-click on taskbar | Open Task Manager
+Alt + click on taskbar | Show desktop
+Ctrl + click on taskbar | Toggle autohide taskbar
 __Remote Desktop mode__ | &nbsp;
 RCtrl x2 | Switch between RDP host/client
 

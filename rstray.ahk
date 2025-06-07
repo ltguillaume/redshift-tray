@@ -1,5 +1,5 @@
 ; Redshift Tray - https://github.com/ltGuillaume/Redshift-Tray
-;@Ahk2Exe-SetFileVersion 2.3.1
+;@Ahk2Exe-SetFileVersion 2.3.2
 
 ; AHK 32-bit keybd hook with #If breaks if other apps slow down keybd processing (https://www.autohotkey.com/boards/viewtopic.php?t=82158)
 ;@Ahk2Exe-Bin Unicode 64*
@@ -799,30 +799,21 @@ RAlt & ,::ShiftAltTab
 RAlt & .::AltTab
 
 #If extrahotkeys And MouseOnTaskbar()
-~LButton::ShowDesktop()
-~^LButton::HideTaskbar()
-MButton::TaskMgr()
+!LButton::Send #d
+^LButton::HideTaskbar()
+~LButton::TaskManager()
+MButton::TaskbarMute()
 WheelUp::
 	If WinActive("ahk_class TscShellContainerClass") Or WinActive("ahk_exe VirtualBoxVM.exe")
 		SetVolume("+2")
-	Else {
-		MouseGetPos,,,, wheelcontrol
-		If wheelcontrol = MSTaskListWClass1	; Skip if not scrolling on tasklist
-			Send {Volume_Up}
-		Else
-			Send {WheelUp}
-	}
+	Else
+		Send {Volume_Up}
 Return
 WheelDown::
 	If WinActive("ahk_class TscShellContainerClass") Or WinActive("ahk_exe VirtualBoxVM.exe")
 		SetVolume("-2")
-	Else {
-		MouseGetPos,,,, wheelcontrol
-		If wheelcontrol = MSTaskListWClass1	; Skip if not scrolling on tasklist
-			Send {Volume_Down}
-		Else
-			Send {WheelDown}
-	}
+	Else
+		Send {Volume_Down}
 Return
 
 #If extrahotkeys And !rdpclient
@@ -930,8 +921,8 @@ RunGuiGuiSize:
 Return
 
 MouseOnTaskbar() {
-	MouseGetPos,,, id
-	Return WinExist("ahk_class Shell_TrayWnd ahk_id" id) Or WinExist("ahk_class Shell_SecondaryTrayWnd ahk_id" id)
+	MouseGetPos,,, id, control
+	Return control = "MSTaskListWClass1" And (WinExist("ahk_class Shell_TrayWnd ahk_id" id) Or WinExist("ahk_class Shell_SecondaryTrayWnd ahk_id" id))
 }
 
 SetVolume(value) {
@@ -1028,11 +1019,9 @@ Opacity(value) {
 	Return
 }
 
-ShowDesktop() {
+TaskManager() {
 	If (A_PriorHotkey = A_ThisHotkey And A_TimeSincePriorHotkey < 400 And (WinActive("ahk_class Shell_TrayWnd") Or WinActive("ahk_class Shell_SecondaryTrayWnd"))) {
-		MouseGetPos,,,, control
-		If control = MSTaskListWClass1
-			Send #d
+		Send ^+{Esc}
 		Sleep 250
 	}
 }
@@ -1043,22 +1032,18 @@ HideTaskbar() {	; https://www.autohotkey.com/boards/viewtopic.php?t=39123
 	DllCall("Shell32\SHAppBarMessage", "UInt", 10, "Ptr", &taskbar)	; 10 = ABM_SETSTATE
 }
 
-TaskMgr() {
-	MouseGetPos,,,, control
-	If control <> MSTaskListWClass1	; Skip if not clicking on task list
-	{
-		Click Middle
-		Return
-	}
-	WinGetClass before, A
-	If Instr(before, "TrayWnd",, 0) {
-		Send !{Esc}
+TaskbarMute() {
+	If (A_ThisHotkey = "MButton") {
 		WinGetClass before, A
+		If (Instr(before, "TrayWnd",, 0)) {
+			Send !{Esc}
+			WinGetClass before, A
+		}
+		Click Middle
+		WinGetClass after, A
+		If Instr(after, "TrayWnd",, 0) And before <> after
+			Send {Volume_Mute}
 	}
-	Click Middle
-	WinGetClass after, A
-	If Instr(after, "TrayWnd",, 0) And before <> after
-		Send ^+{Esc}
 }
 
 PrepShell() {	; From Installer.ahk
