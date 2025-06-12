@@ -1,8 +1,7 @@
 ; Redshift Tray - https://github.com/ltGuillaume/Redshift-Tray
-;@Ahk2Exe-SetFileVersion 2.3.2
-
-; AHK 32-bit keybd hook with #If breaks if other apps slow down keybd processing (https://www.autohotkey.com/boards/viewtopic.php?t=82158)
-;@Ahk2Exe-Bin Unicode 64*
+Global ver := "3.0.0"
+;@Ahk2Exe-SetFileVersion 3.0.0
+;@Ahk2Exe-Bin Unicode 64*	; AHK 32-bit keybd hook with #If breaks if other apps slow down keybd processing (https://www.autohotkey.com/boards/viewtopic.php?t=82158)
 ;@Ahk2Exe-SetDescription Redshift Tray
 ;@Ahk2Exe-SetMainIcon Icons\redshift.ico
 ;@Ahk2Exe-AddResource Icons\redshift-6500k.ico, 160
@@ -21,12 +20,12 @@ SetTitleMatchMode 2
 SetWorkingDir %A_ScriptDir%
 
 ; Global variables (when also used in functions)
-Global exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values", taskname = "Redshift Tray (" A_UserName ")"
+Global rstray = A_IsCompiled ? A_ScriptFullPath : A_AhkPath, exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values", taskname = "Redshift Tray (" A_UserName ")"
+Global restartcmd := A_IsCompiled ? """" rstray """ /r" : """" A_AhkPath """ /r /script """ A_ScriptFullPath """"
 Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, rdpnumlock, runasadmin, startdisabled, traveling	; Switches
 Global lat, lon, day, night, brightness, fullscreen, fullscreenignore, pauseminutes, daytime, nighttime, keepaliveseconds, ctrlwforralt	; Values
 Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, pid, ralt, rctrl, rdpclient, remote, rundialog, shell, ver, winchange, withcaption := Object()	; Internal
-FileGetVersion ver, %A_ScriptFullPath%
-ver := SubStr(ver, 1, -2)
+
 ; Settings from .ini
 IniRead lat, %ini%, %v%, latitude, 0.0
 IniRead lon, %ini%, %v%, longitude, 0.0
@@ -57,14 +56,14 @@ IniRead traveling, %ini%, %s%, traveling, 0
 ; Initialize
 If !A_IsAdmin And (runasadmin Or keepcalibration) {
 	Try {
-		Run *RunAs "%A_ScriptFullPath%" /r
+		Run *RunAs %restartcmd%
 	}
 	ExitApp
 }
 
 ; Close other instances
 DetectHiddenWindows On
-WinGet self, List, %A_ScriptName% ahk_exe %A_ScriptName%
+WinGet self, List, %A_ScriptName% ahk_exe %rstray%
 Loop %self%
 	If (self%A_Index% != A_ScriptHwnd)
 		PostMessage 0x0010,,,, % "ahk_id" self%A_Index%
@@ -595,9 +594,9 @@ WriteSettings() {
 
 Autorun(force = FALSE) {
 	If !A_IsAdmin
-	Try {
-		Run *RunAs "%A_ScriptFullPath%" /r %force%
-	}
+		Try {
+			Run *RunAs %restartcmd% %force%
+		}
 
 	sch := ComObjCreate("Schedule.Service")
 	sch.Connect()
@@ -610,7 +609,7 @@ Autorun(force = FALSE) {
 		task.Triggers.Create(9)	; 9 = Trigger on logon
 		action := task.Actions.Create(0)	; 0 = Executable
 		action.ID := taskname
-		action.Path := A_ScriptFullPath
+		action.Path := rstray (InStr(rstray, "rstray.exe") ? "" : " /script """ A_ScriptFullPath """")
 		task.Settings.DisallowStartIfOnBatteries := FALSE
 		task.Settings.ExecutionTimeLimit := "PT0S"
 		task.Settings.StopIfGoingOnBatteries := FALSE
@@ -690,8 +689,8 @@ Tip(text, time = 1000) {
 }
 
 TrayIcon(enabled = 1) {
-	If A_IsCompiled
-		Menu Tray, Icon, %A_ScriptFullPath%, % enabled ? 1 : 2, 1
+	If (A_IsCompiled Or InStr(rstray, "rstray.exe"))
+		Menu Tray, Icon, %rstray%, % enabled ? 1 : 2, 1
 	Else
 		Menu Tray, Icon, % A_ScriptDir "\Icons\redshift" (enabled ? "" : "-6500k") ".ico", 1
 }
