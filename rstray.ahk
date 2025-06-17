@@ -1,13 +1,5 @@
 ; Redshift Tray - https://github.com/ltGuillaume/Redshift-Tray
 Global ver := "3.0.0"
-;@Ahk2Exe-SetFileVersion 3.0.0
-;@Ahk2Exe-Bin Unicode 64*	; AHK 32-bit keybd hook with #If breaks if other apps slow down keybd processing (https://www.autohotkey.com/boards/viewtopic.php?t=82158)
-;@Ahk2Exe-SetDescription Redshift Tray
-;@Ahk2Exe-SetMainIcon Icons\redshift.ico
-;@Ahk2Exe-AddResource Icons\redshift-6500k.ico, 160
-;@Ahk2Exe-PostExec ResourceHacker.exe -open "%A_WorkFileName%" -save "%A_WorkFileName%" -action delete -mask ICONGROUP`,206`, ,,,,1
-;@Ahk2Exe-PostExec ResourceHacker.exe -open "%A_WorkFileName%" -save "%A_WorkFileName%" -action delete -mask ICONGROUP`,207`, ,,,,1
-;@Ahk2Exe-PostExec ResourceHacker.exe -open "%A_WorkFileName%" -save "%A_WorkFileName%" -action delete -mask ICONGROUP`,208`, ,,,,1
 
 #NoEnv
 #SingleInstance Off
@@ -20,8 +12,8 @@ SetTitleMatchMode 2
 SetWorkingDir %A_ScriptDir%
 
 ; Global variables (when also used in functions)
-Global rstray = A_IsCompiled ? A_ScriptFullPath : A_AhkPath, exe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values", taskname = "Redshift Tray (" A_UserName ")"
-Global restartcmd := A_IsCompiled ? """" rstray """ /r" : """" A_AhkPath """ /r /script """ A_ScriptFullPath """"
+Global this = A_IsCompiled ? A_ScriptFullPath : A_AhkPath, redshiftexe = "redshift.exe", ini = "rstray.ini", s = "Switches", v = "Values", taskname = "Redshift Tray (" A_UserName ")"
+Global restartcmd := A_IsCompiled ? """" this """ /r" : """" A_AhkPath """ /r /script """ A_ScriptFullPath """"
 Global colorizecursor, customtimes, fullscreenmode, hotkeys, extrahotkeys, keepbrightness, keepcalibration, nofading, remotedesktop, rdpnumlock, runasadmin, startdisabled, traveling	; Switches
 Global lat, lon, day, night, brightness, fullscreen, fullscreenignore, pauseminutes, daytime, nighttime, keepaliveseconds, ctrlwforralt	; Values
 Global mode, prevmode, temperature, restorebrightness, timer, endtime, customnight, isfullscreen, pid, ralt, rctrl, rdpclient, remote, rundialog, shell, ver, winchange, withcaption := Object()	; Internal
@@ -63,7 +55,7 @@ If !A_IsAdmin And (runasadmin Or keepcalibration) {
 
 ; Close other instances
 DetectHiddenWindows On
-WinGet self, List, %A_ScriptName% ahk_exe %rstray%
+WinGet self, List, %A_ScriptName% ahk_exe %this%
 Loop %self%
 	If (self%A_Index% != A_ScriptHwnd)
 		PostMessage 0x0010,,,, % "ahk_id" self%A_Index%
@@ -376,7 +368,7 @@ CheckRunning:
 	If mode <> enabled
 		SetTimer,, Delete
 	Else {
-		Process Exist, %exe%
+		Process Exist, %redshiftexe%
 		If !ErrorLevel
 			Run(TRUE)
 	}
@@ -609,7 +601,7 @@ Autorun(force = FALSE) {
 		task.Triggers.Create(9)	; 9 = Trigger on logon
 		action := task.Actions.Create(0)	; 0 = Executable
 		action.ID := taskname
-		action.Path := rstray (InStr(rstray, "rstray.exe") ? "" : " /script """ A_ScriptFullPath """")
+		action.Path := this (InStr(this, "rstray.exe") ? "" : " /script """ A_ScriptFullPath """")
 		task.Settings.DisallowStartIfOnBatteries := FALSE
 		task.Settings.ExecutionTimeLimit := "PT0S"
 		task.Settings.StopIfGoingOnBatteries := FALSE
@@ -641,8 +633,8 @@ ColorizeCursor() {
 
 Close() {
 	Loop {
-		Process Close, %exe%
-		Process Exist, %exe%
+		Process Close, %redshiftexe%
+		Process Exist, %redshiftexe%
 	} Until !ErrorLevel
 }
 
@@ -651,7 +643,7 @@ Restore() {
 	If keepcalibration
 		RunWait schtasks /run /tn "\Microsoft\Windows\WindowsColorSystem\Calibration Loader",, Hide
 	Else
-		RunWait %exe% -x,,Hide
+		RunWait %redshiftexe% -x,,Hide
 }
 
 Run(adjust = FALSE) {
@@ -678,7 +670,7 @@ Run(adjust = FALSE) {
 		Restore()
 	If !keepcalibration
 		cfg .= " -P"
-	Run %exe% %cfg%,, Hide, pid
+	Run %redshiftexe% %cfg%,, Hide, pid
 	TrayTip()
 	SetTimer ClearMem, -1000
 }
@@ -689,8 +681,8 @@ Tip(text, time = 1000) {
 }
 
 TrayIcon(enabled = 1) {
-	If (A_IsCompiled Or InStr(rstray, "rstray.exe"))
-		Menu Tray, Icon, %rstray%, % enabled ? 1 : 2, 1
+	If (A_IsCompiled Or InStr(this, "rstray.exe"))
+		Menu Tray, Icon, %this%, % enabled ? 1 : 2, 1
 	Else
 		Menu Tray, Icon, % A_ScriptDir "\Icons\redshift" (enabled ? "" : "-6500k") ".ico", 1
 }
@@ -739,7 +731,7 @@ Brightness(value) {
 	Run(TRUE)
 	If mode = enabled
 	{
-		Process Wait, %exe%, .5
+		Process Wait, %redshiftexe%, .5
 		If !ErrorLevel {
 			brightness -= value
 			Run(TRUE)
@@ -762,7 +754,7 @@ Temperature(value) {
 	Run(TRUE)
 	If mode = enabled
 	{
-		Process Wait, %exe%, .25
+		Process Wait, %redshiftexe%, .25
 		If !ErrorLevel {
 			temperature -= value
 			Run(TRUE)
