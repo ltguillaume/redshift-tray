@@ -1,7 +1,7 @@
-<img src="https://raw.githubusercontent.com/ltGuillaume/Redshift-Tray/master/Icons/redshift.ico" align="right">
+<img src="Icons/redshift.ico" align="right">
 
 # Redshift Tray
-by ltGuillaume: [Codeberg](https://codeberg.org/ltGuillaume) | [GitHub](https://github.com/ltGuillaume) | [Buy me a beer](https://buymeacoff.ee/ltGuillaume) 🍺
+by ltGuillaume: [Codeberg](https://codeberg.org/ltguillaume) | [GitHub](https://github.com/ltguillaume) | [Buy me a beer](https://coff.ee/ltguillaume) 🍺
 
 ## Overview
 Redshift Tray is a no-frills GUI for the excellent screen temperature adjustment tool [Redshift](https://github.com/jonls/redshift) by Jon Lund Steffensen. Redshift Tray allows you to:
@@ -67,9 +67,9 @@ __Remote Desktop mode__ | &nbsp;
 RCtrl x2 | Switch between RDP host/client
 
 ## Getting started
-1. Download Redshift Tray from the [releases page](https://github.com/ltGuillaume/Redshift-Tray/releases) and extract it to a folder for which your user account has writing permissions. Alternatively, you can install it [with Chocolatey](https://chocolatey.org/packages/rstray) or [with Scoop](https://scoop.sh) (`scoop bucket add extras`, then `scoop add redshift-tray`).
+1. Download Redshift Tray from the [releases page](https://codeberg.org/ltguillaume/redshift-tray/releases) and extract it to a folder for which your user account has writing permissions. Alternatively, you can install it [with Chocolatey](https://chocolatey.org/packages/rstray) or [with Scoop](https://scoop.sh) (`scoop bucket add extras`, then `scoop add redshift-tray`).
 2. Run __rstray.exe__ and you'll see a handsome icon pop up in the notification area next to your clock. Now right-click it and choose __Settings__. You can quickly switch some features on/off, or choose __More Settings__. The text file __rstray.ini__ that shows up in your editor contains all the settings for Redshift Tray.
-    - For accurate coordinates, you can set them yourself, otherwise it uses your IP and the [ipapi](https://ipapi.co) service (__one time only__). Use a <a href="https://search.disroot.org/search?q=berlin%20map%20coordinates">search engine</a>, Maps, Wikipedia, or whatever and jot down your coordinates behind __latitude__ and __longitude__. Use periods (__.__) for decimal symbols.
+    - For accurate coordinates, you can set them yourself, otherwise it uses your IP and the [ipapi](https://ipapi.co) service (__one time only__). Use a search engine, Maps, Wikipedia, or whatever and jot down your coordinates behind __latitude__ and __longitude__. Use periods (__.__) for decimal symbols.
     - During the day, the color temperature should match the light from outside, typically around 5500K-6500K. The light has a higher temperature on an overcast day. Redshift assumes that your screen will produce light at a color of 6500K when no color correction is applied by the program. Thus, 6500K is the neutral temperature. The __daytemp__ setting helps you set this value (e.g. `daytemp=6500`).
     - At night, the color temperature should be set to match the lamps in your room. This is typically a low temperature at around 3000K-4000K. The __nighttemp__ setting helps you out here (e.g. `nighttemp=3500`).
     - Redshift Tray can check if the active window is in full-screen mode and automatically switch to a different color temperature (useful for image viewers and video players). Set the __fullscreentemp__ to your preferred value and enable this feature with `fullscreenmode=1`.  If you wish to exclude some full-screen windows from full-screen mode (such as browsers), you can specify a list of their [WinTitles](https://www.autohotkey.com/docs/misc/WinTitle.htm) in __fullscreenignore__. For example, `fullscreenignore=ahk_class MozillaWindowClass|ahk_class Chrome_WidgetWin_1` will exclude Firefox and Chrome/Chromium windows from full-screen mode.
@@ -100,4 +100,4 @@ You. Are. Done!
 * [Redshift](https://github.com/jonls/redshift) by [Jon Lund Steffensen](https://github.com/jonls)
 * [ipapi](https://ipapi.co) by Kloudend, Inc. ([Privacy Policy](https://ipapi.co/privacy))
 * [Chocolatey package](https://chocolatey.org/packages/rstray) by [tunisiano187](https://github.com/tunisiano187)
-* [Scoop package](https://github.com/lukesampson/scoop-extras/blob/master/bucket/redshift-tray.json) by [Ash258](https://github.com/Ash258), [r15ch13](https://github.com/r15ch13) and [linsui](https://github.com/linsui)
+* [Scoop package](https://github.com/lukesampson/scoop-extras/blob/master/bucket/redshift-tray.json) by [Ash258](https://github.com/ash258), [r15ch13](https://github.com/r15ch13) and [linsui](https://github.com/linsui)
