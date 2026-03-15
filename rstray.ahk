@@ -1,5 +1,5 @@
 ; Redshift Tray - https://github.com/ltGuillaume/Redshift-Tray
-Global ver := "3.0.0"
+Global ver := "3.1.0"
 
 #NoEnv
 #SingleInstance Off
@@ -508,12 +508,15 @@ Exit() {
 GetLocation() {
 	Try {
 		whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		whr.Open("GET", "https://ipapi.co/latlong", FALSE)
+		whr.Open("GET", "https://de.ipapi.is", FALSE)
 		whr.Send()
 		response := whr.ResponseText
 		ObjRelease(whr)
 	}
-	If !response Or InStr(response, "Undefined") {
+
+	latpos := RegExMatch(response, "i)latitude"":\s*([\d\.]+)" , newlat)
+	lonpos := RegExMatch(response, "i)longitude"":\s*([\d\.]+)", newlon)
+	If !response Or !latpos Or !lonpos {
 		If (lat = 0.0 Or lon = 0.0) {
 			MsgBox 308, Location Error
 				, An error occurred while determining your location!`nChoose Yes to retry, or No to manually specify latitude and longitude.
@@ -526,9 +529,8 @@ GetLocation() {
 		}
 		Return
 	}
-	StringSplit latlon, response, `,
-	lat = %latlon1%
-	lon = %latlon2%
+	lat = %newlat1%
+	lon = %newlon1%
 	IniWrite %lat%, %ini%, %v%, latitude
 	IniWrite %lon%, %ini%, %v%, longitude
 }
