@@ -1,3 +1,4 @@
+[Overview](#overview) • [Hotkeys](#list-of-hotkeys) • [Getting started](#getting-started) • [Credits](#credits)
 <img src="Icons/redshift.ico" align="right">
 
 # Redshift Tray
